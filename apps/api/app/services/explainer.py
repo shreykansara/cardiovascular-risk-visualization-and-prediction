@@ -87,10 +87,13 @@ def explain_patient(
     patient: PatientInputSchema,
     target: str = "LAD",
     top_k: int = 8,
+    pretransformed_x: np.ndarray | None = None,
+    precomputed_prob: float | None = None,
 ) -> VesselExplanation:
     """
     Computes local TreeSHAP attributions for a given target vessel.
     Ranks features by absolute attribution magnitude and classifies impact direction.
+    Supports pretransformed feature matrix and precomputed probabilities for ultra-low latency.
     """
     target_upper = target.upper()
     if target_upper not in ["CAD", "LAD", "LCX", "RCA"]:
@@ -103,9 +106,13 @@ def explain_patient(
     if not model_service.is_ready:
         model_service.load_artifacts()
 
-    # 1. Transform features
-    df = patient.to_feature_dataframe()
-    X_trans = model_service.preprocessor.transform(df)
+    # 1. Transform features (reuse pretransformed if provided)
+    if pretransformed_x is not None:
+        X_trans = pretransformed_x
+    else:
+        df = patient.to_feature_dataframe()
+        X_trans = model_service.preprocessor.transform(df)
+
     feature_names = model_service.shap_bundle.get("feature_names", [])
 
     # 2. Extract TreeSHAP values
@@ -128,8 +135,11 @@ def explain_patient(
         base_val = float(expected_val)
 
     # Model predicted probability
-    bundle = model_service.get_model_bundle(target_upper)
-    pred_prob = float(bundle["calibrated_model"].predict_proba(X_trans)[0, 1])
+    if precomputed_prob is not None:
+        pred_prob = precomputed_prob
+    else:
+        bundle = model_service.get_model_bundle(target_upper)
+        pred_prob = float(bundle["calibrated_model"].predict_proba(X_trans)[0, 1])
 
     # 3. Sort features by absolute SHAP attribution
     abs_indices = np.argsort(np.abs(shap_vec))[::-1]

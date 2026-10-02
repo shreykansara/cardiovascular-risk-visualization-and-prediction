@@ -106,9 +106,21 @@ def analyze_patient_complete(
 
     predictions = predict_patient(patient)
 
+    # Reuse pretransformed feature matrix for sub-10ms explainability
+    df = patient.to_feature_dataframe()
+    X_trans = model_service.preprocessor.transform(df)
+
     explanations: dict[str, VesselExplanation] = {}
     for target in ["CAD", "LAD", "LCX", "RCA"]:
-        explanations[target.lower()] = explain_patient(patient=patient, target=target, top_k=top_k)
+        t_lower = target.lower()
+        prob = predictions.overall_cad.probability if target == "CAD" else predictions.vessels[t_lower].probability
+        explanations[t_lower] = explain_patient(
+            patient=patient,
+            target=target,
+            top_k=top_k,
+            pretransformed_x=X_trans,
+            precomputed_prob=prob,
+        )
 
     latency = (time.perf_counter() - start_time) * 1000.0
 
