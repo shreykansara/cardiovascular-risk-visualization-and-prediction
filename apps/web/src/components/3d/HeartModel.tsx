@@ -65,29 +65,33 @@ const LCX_OM1_BASE_POINTS = [
   new THREE.Vector3(0.334, -0.36, 0.092),
 ];
 
+// RCA: Smooth anatomical right atrioventricular groove from aortic sinus to crux / acute margin
 const RCA_BASE_POINTS = [
-  new THREE.Vector3(-0.08, 0.26, 0.345),
-  new THREE.Vector3(-0.255, 0.24, 0.363),
-  new THREE.Vector3(-0.536, 0.2, 0.012),
-  new THREE.Vector3(-0.564, 0.11, -0.022),
-  new THREE.Vector3(-0.587, 0.01, 0.028),
-  new THREE.Vector3(-0.591, -0.05, 0.008),
-  new THREE.Vector3(-0.576, -0.12, -0.012),
-  new THREE.Vector3(-0.552, -0.22, 0.018),
-  new THREE.Vector3(-0.513, -0.32, 0.122),
-  new THREE.Vector3(-0.453, -0.42, 0.062),
-  new THREE.Vector3(-0.375, -0.52, 0.012),
-  new THREE.Vector3(-0.205, -0.65, 0.038),
+  new THREE.Vector3(-0.076, 0.182, 0.399),
+  new THREE.Vector3(-0.155, 0.165, 0.389),
+  new THREE.Vector3(-0.238, 0.131, 0.384),
+  new THREE.Vector3(-0.344, 0.055, 0.372),
+  new THREE.Vector3(-0.432, -0.020, 0.317),
+  new THREE.Vector3(-0.505, -0.098, 0.235),
+  new THREE.Vector3(-0.540, -0.157, 0.138),
+  new THREE.Vector3(-0.520, -0.267, 0.126),
+  new THREE.Vector3(-0.486, -0.346, 0.125),
+  new THREE.Vector3(-0.418, -0.450, 0.119),
+  new THREE.Vector3(-0.348, -0.526, 0.117),
+  new THREE.Vector3(-0.241, -0.617, 0.113),
+  new THREE.Vector3(-0.159, -0.672, 0.090),
 ];
 
 const RCA_MARGINAL_BASE_POINTS = [
-  new THREE.Vector3(-0.591, -0.05, 0.008),
-  new THREE.Vector3(-0.512, -0.18, 0.152),
-  new THREE.Vector3(-0.392, -0.32, 0.192),
+  new THREE.Vector3(-0.540, -0.157, 0.138),
+  new THREE.Vector3(-0.470, -0.291, 0.254),
+  new THREE.Vector3(-0.384, -0.400, 0.292),
+  new THREE.Vector3(-0.277, -0.487, 0.302),
 ];
 
 /**
- * Creates an authentic tapering cylindrical tube geometry with Frenet frames.
+ * Creates an authentic tapering cylindrical tube geometry with Frenet frames,
+ * radialSegments = 16, closed end caps, and outward-oriented vertex normals.
  */
 function createTaperedArteryGeometry(
   curve: THREE.Curve<THREE.Vector3>,
@@ -100,7 +104,6 @@ function createTaperedArteryGeometry(
   const frames = curve.computeFrenetFrames(tubularSegments, false);
 
   const positions: number[] = [];
-  const normals: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
 
@@ -125,7 +128,6 @@ function createTaperedArteryGeometry(
       const vertex = new THREE.Vector3().copy(p).addScaledVector(normal, radius);
 
       positions.push(vertex.x, vertex.y, vertex.z);
-      normals.push(normal.x, normal.y, normal.z);
       uvs.push(u, v);
     }
   }
@@ -142,11 +144,36 @@ function createTaperedArteryGeometry(
     }
   }
 
+  // Smooth closed end cap at ostium (i = 0)
+  const startCapCenter = points[0];
+  const startCenterIdx = positions.length / 3;
+  positions.push(startCapCenter.x, startCapCenter.y, startCapCenter.z);
+  uvs.push(0.5, 0.5);
+
+  for (let j = 0; j < radialSegments; j++) {
+    const ringIdx1 = j;
+    const ringIdx2 = j + 1;
+    indices.push(startCenterIdx, ringIdx2, ringIdx1);
+  }
+
+  // Smooth closed end cap at distal terminus (i = tubularSegments)
+  const endCapCenter = points[tubularSegments];
+  const endCenterIdx = positions.length / 3;
+  positions.push(endCapCenter.x, endCapCenter.y, endCapCenter.z);
+  uvs.push(0.5, 0.5);
+
+  const endRingOffset = tubularSegments * (radialSegments + 1);
+  for (let j = 0; j < radialSegments; j++) {
+    const ringIdx1 = endRingOffset + j;
+    const ringIdx2 = endRingOffset + j + 1;
+    indices.push(endCenterIdx, ringIdx1, ringIdx2);
+  }
+
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geo.setIndex(indices);
+  geo.computeVertexNormals();
   return geo;
 }
 
@@ -156,9 +183,9 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
   const [hoveredVessel, setHoveredVessel] = useState<string | null>(null);
 
   // Material refs for dynamic 60fps emissive pulse updates without React re-renders
-  const ladMatRef = useRef<THREE.MeshPhysicalMaterial>(null);
-  const lcxMatRef = useRef<THREE.MeshPhysicalMaterial>(null);
-  const rcaMatRef = useRef<THREE.MeshPhysicalMaterial>(null);
+  const ladMatRef = useRef<THREE.MeshStandardMaterial>(null);
+  const lcxMatRef = useRef<THREE.MeshStandardMaterial>(null);
+  const rcaMatRef = useRef<THREE.MeshStandardMaterial>(null);
 
   // Load the production GLTF model containing the intact myocardium
   const { scene } = useGLTF('/models/heart_coronary_optimized.glb');
@@ -215,7 +242,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
       }
     }
 
-    // Snaps points flush onto epicardial sulci with ~50% outward protrusion
+    // Snaps points flush onto epicardial sulci with surface elevation (r + 0.005)
     function snapAndEmbed(basePoints: THREE.Vector3[], rStart: number, rEnd: number) {
       return basePoints.map((pt, idx) => {
         const u = idx / (basePoints.length - 1);
@@ -231,7 +258,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
         }
         const closestVertex = vPos[minIdx];
         const surfaceNormal = vNorm[minIdx];
-        const offset = 0.5 * r;
+        const offset = r + 0.005;
         const snappedPoint = closestVertex.clone().addScaledVector(surfaceNormal, offset);
 
         // Step 1: Guarantee exact local alignment using myocardium.worldToLocal(point)
@@ -244,8 +271,8 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     const ladD1Pts = snapAndEmbed(LAD_D1_BASE_POINTS, 0.013, 0.008);
     const ladMainCurve = new THREE.CatmullRomCurve3(ladPts, false, 'centripetal');
     const ladD1Curve = new THREE.CatmullRomCurve3(ladD1Pts, false, 'centripetal');
-    const ladMainGeo = createTaperedArteryGeometry(ladMainCurve, 128, 12, 0.024, 0.014);
-    const ladD1Geo = createTaperedArteryGeometry(ladD1Curve, 48, 12, 0.013, 0.008);
+    const ladMainGeo = createTaperedArteryGeometry(ladMainCurve, 128, 16, 0.024, 0.014);
+    const ladD1Geo = createTaperedArteryGeometry(ladD1Curve, 48, 16, 0.013, 0.008);
     const mergedLad = BufferGeometryUtils.mergeGeometries([ladMainGeo, ladD1Geo]);
 
     // 2. LCX: Left atrioventricular groove beneath left auricle
@@ -253,8 +280,8 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     const lcxOm1Pts = snapAndEmbed(LCX_OM1_BASE_POINTS, 0.013, 0.008);
     const lcxMainCurve = new THREE.CatmullRomCurve3(lcxPts, false, 'centripetal');
     const lcxOm1Curve = new THREE.CatmullRomCurve3(lcxOm1Pts, false, 'centripetal');
-    const lcxMainGeo = createTaperedArteryGeometry(lcxMainCurve, 128, 12, 0.024, 0.014);
-    const lcxOm1Geo = createTaperedArteryGeometry(lcxOm1Curve, 48, 12, 0.013, 0.008);
+    const lcxMainGeo = createTaperedArteryGeometry(lcxMainCurve, 128, 16, 0.024, 0.014);
+    const lcxOm1Geo = createTaperedArteryGeometry(lcxOm1Curve, 48, 16, 0.013, 0.008);
     const mergedLcx = BufferGeometryUtils.mergeGeometries([lcxMainGeo, lcxOm1Geo]);
 
     // 3. RCA: Right atrioventricular sulcus along right border
@@ -262,14 +289,14 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     const rcaMarginalPts = snapAndEmbed(RCA_MARGINAL_BASE_POINTS, 0.013, 0.008);
     const rcaMainCurve = new THREE.CatmullRomCurve3(rcaPts, false, 'centripetal');
     const rcaMarginalCurve = new THREE.CatmullRomCurve3(rcaMarginalPts, false, 'centripetal');
-    const rcaMainGeo = createTaperedArteryGeometry(rcaMainCurve, 128, 12, 0.024, 0.014);
-    const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 12, 0.013, 0.008);
+    const rcaMainGeo = createTaperedArteryGeometry(rcaMainCurve, 128, 16, 0.024, 0.014);
+    const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 16, 0.013, 0.008);
     const mergedRca = BufferGeometryUtils.mergeGeometries([rcaMainGeo, rcaMarginalGeo]);
 
     // Step 3: Proximal callout badge anchors in local myocardium space
     const ladAnchor = ladPts[0].clone().add(new THREE.Vector3(0.0, 0.06, 0.07));
     const lcxAnchor = lcxPts[1].clone().add(new THREE.Vector3(0.06, 0.06, 0.05));
-    const rcaAnchor = rcaPts[1].clone().add(new THREE.Vector3(-0.06, 0.06, 0.05));
+    const rcaAnchor = rcaPts[1].clone().add(new THREE.Vector3(-0.04, 0.05, 0.06));
 
     return {
       ladGeo: mergedLad,
@@ -305,7 +332,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
   const isRcaBorderline = rcaProb > 0.40 && rcaProb <= 0.70;
   const isRcaSelected = activeVesselFocus === 'vessel_RCA';
 
-  const isGlobalFocus = activeVesselFocus === 'default';
+  const isGlobalFocus = activeVesselFocus === 'default' || activeVesselFocus === 'all' || activeVesselFocus === 'free';
   const isLadDimmed = !isGlobalFocus && !isLadSelected;
   const isLcxDimmed = !isGlobalFocus && !isLcxSelected;
   const isRcaDimmed = !isGlobalFocus && !isRcaSelected;
@@ -321,11 +348,11 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
 
     if (ladMatRef.current) {
       if (isLadDimmed) {
-        ladMatRef.current.emissiveIntensity = 0.0;
+        ladMatRef.current.emissiveIntensity = 0.05;
       } else if (isLadSelected) {
-        ladMatRef.current.emissiveIntensity = 0.8;
+        ladMatRef.current.emissiveIntensity = 0.7;
       } else if (isLadCritical) {
-        ladMatRef.current.emissiveIntensity = 0.7 + 0.3 * pulse;
+        ladMatRef.current.emissiveIntensity = 0.6 + 0.3 * pulse;
       } else {
         ladMatRef.current.emissiveIntensity = 0.25;
       }
@@ -333,11 +360,11 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
 
     if (lcxMatRef.current) {
       if (isLcxDimmed) {
-        lcxMatRef.current.emissiveIntensity = 0.0;
+        lcxMatRef.current.emissiveIntensity = 0.05;
       } else if (isLcxSelected) {
-        lcxMatRef.current.emissiveIntensity = 0.8;
+        lcxMatRef.current.emissiveIntensity = 0.7;
       } else if (isLcxCritical) {
-        lcxMatRef.current.emissiveIntensity = 0.7 + 0.3 * pulse;
+        lcxMatRef.current.emissiveIntensity = 0.6 + 0.3 * pulse;
       } else {
         lcxMatRef.current.emissiveIntensity = 0.25;
       }
@@ -345,11 +372,11 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
 
     if (rcaMatRef.current) {
       if (isRcaDimmed) {
-        rcaMatRef.current.emissiveIntensity = 0.0;
+        rcaMatRef.current.emissiveIntensity = 0.05;
       } else if (isRcaSelected) {
-        rcaMatRef.current.emissiveIntensity = 0.8;
+        rcaMatRef.current.emissiveIntensity = 0.7;
       } else if (isRcaCritical) {
-        rcaMatRef.current.emissiveIntensity = 0.7 + 0.3 * pulse;
+        rcaMatRef.current.emissiveIntensity = 0.6 + 0.3 * pulse;
       } else {
         rcaMatRef.current.emissiveIntensity = 0.25;
       }
@@ -397,22 +424,17 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             handlePointerOut();
           }}
         >
-          <meshPhysicalMaterial
+          <meshStandardMaterial
             ref={ladMatRef}
             color={ladColorHex}
             emissive={ladColorHex}
-            emissiveIntensity={isLadSelected ? 0.8 : (isLadCritical ? 0.7 : 0.25)}
-            roughness={0.2}
+            emissiveIntensity={isLadSelected ? 0.7 : (isLadCritical ? 0.6 : 0.25)}
+            roughness={0.25}
             metalness={0.1}
-            clearcoat={1.0}
-            clearcoatRoughness={0.1}
+            side={THREE.DoubleSide}
             depthTest={true}
-            depthWrite={false}
-            polygonOffset={true}
-            polygonOffsetFactor={-4}
-            polygonOffsetUnits={-4}
-            transparent={true}
-            opacity={isLadDimmed ? 0.3 : 1.0}
+            depthWrite={true}
+            transparent={false}
           />
 
           {/* Step 3: Floating Drei <Html> Callout Badge for LAD */}
@@ -474,22 +496,17 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             handlePointerOut();
           }}
         >
-          <meshPhysicalMaterial
+          <meshStandardMaterial
             ref={lcxMatRef}
             color={lcxColorHex}
             emissive={lcxColorHex}
-            emissiveIntensity={isLcxSelected ? 0.8 : (isLcxCritical ? 0.7 : 0.25)}
-            roughness={0.2}
+            emissiveIntensity={isLcxSelected ? 0.7 : (isLcxCritical ? 0.6 : 0.25)}
+            roughness={0.25}
             metalness={0.1}
-            clearcoat={1.0}
-            clearcoatRoughness={0.1}
+            side={THREE.DoubleSide}
             depthTest={true}
-            depthWrite={false}
-            polygonOffset={true}
-            polygonOffsetFactor={-4}
-            polygonOffsetUnits={-4}
-            transparent={true}
-            opacity={isLcxDimmed ? 0.3 : 1.0}
+            depthWrite={true}
+            transparent={false}
           />
 
           {/* Step 3: Floating Drei <Html> Callout Badge for LCX */}
@@ -551,22 +568,17 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             handlePointerOut();
           }}
         >
-          <meshPhysicalMaterial
+          <meshStandardMaterial
             ref={rcaMatRef}
             color={rcaColorHex}
             emissive={rcaColorHex}
-            emissiveIntensity={isRcaSelected ? 0.8 : (isRcaCritical ? 0.7 : 0.25)}
-            roughness={0.2}
+            emissiveIntensity={isRcaSelected ? 0.7 : (isRcaCritical ? 0.6 : 0.25)}
+            roughness={0.25}
             metalness={0.1}
-            clearcoat={1.0}
-            clearcoatRoughness={0.1}
+            side={THREE.DoubleSide}
             depthTest={true}
-            depthWrite={false}
-            polygonOffset={true}
-            polygonOffsetFactor={-4}
-            polygonOffsetUnits={-4}
-            transparent={true}
-            opacity={isRcaDimmed ? 0.3 : 1.0}
+            depthWrite={true}
+            transparent={false}
           />
 
           {/* Step 3: Floating Drei <Html> Callout Badge for RCA */}

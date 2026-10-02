@@ -41,7 +41,8 @@ function ensureDirectories() {
 }
 
 /**
- * Generates an authentic tapering vascular tube geometry with smooth Frenet frames.
+ * Generates an authentic tapering vascular tube geometry with smooth Frenet frames,
+ * radialSegments = 16, closed end caps, and outward-oriented vertex normals.
  */
 function createTaperedArteryGeometry(
   curve,
@@ -54,7 +55,6 @@ function createTaperedArteryGeometry(
   const frames = curve.computeFrenetFrames(tubularSegments, false);
 
   const positions = [];
-  const normals = [];
   const uvs = [];
   const indices = [];
 
@@ -79,7 +79,6 @@ function createTaperedArteryGeometry(
       const vertex = new THREE.Vector3().copy(p).addScaledVector(normal, radius);
 
       positions.push(vertex.x, vertex.y, vertex.z);
-      normals.push(normal.x, normal.y, normal.z);
       uvs.push(u, v);
     }
   }
@@ -96,11 +95,36 @@ function createTaperedArteryGeometry(
     }
   }
 
+  // Smooth closed end cap at ostium (i = 0)
+  const startCapCenter = points[0];
+  const startCenterIdx = positions.length / 3;
+  positions.push(startCapCenter.x, startCapCenter.y, startCapCenter.z);
+  uvs.push(0.5, 0.5);
+
+  for (let j = 0; j < radialSegments; j++) {
+    const ringIdx1 = j;
+    const ringIdx2 = j + 1;
+    indices.push(startCenterIdx, ringIdx2, ringIdx1);
+  }
+
+  // Smooth closed end cap at distal terminus (i = tubularSegments)
+  const endCapCenter = points[tubularSegments];
+  const endCenterIdx = positions.length / 3;
+  positions.push(endCapCenter.x, endCapCenter.y, endCapCenter.z);
+  uvs.push(0.5, 0.5);
+
+  const endRingOffset = tubularSegments * (radialSegments + 1);
+  for (let j = 0; j < radialSegments; j++) {
+    const ringIdx1 = endRingOffset + j;
+    const ringIdx2 = endRingOffset + j + 1;
+    indices.push(endCenterIdx, ringIdx1, ringIdx2);
+  }
+
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geo.setIndex(indices);
+  geo.computeVertexNormals();
   return geo;
 }
 
@@ -201,7 +225,7 @@ export async function processAndSegmentHeart() {
   });
   scene.addChild(oldNode);
 
-  // Snaps control points flush onto epicardial sulci with ~50% protrusion
+  // Snaps control points flush onto epicardial sulci with surface elevation (r + 0.005)
   function snapAndEmbedControlPoints(controlPoints, rStart, rEnd) {
     return controlPoints.map((pt, idx) => {
       const u = idx / (controlPoints.length - 1);
@@ -217,7 +241,7 @@ export async function processAndSegmentHeart() {
       }
       const closestVertex = worldPos[minIdx];
       const surfaceNormal = worldNorm[minIdx];
-      const offset = 0.5 * r;
+      const offset = r + 0.005;
       return closestVertex.clone().addScaledVector(surfaceNormal, offset);
     });
   }
@@ -264,28 +288,30 @@ export async function processAndSegmentHeart() {
     new THREE.Vector3(0.334, -0.36, 0.092),
   ];
 
-  // RCA: Right atrioventricular sulcus and acute margin
+  // RCA: Smooth anatomical right atrioventricular groove from aortic sinus to crux / acute margin
   const rcaBasePoints = [
-    new THREE.Vector3(-0.08, 0.26, 0.345),
-    new THREE.Vector3(-0.255, 0.24, 0.363),
-    new THREE.Vector3(-0.536, 0.2, 0.012),
-    new THREE.Vector3(-0.564, 0.11, -0.022),
-    new THREE.Vector3(-0.587, 0.01, 0.028),
-    new THREE.Vector3(-0.591, -0.05, 0.008),
-    new THREE.Vector3(-0.576, -0.12, -0.012),
-    new THREE.Vector3(-0.552, -0.22, 0.018),
-    new THREE.Vector3(-0.513, -0.32, 0.122),
-    new THREE.Vector3(-0.453, -0.42, 0.062),
-    new THREE.Vector3(-0.375, -0.52, 0.012),
-    new THREE.Vector3(-0.205, -0.65, 0.038),
+    new THREE.Vector3(-0.076, 0.182, 0.399),
+    new THREE.Vector3(-0.155, 0.165, 0.389),
+    new THREE.Vector3(-0.238, 0.131, 0.384),
+    new THREE.Vector3(-0.344, 0.055, 0.372),
+    new THREE.Vector3(-0.432, -0.020, 0.317),
+    new THREE.Vector3(-0.505, -0.098, 0.235),
+    new THREE.Vector3(-0.540, -0.157, 0.138),
+    new THREE.Vector3(-0.520, -0.267, 0.126),
+    new THREE.Vector3(-0.486, -0.346, 0.125),
+    new THREE.Vector3(-0.418, -0.450, 0.119),
+    new THREE.Vector3(-0.348, -0.526, 0.117),
+    new THREE.Vector3(-0.241, -0.617, 0.113),
+    new THREE.Vector3(-0.159, -0.672, 0.090),
   ];
   const rcaMarginalBasePoints = [
-    new THREE.Vector3(-0.591, -0.05, 0.008),
-    new THREE.Vector3(-0.512, -0.18, 0.152),
-    new THREE.Vector3(-0.392, -0.32, 0.192),
+    new THREE.Vector3(-0.540, -0.157, 0.138),
+    new THREE.Vector3(-0.470, -0.291, 0.254),
+    new THREE.Vector3(-0.384, -0.400, 0.292),
+    new THREE.Vector3(-0.277, -0.487, 0.302),
   ];
 
-  // 4. Generate smoothly embedded Catmull-Rom splines (proximal radius 0.024 -> distal 0.014)
+  // 4. Generate smoothly elevated Catmull-Rom splines (proximal radius 0.024 -> distal 0.014)
   const ladPts = snapAndEmbedControlPoints(ladBasePoints, 0.024, 0.014);
   const ladD1Pts = snapAndEmbedControlPoints(ladD1BasePoints, 0.013, 0.008);
   const lcxPts = snapAndEmbedControlPoints(lcxBasePoints, 0.024, 0.014);
@@ -300,18 +326,18 @@ export async function processAndSegmentHeart() {
   const rcaMainCurve = new THREE.CatmullRomCurve3(rcaPts, false, 'centripetal');
   const rcaMarginalCurve = new THREE.CatmullRomCurve3(rcaMarginalPts, false, 'centripetal');
 
-  // 5. Generate authentic cylindrical vascular conduits (128 tubular segments, 12 radial segments, r = 0.024 -> 0.014)
-  console.log('Generating vascular conduits (128 segments, 12 radial segments, tapering caliber r = 0.024 -> 0.014)...');
-  const ladMainGeo = createTaperedArteryGeometry(ladMainCurve, 128, 12, 0.024, 0.014);
-  const ladD1Geo = createTaperedArteryGeometry(ladD1Curve, 48, 12, 0.013, 0.008);
+  // 5. Generate authentic cylindrical vascular conduits (128 tubular segments, 16 radial segments, closed caps, r = 0.024 -> 0.014)
+  console.log('Generating vascular conduits (128 segments, 16 radial segments, closed end caps, tapering caliber r = 0.024 -> 0.014)...');
+  const ladMainGeo = createTaperedArteryGeometry(ladMainCurve, 128, 16, 0.024, 0.014);
+  const ladD1Geo = createTaperedArteryGeometry(ladD1Curve, 48, 16, 0.013, 0.008);
   const ladGeo = BufferGeometryUtils.mergeGeometries([ladMainGeo, ladD1Geo]);
 
-  const lcxMainGeo = createTaperedArteryGeometry(lcxMainCurve, 128, 12, 0.024, 0.014);
-  const lcxOm1Geo = createTaperedArteryGeometry(lcxOm1Curve, 48, 12, 0.013, 0.008);
+  const lcxMainGeo = createTaperedArteryGeometry(lcxMainCurve, 128, 16, 0.024, 0.014);
+  const lcxOm1Geo = createTaperedArteryGeometry(lcxOm1Curve, 48, 16, 0.013, 0.008);
   const lcxGeo = BufferGeometryUtils.mergeGeometries([lcxMainGeo, lcxOm1Geo]);
 
-  const rcaMainGeo = createTaperedArteryGeometry(rcaMainCurve, 128, 12, 0.024, 0.014);
-  const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 12, 0.013, 0.008);
+  const rcaMainGeo = createTaperedArteryGeometry(rcaMainCurve, 128, 16, 0.024, 0.014);
+  const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 16, 0.013, 0.008);
   const rcaGeo = BufferGeometryUtils.mergeGeometries([rcaMainGeo, rcaMarginalGeo]);
 
   // 6. Integrate vascular conduits as dedicated mesh nodes in GLTF document
