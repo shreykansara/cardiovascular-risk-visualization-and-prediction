@@ -1,0 +1,70 @@
+# Cursor Rules: Multimodal Cardiovascular Risk Platform (Track A)
+# Domain: Clinical AI & Interactive 3D WebGL Visualization
+
+---
+
+## 1. Core Engineering Directives
+
+You are working as a Principal AI Systems Architect and Lead Full-Stack 3D Graphics Engineer on a production-grade clinical AI platform. You must enforce uncompromising quality across medical validity, ML pipeline integrity, and WebGL rendering performance.
+
+### Primary Directives:
+1. **Zero Data Leakage (Non-Negotiable)**: Under NO circumstances may ground-truth catheterization (`Cath`) or vessel stenosis target variables (`LAD`, `LCX`, `RCA`, `CAD`) be included as input features $X$. Always verify that feature isolation asserts are maintained.
+2. **Clinical Safety & SaMD Compliance**: All visualizations and inference responses must maintain visible clinical disclaimers clarifying that the system is a decision-support prototype and not a replacement for formal coronary angiography.
+3. **Deterministic WebGL Lifecycle**: Guarantee that all Three.js geometries, materials, and textures are explicitly disposed of upon unmount. Never allocate memory inside animation loops.
+4. **End-to-End Type Safety**: Synchronize Pydantic v2 schemas (`apps/api/app/schemas/`) with TypeScript interfaces (`apps/web/src/types/`). Never use `any` in TypeScript or untyped `dict` in Python service handlers.
+
+---
+
+## 2. Machine Learning & Data Pipeline Rules
+
+- **Target Leakage Prohibition**:
+  - Forbidden columns in feature matrix $X$: `Cath`, `cath`, `cad`, `lad`, `lcx`, `rca`, `stenosis`, `target`.
+  - Always enforce `StrictFeatureFilter` prior to any scaling, imputation, or inference prediction.
+- **Preprocessing Standards**:
+  - Imputation and scaling must strictly be fit within cross-validation training folds. Never fit scalers on full datasets prior to splitting.
+  - Use `RobustScaler` for skewed lab values (e.g., Triglycerides, Troponin, ESR).
+  - Use `OneHotEncoder(handle_unknown='ignore')` for nominal categories.
+- **Model Heads & Calibration**:
+  - Train 4 dedicated binary classifiers (`cad_model`, `lad_model`, `lcx_model`, `rca_model`).
+  - Always apply `CalibratedClassifierCV` (isotonic or sigmoid) to ensure predicted probabilities $P \in [0.0, 1.0]$ represent true empirical risk for 3D color mapping.
+  - Address class imbalance dynamically using `scale_pos_weight`.
+- **Explainability (TreeSHAP)**:
+  - Return base value $\phi_0$, localized SHAP values $\phi_i$, and top-k features with human-readable clinical labels.
+
+---
+
+## 3. 3D Graphics & React Three Fiber (R3F) Rules
+
+- **Semantic Node Mapping**:
+  - Coronary vessel meshes in `.glb` must match exact identifiers: `vessel_LAD`, `vessel_LCX`, and `vessel_RCA`.
+  - Heart muscle must be identified as `myocardium`.
+- **Color Uniform Calculations**:
+  - Low Risk ($P \le 0.40$): Emerald Green (`#10B981` / `vec3(0.063, 0.725, 0.506)`).
+  - Borderline Risk ($0.40 < P \le 0.70$): Amber (`#F59E0B` / `vec3(0.961, 0.620, 0.043)`).
+  - High Risk ($P > 0.70$): Crimson Red (`#EF4444` / `vec3(0.937, 0.267, 0.267)`).
+  - Critical Stenosis ($P > 0.75$): Trigger oscillating emissive pulse shader in `useFrame`.
+- **Three.js Memory & Render Optimization**:
+  - NEVER instantiate `new THREE.Vector3()`, `new THREE.Color()`, or allocate arrays inside `useFrame`. Declare scratch objects once in component scope or via `useMemo`.
+  - Explicitly dispose of materials and geometries:
+    ```tsx
+    useEffect(() => {
+      return () => {
+        geometry?.dispose();
+        material?.dispose();
+      };
+    }, [geometry, material]);
+    ```
+  - Optimize shadow maps and keep polycounts lean; target sustained 60 FPS on integrated GPUs.
+
+---
+
+## 4. Full-Stack API & State Conventions
+
+- **FastAPI / Python**:
+  - Python 3.11+ type annotations (`int | None`, `list[str]`).
+  - Use Pydantic v2 `BaseModel` with field descriptions and validators for physiological boundaries (e.g., $10 \le \text{EF} \le 85$).
+  - Return standard HTTP 422 for clinical validation errors and HTTP 400 for leakage attempts.
+- **Frontend / React 19**:
+  - Tailwind CSS for all dashboard HUD elements.
+  - Dark mode as the primary clinical theme (slate-900 / zinc-900 with glassmorphism).
+  - State separation: Zustand for 3D camera/active vessel focus; TanStack Query for caching API inference calls.

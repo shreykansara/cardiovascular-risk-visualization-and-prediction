@@ -1,0 +1,118 @@
+# ==============================================================================
+# Git Ignore Configuration: Cardiovascular Risk Visualization & Prediction
+# Multimodal AI Hackathon 2026 - Track A
+# ==============================================================================
+
+# --- Python & Virtual Environments ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# --- Node & Frontend Build Artifacts ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+apps/web/dist/
+apps/web/dist-ssr/
+*.local
+.turbo/
+.next/
+
+# --- Environment & Secret Variables ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# --- 3D Assets & CAD Intermediate Files ---
+# Exclude heavy raw meshes, blender source backups, and uncompressed geometry
+*.blend
+*.blend1
+*.fbx
+*.obj
+*.mtl
+*.stl
+*.ply
+assets/3d/raw/*
+!assets/3d/raw/README.md
+
+# Keep production-optimized GLB models tracked
+!assets/3d/optimized/*.glb
+!assets/3d/optimized/*.json
+!apps/web/public/models/*.glb
+
+# --- Machine Learning Checkpoints & Temp Data ---
+# Ignore raw checkpoints, scratch weights, and intermediate dumps
+*.ckpt
+*.pt
+*.pth
+*.h5
+*.onnx
+models/checkpoints/
+data/scratch/
+data/temp/
+
+# Keep committed production model artifacts and schemas
+!models/*.joblib
+!models/*.json
+!data/processed/*.parquet
+!data/processed/*.json
+
+# --- Operating System & Editor Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# IDEs
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# Logs & Telemetry
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+uvicorn.log
