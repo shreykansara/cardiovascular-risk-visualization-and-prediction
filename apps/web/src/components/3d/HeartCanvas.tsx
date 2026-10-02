@@ -20,35 +20,35 @@ export const HeartCanvas: React.FC = () => {
 
   const vesselButtons = [
     { key: 'default', label: 'All Vessels', subtitle: 'Global Anatomy' },
-    { key: 'vessel_LAD', label: 'LAD', subtitle: 'Anterior Wall' },
-    { key: 'vessel_LCX', label: 'LCX', subtitle: 'Lateral Wall' },
-    { key: 'vessel_RCA', label: 'RCA', subtitle: 'Inferior Wall' },
+    { key: 'vessel_LAD', label: 'LAD', subtitle: 'Anterior Descending' },
+    { key: 'vessel_LCX', label: 'LCX', subtitle: 'Circumflex Artery' },
+    { key: 'vessel_RCA', label: 'RCA', subtitle: 'Right Coronary' },
   ];
 
   return (
     <div className="relative w-full h-full bg-surface-0 overflow-hidden select-none">
       {/* 3D WebGL Canvas */}
       <Canvas
-        camera={{ position: [0, 0.3, 5.2], fov: 42 }}
+        camera={{ position: [0.0, 0.2, 5.8], fov: 42 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={['#070A10']} />
 
-        {/* Studio Three-Point Clinical Lighting System */}
-        {/* 1. Ambient Fill: Gentle slate ambiance to preserve deep muscle tones */}
-        <ambientLight intensity={0.42} color="#94a3b8" />
+        {/* Balanced Clinical Studio Rim Lighting System */}
+        {/* 1. Ambient Fill: Gentle slate ambiance revealing organ mass */}
+        <ambientLight intensity={0.5} color="#cbd5e1" />
 
-        {/* 2. Key Directional Light: Soft anatomical key light from top-right */}
-        <directionalLight position={[3.5, 4.5, 3.5]} intensity={1.15} color="#ffffff" />
+        {/* 2. Key Directional Light: Clinical white illumination on anterior myocardium */}
+        <directionalLight position={[4.0, 4.5, 4.0]} intensity={1.3} color="#ffffff" />
 
-        {/* 3. Fill Light: Cool clinical blue fill to reveal anatomical contours */}
-        <directionalLight position={[-4.0, 1.5, 2.0]} intensity={0.5} color="#60a5fa" />
+        {/* 3. Anatomical Fill Light: Subtle blue fill revealing lateral sulci */}
+        <directionalLight position={[-4.0, 2.0, 2.5]} intensity={0.6} color="#60a5fa" />
 
-        {/* 4. Cyan Rim Backlight: High-impact clinical cyan edge light */}
-        <directionalLight position={[0.0, 3.0, -4.5]} intensity={1.4} color="#06b6d4" />
+        {/* 4. Cyan Rim Backlight: Institutional cyan edge glow separating heart from dark canvas */}
+        <directionalLight position={[0.0, 3.5, -4.5]} intensity={1.5} color="#06b6d4" />
 
-        {/* 5. Floor Bounce: Soft upward fill preventing dark shadow wash */}
-        <directionalLight position={[0.0, -4.0, 1.0]} intensity={0.25} color="#1e293b" />
+        {/* 5. Floor Bounce: Soft upward fill preventing shadow clipping on apex */}
+        <directionalLight position={[0.0, -4.5, 1.0]} intensity={0.3} color="#1e293b" />
 
         <Suspense
           fallback={
@@ -60,7 +60,7 @@ export const HeartCanvas: React.FC = () => {
             </Html>
           }
         >
-          {/* Natively centered anatomical digital twin at (0, 0, 0) */}
+          {/* Authentic medical human heart twin positioned upright at (0, 0, 0) */}
           <HeartModel onHoverVessel={setHoveredVessel} />
         </Suspense>
 
@@ -68,8 +68,8 @@ export const HeartCanvas: React.FC = () => {
           ref={controlsRef}
           enableDamping
           dampingFactor={0.06}
-          minDistance={2.5}
-          maxDistance={8.0}
+          minDistance={2.8}
+          maxDistance={9.0}
           maxPolarAngle={Math.PI * 0.85}
           minPolarAngle={Math.PI * 0.15}
           makeDefault
