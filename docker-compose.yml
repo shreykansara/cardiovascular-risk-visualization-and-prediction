@@ -1,0 +1,19 @@
+services:
+  auracor-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: auracor-cad3d:latest
+    container_name: auracor_platform
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

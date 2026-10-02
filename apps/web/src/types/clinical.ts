@@ -72,12 +72,12 @@ export interface TargetPrediction {
   display_name: string;
   probability: number;
   binary_class: number;
-  stenosis_suspected: bool;
+  stenosis_suspected: boolean;
   risk_tier: RiskTier;
   optimal_threshold: number;
   color_hex: string;
   color_rgb: [number, number, number];
-  emissive_pulse: bool;
+  emissive_pulse: boolean;
 }
 
 export interface PredictionResponse {

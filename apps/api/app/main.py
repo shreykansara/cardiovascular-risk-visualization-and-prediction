@@ -70,8 +70,31 @@ def root_health():
     }
 
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, FileResponse
+
 # Mount API V1 Router
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Mount production Web UI and 3D assets if build distribution exists
+if settings.WEB_DIST_DIR.exists():
+    logger.info(f"Mounting production Web UI from {settings.WEB_DIST_DIR}")
+    assets_dir = settings.WEB_DIST_DIR / "assets"
+    models_dir = settings.WEB_DIST_DIR / "models"
+    
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+    if models_dir.exists():
+        app.mount("/models", StaticFiles(directory=str(models_dir)), name="models")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        if full_path.startswith("api") or full_path.startswith("docs") or full_path.startswith("redoc") or full_path.startswith("health"):
+            return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        file_path = settings.WEB_DIST_DIR / full_path
+        if file_path.is_file():
+            return FileResponse(file_path)
+        return FileResponse(settings.WEB_DIST_DIR / "index.html")
 
 
 if __name__ == "__main__":

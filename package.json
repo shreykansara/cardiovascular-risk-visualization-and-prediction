@@ -8,7 +8,7 @@
     "dev": "concurrently -n \"API,WEB\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev:api\" \"npm run dev:web\"",
     "dev:api": "python -m uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000 --reload",
     "dev:web": "vite --config apps/web/vite.config.ts",
-    "build:web": "tsc -b && vite build --config apps/web/vite.config.ts",
+    "build:web": "tsc -p apps/web/tsconfig.json && vite build --config apps/web/vite.config.ts",
     "preview": "vite preview --config apps/web/vite.config.ts",
     "test:api": "python -m pytest apps/api/tests -v",
     "test:leakage": "python -m pytest apps/api/tests/test_leakage.py -v",

@@ -139,7 +139,7 @@ export const TelemetryBlade: React.FC<TelemetryBladeProps> = ({ onOpenParameters
           >
             {overallCad.risk_tier === 'CRITICAL' && <Flame className="w-3 h-3 text-rose-400" />}
             {overallCad.risk_tier === 'HIGH' && <AlertCircle className="w-3 h-3 text-red-400" />}
-            {overallCad.risk_tier === 'OPTIMAL' && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+            {overallCad.risk_tier === 'LOW' && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
             <span>{overallCad.risk_tier}</span>
           </div>
         </div>

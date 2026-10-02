@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     ROOT_DIR: Path = Path(__file__).resolve().parent.parent.parent.parent
     MODELS_DIR: Path = ROOT_DIR / "models"
     DATA_DIR: Path = ROOT_DIR / "data"
+    WEB_DIST_DIR: Path = ROOT_DIR / "apps" / "web" / "dist"
 
     # CORS configuration for React 19 / Vite development
     CORS_ORIGINS: list[str] = [

@@ -1,0 +1,16 @@
+.git
+.github
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+node_modules
+apps/web/node_modules
+dist
+apps/web/dist
+reports
+.DS_Store
+Thumbs.db
