@@ -1,10 +1,10 @@
 /**
- * Local TreeSHAP Feature Attribution Waterfall Chart (AuraCor DLS)
+ * Local TreeSHAP Feature Attribution Waterfall Chart (AuraCor Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
 import React, { useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, BarChart3, HelpCircle, Layers, TrendingUp } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, BarChart3 } from 'lucide-react';
 import { usePatientStore } from '../../store/usePatientStore';
 import type { TargetVessel } from '../../types/clinical';
 
@@ -32,7 +32,7 @@ export const ShapWaterfall: React.FC = () => {
     );
   }
 
-  // Calculate maximum absolute SHAP value for scaling bars
+  // Calculate maximum absolute SHAP value for scaling bars proportionately
   const maxAbsShap = Math.max(
     ...currentExp.top_features.map((f) => Math.abs(f.shap_value)),
     0.05
@@ -41,18 +41,18 @@ export const ShapWaterfall: React.FC = () => {
   const targetsList: TargetVessel[] = ['CAD', 'LAD', 'LCX', 'RCA'];
 
   return (
-    <div className="glass-panel p-4 md:p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col h-full select-none">
+    <div className="glass-panel p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col h-full select-none">
       {/* Header & Target Selector Tabs */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
         <div>
           <div className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
-              Explainable AI // TreeSHAP Local Attributions
+            <h3 className="text-xs font-bold text-white tracking-tight uppercase font-mono">
+              Explainable AI // TreeSHAP Local Drivers
             </h3>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Individual physiological factor contributions toward {currentExp.display_name}
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Key physiological factor contributions for {currentExp.display_name}
           </p>
         </div>
 
@@ -73,7 +73,7 @@ export const ShapWaterfall: React.FC = () => {
                   };
                   setVesselFocus(nodeMap[t]);
                 }}
-                className={`px-3 py-1 rounded-lg text-xs font-mono font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition-all ${
                   isTabActive
                     ? 'bg-cyan-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700/40'
@@ -87,16 +87,20 @@ export const ShapWaterfall: React.FC = () => {
       </div>
 
       {/* Model Baseline vs Predicted Risk Header */}
-      <div className="grid grid-cols-2 gap-3 my-4 p-3 rounded-xl bg-surface-2/50 border border-slate-800 font-mono text-xs">
+      <div className="grid grid-cols-2 gap-3 my-3 p-3 rounded-xl bg-surface-2/60 border border-slate-800 font-mono text-xs">
         <div>
-          <span className="text-slate-400 text-[10px] uppercase tracking-wide">Population Base Risk (&phi;₀)</span>
-          <div className="text-lg font-bold text-slate-200 mt-0.5">
+          <span className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">
+            Population Baseline (&phi;₀)
+          </span>
+          <div className="text-base font-bold text-slate-200 mt-0.5">
             {(currentExp.base_value * 100).toFixed(1)}%
           </div>
         </div>
         <div>
-          <span className="text-slate-400 text-[10px] uppercase tracking-wide">Patient Predicted Probability</span>
-          <div className="text-lg font-bold text-cyan-400 mt-0.5 flex items-center gap-1.5">
+          <span className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">
+            Patient Predicted Risk
+          </span>
+          <div className="text-base font-bold text-cyan-400 mt-0.5 flex items-center gap-1">
             <span>{(currentExp.predicted_probability * 100).toFixed(1)}%</span>
             {currentExp.predicted_probability > currentExp.base_value ? (
               <ArrowUpRight className="w-4 h-4 text-rose-400" />
@@ -107,8 +111,8 @@ export const ShapWaterfall: React.FC = () => {
         </div>
       </div>
 
-      {/* Horizontal Divergence Attributions List */}
-      <div className="space-y-3 overflow-y-auto pr-1 flex-1 min-h-[240px]">
+      {/* Clean Executive Horizontal Divergent Bar Chart */}
+      <div className="space-y-2.5 overflow-y-auto pr-2 flex-1 max-h-[380px] custom-scrollbar">
         {currentExp.top_features.map((item, idx) => {
           const isRiskElevating = item.impact === 'INCREASES_RISK';
           const barWidthPercent = Math.min(100, (Math.abs(item.shap_value) / maxAbsShap) * 100);
@@ -116,64 +120,74 @@ export const ShapWaterfall: React.FC = () => {
           return (
             <div
               key={idx}
-              className="p-2.5 rounded-xl bg-surface-2/40 hover:bg-surface-2/70 border border-slate-800/80 transition-all text-xs"
+              className="p-2.5 rounded-xl bg-surface-2/40 hover:bg-surface-2/80 border border-slate-800/80 transition-all text-xs"
             >
-              {/* Feature Title & Value */}
+              {/* Feature Title & Observed Clinical Value */}
               <div className="flex items-center justify-between mb-1.5">
-                <span className="font-semibold text-slate-200 truncate pr-2">
+                <span className="font-semibold text-slate-200 text-xs truncate pr-2">
                   {item.clinical_label}
                 </span>
-                <span className="text-slate-400 font-mono shrink-0 text-[11px]">
-                  Observed: <strong className="text-slate-200">{item.feature_value}</strong>
+                <span className="text-slate-400 font-mono shrink-0 text-[11px] bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">
+                  Value: <strong className="text-slate-200">{item.feature_value}</strong>
                 </span>
               </div>
 
-              {/* Divergence Bar */}
-              <div className="relative flex items-center h-4 rounded-md bg-slate-900/80 overflow-hidden px-1">
-                {/* Center Baseline line */}
-                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-600 z-10" />
+              {/* Horizontal Divergent Bar with Center Zero-Axis */}
+              <div className="flex items-center gap-1.5 h-5 bg-slate-950/80 rounded-lg p-1 border border-slate-800/70">
+                {/* Left Side: Risk Decreasing (Protective) */}
+                <div className="flex-1 flex justify-end items-center h-full">
+                  {!isRiskElevating && (
+                    <div
+                      className="h-3 rounded-l-full bg-gradient-to-l from-emerald-500 to-teal-400 transition-all duration-300 shadow-sm"
+                      style={{ width: `${barWidthPercent}%` }}
+                    />
+                  )}
+                </div>
 
-                {isRiskElevating ? (
-                  // Bar extending right (Positive SHAP = Increases Risk)
-                  <div
-                    className="absolute left-1/2 h-2.5 rounded-r bg-gradient-to-r from-rose-600 to-red-500 shadow-sm transition-all duration-300"
-                    style={{ width: `${barWidthPercent * 0.48}%` }}
-                  />
-                ) : (
-                  // Bar extending left (Negative SHAP = Decreases Risk / Protective)
-                  <div
-                    className="absolute right-1/2 h-2.5 rounded-l bg-gradient-to-l from-emerald-600 to-teal-500 shadow-sm transition-all duration-300"
-                    style={{ width: `${barWidthPercent * 0.48}%` }}
-                  />
-                )}
+                {/* Center Zero-Axis Line */}
+                <div className="w-0.5 h-full bg-slate-600 shrink-0" />
 
-                {/* Attribution Label on Far Right */}
-                <span
-                  className={`ml-auto font-mono text-[10px] font-bold z-10 ${
-                    isRiskElevating ? 'text-rose-400' : 'text-emerald-400'
-                  }`}
-                >
-                  {item.shap_value > 0 ? `+${item.shap_value.toFixed(3)}` : item.shap_value.toFixed(3)}
-                </span>
+                {/* Right Side: Risk Increasing (Elevating) */}
+                <div className="flex-1 flex justify-start items-center h-full">
+                  {isRiskElevating && (
+                    <div
+                      className="h-3 rounded-r-full bg-gradient-to-r from-rose-500 to-red-500 transition-all duration-300 shadow-sm"
+                      style={{ width: `${barWidthPercent}%` }}
+                    />
+                  )}
+                </div>
+
+                {/* Fixed Monospace Absolute Impact Value Tag on Far Right */}
+                <div className="w-14 text-right shrink-0">
+                  <span
+                    className={`font-mono text-[10px] font-bold ${
+                      isRiskElevating ? 'text-rose-400' : 'text-emerald-400'
+                    }`}
+                  >
+                    {item.shap_value > 0
+                      ? `+${item.shap_value.toFixed(3)}`
+                      : item.shap_value.toFixed(3)}
+                  </span>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Footer Interpretation */}
-      <div className="pt-3 mt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+      {/* Divergence Legend Footer */}
+      <div className="pt-2.5 mt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded bg-rose-500" />
-            <span>Elevates Risk</span>
+          <div className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm" />
+            <span className="text-[10px] text-slate-300">Protective (&minus;)</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded bg-emerald-500" />
-            <span>Protective / Lowers Risk</span>
+          <div className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-rose-500 shadow-sm" />
+            <span className="text-[10px] text-slate-300">Elevates Risk (+)</span>
           </div>
         </div>
-        <span className="font-mono text-[10px] text-slate-500">TreeSHAP Polynomial Exact</span>
+        <span className="text-[10px] text-slate-500">TreeSHAP Additive Sum</span>
       </div>
     </div>
   );

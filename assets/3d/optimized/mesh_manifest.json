@@ -1,111 +1,184 @@
 {
   "model_name": "heart_coronary_optimized.glb",
-  "created_at": "2026-10-02T06:17:11.548Z",
+  "created_at": "2026-10-02T06:37:30.445Z",
   "nodes": {
     "ventricles_mesh": {
       "center": [
-        -0.07788246870040894,
-        0,
-        0.11255869269371033
+        0.16123828291893005,
+        -0.19999998807907104,
+        0.07328096032142639
       ],
-      "vertices": 2401,
-      "triangles": 4512
+      "vertices": 4225,
+      "triangles": 8064
+    },
+    "ra_mesh": {
+      "center": [
+        -0.5799999907612801,
+        0.4499999936670065,
+        -0.050000011920928955
+      ],
+      "vertices": 1089,
+      "triangles": 1984
+    },
+    "la_mesh": {
+      "center": [
+        0.350000012665987,
+        0.48000000789761543,
+        -0.3199999965727329
+      ],
+      "vertices": 1089,
+      "triangles": 1984
+    },
+    "ra_auricle_mesh": {
+      "center": [
+        -0.3160081245005131,
+        0.46217940747737885,
+        0.2505389377474785
+      ],
+      "vertices": 99,
+      "triangles": 72
+    },
+    "la_auricle_mesh": {
+      "center": [
+        0.27460095658898354,
+        0.4679635912179947,
+        0.20665523782372475
+      ],
+      "vertices": 99,
+      "triangles": 72
     },
     "aorta_mesh": {
       "center": [
-        -0.15002235770225525,
-        1.4801611006259918,
-        -0.16838113963603973
+        -0.14026816934347153,
+        0.8669513016939163,
+        -0.2343663051724434
       ],
-      "vertices": 693,
-      "triangles": 1280
+      "vertices": 1025,
+      "triangles": 1920
+    },
+    "aorta_branch_1": {
+      "center": [
+        -0.11499999649822712,
+        1.3299999833106995,
+        -0.03499999921768904
+      ],
+      "vertices": 221,
+      "triangles": 384
+    },
+    "aorta_branch_2": {
+      "center": [
+        -0.1600000038743019,
+        1.3600000143051147,
+        -0.1550000049173832
+      ],
+      "vertices": 221,
+      "triangles": 384
+    },
+    "aorta_branch_3": {
+      "center": [
+        -0.2200000062584877,
+        1.3199999928474426,
+        -0.2900000065565109
+      ],
+      "vertices": 221,
+      "triangles": 384
     },
     "pulmonary_mesh": {
       "center": [
-        -0.10969807207584381,
-        1.1833142042160034,
-        0.24354170262813568
+        -0.024096786975860596,
+        0.6351105123758316,
+        0.04936005175113678
       ],
-      "vertices": 609,
-      "triangles": 1120
+      "vertices": 1523,
+      "triangles": 2784
+    },
+    "venae_cavae_mesh": {
+      "center": [
+        -0.5500109791755676,
+        0.4988495856523514,
+        -0.13001108169555664
+      ],
+      "vertices": 570,
+      "triangles": 1008
     },
     "vessel_LAD": {
       "center": [
-        0.1526637151837349,
-        -0.4169099032878876,
-        0.5687439665198326
+        0.20914796739816666,
+        -0.4548952579498291,
+        0.34847137704491615
       ],
-      "vertices": 1105,
-      "triangles": 2048
+      "vertices": 1600,
+      "triangles": 2944
     },
     "vessel_LCX": {
       "center": [
-        0.6095952019095421,
-        -0.1934090256690979,
-        -0.18065278232097626
+        0.42748331278562546,
+        -0.2434806376695633,
+        -0.09676896035671234
       ],
-      "vertices": 1105,
-      "triangles": 2048
+      "vertices": 1600,
+      "triangles": 2944
     },
     "vessel_RCA": {
       "center": [
-        -0.4749158462509513,
-        -0.40107059478759766,
-        0.04659533500671387
+        -0.3372996039688587,
+        -0.39933522045612335,
+        0.048896849155426025
       ],
-      "vertices": 1105,
-      "triangles": 2048
+      "vertices": 1540,
+      "triangles": 2832
     }
   },
   "camera_presets": {
     "default": {
       "position": [
         0,
-        0.5,
-        4.2
+        0.3,
+        5.2
       ],
       "target": [
         0,
         0,
         0
-      ]
+      ],
+      "display_name": "Anatomical Overview"
     },
     "vessel_LAD": {
       "position": [
-        0.35,
+        0.4,
         -0.2,
-        2.6
+        3.8
       ],
       "target": [
-        0.18,
-        -0.5,
-        0.5
+        0.1,
+        -0.35,
+        0.35
       ],
       "display_name": "Left Anterior Descending (Anterior View)"
     },
     "vessel_LCX": {
       "position": [
-        2.8,
-        -0.2,
-        -0.5
+        3.8,
+        0.2,
+        0.5
       ],
       "target": [
-        0.65,
-        -0.3,
-        -0.3
+        0.5,
+        -0.2,
+        -0.1
       ],
-      "display_name": "Left Circumflex (Left Lateral/Posterior View)"
+      "display_name": "Left Circumflex (Left Lateral View)"
     },
     "vessel_RCA": {
       "position": [
-        -2.6,
-        -0.2,
-        1.2
+        -3.6,
+        0.1,
+        1.8
       ],
       "target": [
-        -0.55,
         -0.4,
-        0.1
+        -0.3,
+        0.2
       ],
       "display_name": "Right Coronary Artery (Right Lateral View)"
     }

@@ -56,9 +56,9 @@ export const App: React.FC = () => {
         </section>
 
         {/* Clinical Diagnostic Dashboard & XAI Panel (40% on desktop) */}
-        <section className="w-full lg:w-[480px] xl:w-[540px] flex flex-col h-[50vh] lg:h-full bg-surface-1/50 overflow-y-auto">
+        <section className="w-full lg:w-[480px] xl:w-[540px] flex flex-col h-[50vh] lg:h-full bg-surface-1/50 overflow-hidden">
           {/* Top: 4-Head Vessel Stenosis Matrix */}
-          <div className="border-b border-slate-800/80 bg-surface-1/70 backdrop-blur-md">
+          <div className="shrink-0 border-b border-slate-800/80 bg-surface-1/70 backdrop-blur-md">
             <div className="px-4 pt-3 pb-1 flex items-center justify-between">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
                 Diagnostic Stenosis Matrix
@@ -71,7 +71,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Bottom: TreeSHAP Local Attributions */}
-          <div className="flex-1 p-3 md:p-4 min-h-[360px]">
+          <div className="flex-1 p-3 md:p-4 min-h-0 overflow-y-auto">
             <ShapWaterfall />
           </div>
         </section>

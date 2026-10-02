@@ -1,5 +1,5 @@
 /**
- * 3D Camera Rig & Smooth Focal Interpolation
+ * 3D Camera Rig & Smooth Focal Interpolation (AuraCor Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
@@ -8,22 +8,23 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { usePatientStore } from '../../store/usePatientStore';
 
+// Calibrated camera positions and focal targets matching normalized heart geometry
 const CAMERA_PRESETS: Record<string, { position: [number, number, number]; target: [number, number, number] }> = {
   default: {
-    position: [0.0, 0.5, 4.2],
+    position: [0.0, 0.3, 5.2],
     target: [0.0, 0.0, 0.0],
   },
   vessel_LAD: {
-    position: [0.35, -0.2, 2.6],
-    target: [0.18, -0.5, 0.5],
+    position: [0.4, -0.2, 3.8],
+    target: [0.2, -0.45, 0.35],
   },
   vessel_LCX: {
-    position: [2.8, -0.2, -0.5],
-    target: [0.65, -0.3, -0.3],
+    position: [3.8, 0.2, 0.5],
+    target: [0.43, -0.24, -0.1],
   },
   vessel_RCA: {
-    position: [-2.6, -0.2, 1.2],
-    target: [-0.55, -0.4, 0.1],
+    position: [-3.6, 0.1, 1.8],
+    target: [-0.34, -0.4, 0.05],
   },
 };
 
@@ -44,8 +45,8 @@ export const CameraRig: React.FC<CameraRigProps> = ({ controlsRef }) => {
     targetPos.current.set(...preset.position);
     targetLook.current.set(...preset.target);
 
-    // Smooth cubic exponential easing (speed: 4.5 * delta)
-    const lerpFactor = Math.min(1.0, delta * 4.5);
+    // Smooth exponential damping (speed factor 4.0)
+    const lerpFactor = Math.min(1.0, delta * 4.0);
 
     camera.position.lerp(targetPos.current, lerpFactor);
 
