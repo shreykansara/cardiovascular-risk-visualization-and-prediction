@@ -3,8 +3,8 @@
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  *
  * Integrates an authentic pre-modeled, production-grade 3D human heart digital twin
- * with flush coronary artery vascular conduits (1.5 - 2.5 mm scale) directly mapped
- * to the surface of the ventricles along the anatomical sulci.
+ * with flush, delicate coronary artery vascular conduits (2.5mm–3.5mm scale tapering to 1.5mm)
+ * snapping directly onto the epicardial surface with glistening clearcoat PBR shading.
  */
 
 import React, { useRef, useMemo, useEffect, useState } from 'react';
@@ -18,6 +18,70 @@ interface HeartModelProps {
   onHoverVessel?: (vesselName: string | null) => void;
 }
 
+/**
+ * Generates an anatomically authentic tapering vascular tube geometry.
+ */
+function createTaperedArteryGeometry(
+  curve: THREE.CatmullRomCurve3,
+  tubularSegments: number,
+  radialSegments: number,
+  radiusStart: number,
+  radiusEnd: number
+): THREE.BufferGeometry {
+  const points = curve.getPoints(tubularSegments);
+  const frames = curve.computeFrenetFrames(tubularSegments, false);
+
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+
+  for (let i = 0; i <= tubularSegments; i++) {
+    const u = i / tubularSegments;
+    const radius = radiusStart + (radiusEnd - radiusStart) * u;
+    const p = points[i];
+    const N = frames.normals[i];
+    const B = frames.binormals[i];
+
+    for (let j = 0; j <= radialSegments; j++) {
+      const v = j / radialSegments;
+      const theta = v * Math.PI * 2;
+      const sin = Math.sin(theta);
+      const cos = Math.cos(theta);
+
+      const normal = new THREE.Vector3()
+        .addScaledVector(N, cos)
+        .addScaledVector(B, sin)
+        .normalize();
+
+      const vertex = new THREE.Vector3().copy(p).addScaledVector(normal, radius);
+
+      positions.push(vertex.x, vertex.y, vertex.z);
+      normals.push(normal.x, normal.y, normal.z);
+      uvs.push(u, v);
+    }
+  }
+
+  for (let i = 0; i < tubularSegments; i++) {
+    for (let j = 0; j < radialSegments; j++) {
+      const a = i * (radialSegments + 1) + j;
+      const b = (i + 1) * (radialSegments + 1) + j;
+      const c = (i + 1) * (radialSegments + 1) + (j + 1);
+      const d = i * (radialSegments + 1) + (j + 1);
+
+      indices.push(a, b, d);
+      indices.push(b, c, d);
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(indices);
+  return geo;
+}
+
 export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
   const { analysis, activeVesselFocus, setVesselFocus } = usePatientStore();
   const groupRef = useRef<THREE.Group>(null);
@@ -29,7 +93,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
   const dimColor = useMemo(() => new THREE.Color('#334155'), []);
 
   // Material references for dynamic uniform updates
-  const vesselMaterials = useRef<Record<string, THREE.MeshStandardMaterial>>({});
+  const vesselMaterials = useRef<Record<string, THREE.MeshPhysicalMaterial>>({});
 
   // Load authentic medical 3D heart model
   const { scene } = useGLTF('/models/heart_coronary_optimized.glb');
@@ -37,87 +101,90 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
   // Clone scene on mount so materials are isolated per instance
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
 
-  // Build delicate, flush coronary artery geometries mapped directly to world surface vertices
+  // Build delicate, flush coronary artery geometries mapped directly to epicardial surface vertices
   const { ladGeo, lcxGeo, rcaGeo } = useMemo(() => {
-    // 1. LAD (Left Anterior Descending Artery) - runs down anterior interventricular sulcus to apex
+    // 1. LAD (Left Anterior Descending Artery) - Snaps directly onto anterior interventricular sulcus
     const ladMainCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.003, 0.22, 0.415),
-      new THREE.Vector3(-0.025, 0.12, 0.432),
-      new THREE.Vector3(-0.097, 0.035, 0.463),
-      new THREE.Vector3(-0.01, -0.083, 0.482),
-      new THREE.Vector3(-0.046, -0.15, 0.487),
-      new THREE.Vector3(-0.077, -0.221, 0.48),
-      new THREE.Vector3(-0.082, -0.321, 0.451),
-      new THREE.Vector3(-0.021, -0.42, 0.407),
-      new THREE.Vector3(0.017, -0.511, 0.364),
-      new THREE.Vector3(0.034, -0.611, 0.303),
-      new THREE.Vector3(0.082, -0.713, 0.22),
+      new THREE.Vector3(-0.003, 0.25, 0.402),
+      new THREE.Vector3(-0.02, 0.15, 0.423),
+      new THREE.Vector3(-0.04, 0.05, 0.45),
+      new THREE.Vector3(-0.03, -0.05, 0.472),
+      new THREE.Vector3(-0.04, -0.15, 0.483),
+      new THREE.Vector3(-0.06, -0.25, 0.47),
+      new THREE.Vector3(-0.07, -0.35, 0.433),
+      new THREE.Vector3(-0.03, -0.45, 0.389),
+      new THREE.Vector3(0.01, -0.55, 0.337),
+      new THREE.Vector3(0.03, -0.65, 0.271),
+      new THREE.Vector3(0.08, -0.73, 0.197),
       new THREE.Vector3(0.108, -0.785, 0.08),
     ]);
-    const ladMain = new THREE.TubeGeometry(ladMainCurve, 64, 0.014, 12, false);
+    // Tapering from 2.8mm proximal to 1.5mm at apex
+    const ladMain = createTaperedArteryGeometry(ladMainCurve, 64, 12, 0.007, 0.0038);
 
     const ladD1Curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.046, -0.15, 0.487),
-      new THREE.Vector3(0.12, -0.25, 0.42),
-      new THREE.Vector3(0.22, -0.4, 0.32),
-      new THREE.Vector3(0.28, -0.55, 0.2),
+      new THREE.Vector3(-0.04, -0.15, 0.483),
+      new THREE.Vector3(0.08, -0.23, 0.43),
+      new THREE.Vector3(0.18, -0.35, 0.33),
+      new THREE.Vector3(0.22, -0.48, 0.22),
     ]);
-    const ladD1 = new THREE.TubeGeometry(ladD1Curve, 32, 0.01, 10, false);
+    const ladD1 = createTaperedArteryGeometry(ladD1Curve, 32, 10, 0.0055, 0.003);
     const ladGeo = BufferGeometryUtils.mergeGeometries([ladMain, ladD1]);
 
-    // 2. LCX (Left Circumflex Artery) - runs in left atrioventricular groove around obtuse margin
+    // 2. LCX (Left Circumflex Artery) - Snaps directly into left atrioventricular groove
     const lcxMainCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0.0, 0.25, 0.38),
-      new THREE.Vector3(0.22, 0.26, 0.24),
-      new THREE.Vector3(0.454, 0.289, 0.068),
-      new THREE.Vector3(0.414, 0.111, -0.102),
-      new THREE.Vector3(0.417, 0.078, -0.076),
-      new THREE.Vector3(0.406, -0.018, -0.037),
-      new THREE.Vector3(0.426, -0.185, -0.068),
-      new THREE.Vector3(0.431, -0.233, -0.073),
-      new THREE.Vector3(0.426, -0.313, -0.05),
+      new THREE.Vector3(0.05, 0.28, 0.39),
+      new THREE.Vector3(0.22, 0.28, 0.26),
+      new THREE.Vector3(0.33, 0.28, 0.15),
+      new THREE.Vector3(0.394, 0.18, -0.05),
+      new THREE.Vector3(0.417, 0.08, -0.08),
+      new THREE.Vector3(0.405, -0.02, -0.06),
+      new THREE.Vector3(0.419, -0.15, -0.07),
+      new THREE.Vector3(0.431, -0.25, -0.07),
+      new THREE.Vector3(0.42, -0.35, -0.05),
     ]);
-    const lcxMain = new THREE.TubeGeometry(lcxMainCurve, 64, 0.013, 12, false);
+    // Tapering from 2.6mm to 1.4mm
+    const lcxMain = createTaperedArteryGeometry(lcxMainCurve, 64, 12, 0.0065, 0.0035);
 
     const lcxOm1Curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0.417, 0.078, -0.076),
-      new THREE.Vector3(0.44, -0.08, 0.02),
-      new THREE.Vector3(0.42, -0.28, 0.04),
-      new THREE.Vector3(0.36, -0.45, 0.08),
+      new THREE.Vector3(0.417, 0.08, -0.08),
+      new THREE.Vector3(0.41, -0.06, 0.02),
+      new THREE.Vector3(0.39, -0.2, 0.04),
+      new THREE.Vector3(0.32, -0.36, 0.08),
     ]);
-    const lcxOm1 = new THREE.TubeGeometry(lcxOm1Curve, 32, 0.01, 10, false);
+    const lcxOm1 = createTaperedArteryGeometry(lcxOm1Curve, 32, 10, 0.005, 0.003);
     const lcxGeo = BufferGeometryUtils.mergeGeometries([lcxMain, lcxOm1]);
 
-    // 3. RCA (Right Coronary Artery) - runs in right atrioventricular groove along acute margin
+    // 3. RCA (Right Coronary Artery) - Snaps directly into right atrioventricular sulcus
     const rcaMainCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.08, 0.25, 0.35),
-      new THREE.Vector3(-0.28, 0.23, 0.2),
-      new THREE.Vector3(-0.519, 0.211, 0.005),
-      new THREE.Vector3(-0.549, 0.113, -0.03),
-      new THREE.Vector3(-0.573, 0.012, 0.032),
-      new THREE.Vector3(-0.578, -0.041, 0.002),
-      new THREE.Vector3(-0.566, -0.112, -0.021),
-      new THREE.Vector3(-0.539, -0.215, 0.018),
-      new THREE.Vector3(-0.503, -0.311, 0.117),
-      new THREE.Vector3(-0.444, -0.412, 0.056),
-      new THREE.Vector3(-0.371, -0.51, 0.016),
-      new THREE.Vector3(-0.2, -0.65, 0.03),
+      new THREE.Vector3(-0.08, 0.26, 0.331),
+      new THREE.Vector3(-0.25, 0.24, 0.349),
+      new THREE.Vector3(-0.522, 0.2, 0.0),
+      new THREE.Vector3(-0.55, 0.11, -0.03),
+      new THREE.Vector3(-0.573, 0.01, 0.02),
+      new THREE.Vector3(-0.577, -0.05, 0.0),
+      new THREE.Vector3(-0.562, -0.12, -0.02),
+      new THREE.Vector3(-0.538, -0.22, 0.01),
+      new THREE.Vector3(-0.499, -0.32, 0.11),
+      new THREE.Vector3(-0.439, -0.42, 0.05),
+      new THREE.Vector3(-0.361, -0.52, 0.0),
+      new THREE.Vector3(-0.2, -0.65, 0.025),
     ]);
-    const rcaMain = new THREE.TubeGeometry(rcaMainCurve, 64, 0.014, 12, false);
+    // Tapering from 2.8mm to 1.6mm
+    const rcaMain = createTaperedArteryGeometry(rcaMainCurve, 64, 12, 0.007, 0.004);
 
     const rcaMarginalCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.578, -0.041, 0.002),
-      new THREE.Vector3(-0.52, -0.22, 0.15),
-      new THREE.Vector3(-0.4, -0.4, 0.18),
+      new THREE.Vector3(-0.577, -0.05, 0.0),
+      new THREE.Vector3(-0.5, -0.18, 0.14),
+      new THREE.Vector3(-0.38, -0.32, 0.18),
     ]);
-    const rcaMarginal = new THREE.TubeGeometry(rcaMarginalCurve, 28, 0.01, 10, false);
+    const rcaMarginal = createTaperedArteryGeometry(rcaMarginalCurve, 28, 10, 0.005, 0.003);
     const rcaGeo = BufferGeometryUtils.mergeGeometries([rcaMain, rcaMarginal]);
 
     return { ladGeo, lcxGeo, rcaGeo };
   }, []);
 
   useEffect(() => {
-    // Preserve authentic photographic PBR texturing with wet anatomical sheen
+    // Preserve authentic photographic PBR texturing with realistic living tissue sheen
     clonedScene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -132,15 +199,20 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     });
   }, [clonedScene]);
 
-  // Create isolated materials for the 3 coronary arteries
+  // Glistening, semi-gloss organic vascular physical materials with clearcoat and subtle translucency
   const arteryMaterials = useMemo(() => {
     const createMat = () =>
-      new THREE.MeshStandardMaterial({
+      new THREE.MeshPhysicalMaterial({
         color: new THREE.Color('#10B981'),
-        roughness: 0.25,
-        metalness: 0.2,
-        emissive: new THREE.Color('#000000'),
-        emissiveIntensity: 0.2,
+        roughness: 0.2,
+        metalness: 0.05,
+        clearcoat: 0.85,
+        clearcoatRoughness: 0.15,
+        transmission: 0.15, // Organic living tissue translucency
+        thickness: 0.02,
+        ior: 1.45,
+        emissive: new THREE.Color('#10B981'),
+        emissiveIntensity: 0.25,
         transparent: true,
         opacity: 1.0,
       });
@@ -181,7 +253,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
         scratchColor.set(pred.color_hex);
 
         if (isGlobalFocus || isThisSelected) {
-          // Full visibility and vibrant risk color
+          // Full visibility with glistening clearcoat
           mat.color.lerp(scratchColor, 0.15);
           mat.opacity = THREE.MathUtils.lerp(mat.opacity, 1.0, 0.15);
         } else {
@@ -238,7 +310,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
       {/* 1. Authentic Medical Human Heart Digital Twin */}
       <primitive object={clonedScene} />
 
-      {/* 2. Flush Anatomical Coronary Conduit: LAD (Anterior Interventricular Sulcus) */}
+      {/* 2. Flush Tapering Coronary Artery: LAD (Anterior Interventricular Sulcus) */}
       <mesh
         name="vessel_LAD"
         geometry={ladGeo}
@@ -248,7 +320,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
         onClick={(e) => handleClick('vessel_LAD', e)}
       />
 
-      {/* 3. Flush Anatomical Coronary Conduit: LCX (Left Circumflex Artery) */}
+      {/* 3. Flush Tapering Coronary Artery: LCX (Left Circumflex Artery) */}
       <mesh
         name="vessel_LCX"
         geometry={lcxGeo}
@@ -258,7 +330,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
         onClick={(e) => handleClick('vessel_LCX', e)}
       />
 
-      {/* 4. Flush Anatomical Coronary Conduit: RCA (Right Coronary Artery) */}
+      {/* 4. Flush Tapering Coronary Artery: RCA (Right Coronary Artery) */}
       <mesh
         name="vessel_RCA"
         geometry={rcaGeo}
