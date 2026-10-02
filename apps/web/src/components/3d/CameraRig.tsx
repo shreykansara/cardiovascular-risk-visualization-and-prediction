@@ -8,23 +8,23 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { usePatientStore } from '../../store/usePatientStore';
 
-// Camera presets calibrated for the authentic medical 3D heart model
+// Camera presets calibrated for authentic medical 3D heart model (1.6 units tall, filling 70% viewport)
 const CAMERA_PRESETS: Record<string, { position: [number, number, number]; target: [number, number, number] }> = {
   default: {
-    position: [0.0, 0.2, 5.8],
+    position: [0.0, 0.0, 3.1],
     target: [0.0, 0.0, 0.0],
   },
   vessel_LAD: {
-    position: [0.3, -0.3, 4.2],
-    target: [0.08, -0.55, 0.6],
+    position: [0.0, -0.2, 2.2],
+    target: [0.0, -0.3, 0.35],
   },
   vessel_LCX: {
-    position: [4.4, 0.0, 0.8],
-    target: [0.75, -0.25, -0.15],
+    position: [2.3, -0.05, 0.5],
+    target: [0.35, -0.15, -0.05],
   },
   vessel_RCA: {
-    position: [-4.4, 0.0, 1.8],
-    target: [-0.85, -0.35, 0.15],
+    position: [-2.3, -0.1, 0.8],
+    target: [-0.45, -0.2, 0.05],
   },
 };
 
