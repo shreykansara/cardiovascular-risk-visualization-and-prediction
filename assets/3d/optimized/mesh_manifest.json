@@ -1,7 +1,7 @@
 {
   "model_name": "heart_coronary_optimized.glb",
-  "created_at": "2026-10-02T12:15:37.133Z",
-  "architecture": "Native Disjoint Epicardial Segmentation (Zero Tubes, Zero Occlusion)",
+  "created_at": "2026-10-02T13:12:05.953Z",
+  "architecture": "Intact Photorealistic Myocardium + Dedicated 3D Cylindrical Vascular Conduits",
   "sub_meshes": [
     "myocardium",
     "vessel_LAD",
@@ -14,11 +14,16 @@
     "mat_LCX",
     "mat_RCA"
   ],
+  "vascular_specifications": {
+    "tubular_segments": 128,
+    "radial_segments": 12,
+    "caliber_range_mm": "2.5mm - 4.5mm (0.007 to 0.016 units)",
+    "embedding": "Underside embedded ~30% into epicardial sulci, top 70% protruding"
+  },
   "triangle_counts": {
-    "myocardium": 20656,
-    "vessel_LAD": 623,
-    "vessel_LCX": 518,
-    "vessel_RCA": 765,
-    "total": 22562
+    "myocardium": 22562,
+    "vessel_LAD": 4224,
+    "vessel_LCX": 4224,
+    "vessel_RCA": 4224
   }
 }
