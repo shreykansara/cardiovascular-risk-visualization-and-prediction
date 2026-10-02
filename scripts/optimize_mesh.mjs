@@ -288,27 +288,37 @@ export async function processAndSegmentHeart() {
     new THREE.Vector3(0.334, -0.36, 0.092),
   ];
 
-  // RCA: Smooth anatomical right atrioventricular groove from aortic sinus to crux / acute margin
+  // RCA: Follows true horizontal right atrioventricular sulcus, smooth C-turn around acute margin, and crux descent
   const rcaBasePoints = [
-    new THREE.Vector3(-0.076, 0.182, 0.399),
-    new THREE.Vector3(-0.155, 0.165, 0.389),
-    new THREE.Vector3(-0.238, 0.131, 0.384),
-    new THREE.Vector3(-0.344, 0.055, 0.372),
-    new THREE.Vector3(-0.432, -0.020, 0.317),
-    new THREE.Vector3(-0.505, -0.098, 0.235),
-    new THREE.Vector3(-0.540, -0.157, 0.138),
-    new THREE.Vector3(-0.520, -0.267, 0.126),
-    new THREE.Vector3(-0.486, -0.346, 0.125),
-    new THREE.Vector3(-0.418, -0.450, 0.119),
-    new THREE.Vector3(-0.348, -0.526, 0.117),
-    new THREE.Vector3(-0.241, -0.617, 0.113),
-    new THREE.Vector3(-0.159, -0.672, 0.090),
+    // 1. Proximal horizontal segment in upper right atrioventricular groove
+    new THREE.Vector3(-0.070, 0.205, 0.395),
+    new THREE.Vector3(-0.140, 0.208, 0.365),
+    new THREE.Vector3(-0.210, 0.218, 0.350),
+    new THREE.Vector3(-0.285, 0.212, 0.360),
+    new THREE.Vector3(-0.355, 0.215, 0.340),
+    new THREE.Vector3(-0.425, 0.208, 0.290),
+    new THREE.Vector3(-0.480, 0.200, 0.215),
+
+    // 2. Smooth C-shaped curve rounding the acute margin of the right ventricle
+    new THREE.Vector3(-0.525, 0.170, 0.110),
+    new THREE.Vector3(-0.550, 0.110, 0.045),
+    new THREE.Vector3(-0.565, 0.030, 0.015),
+    new THREE.Vector3(-0.568, -0.050, 0.010),
+    new THREE.Vector3(-0.555, -0.130, 0.020),
+    new THREE.Vector3(-0.530, -0.220, 0.055),
+
+    // 3. Continuation curving smoothly toward the crux / diaphragmatic surface
+    new THREE.Vector3(-0.490, -0.320, 0.115),
+    new THREE.Vector3(-0.435, -0.420, 0.080),
+    new THREE.Vector3(-0.365, -0.510, 0.045),
+    new THREE.Vector3(-0.245, -0.610, 0.050),
+    new THREE.Vector3(-0.165, -0.665, 0.060),
   ];
   const rcaMarginalBasePoints = [
-    new THREE.Vector3(-0.540, -0.157, 0.138),
-    new THREE.Vector3(-0.470, -0.291, 0.254),
-    new THREE.Vector3(-0.384, -0.400, 0.292),
-    new THREE.Vector3(-0.277, -0.487, 0.302),
+    new THREE.Vector3(-0.555, -0.130, 0.020),
+    new THREE.Vector3(-0.470, -0.210, 0.160),
+    new THREE.Vector3(-0.380, -0.280, 0.250),
+    new THREE.Vector3(-0.280, -0.340, 0.290),
   ];
 
   // 4. Generate smoothly elevated Catmull-Rom splines (proximal radius 0.024 -> distal 0.014)

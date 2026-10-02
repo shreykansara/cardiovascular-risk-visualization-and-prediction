@@ -27,8 +27,8 @@ const CAMERA_PRESETS: Record<string, { position: [number, number, number]; targe
     target: [0.38, -0.05, -0.06],
   },
   vessel_RCA: {
-    position: [-2.2, -0.10, 0.5],
-    target: [-0.45, -0.20, 0.18],
+    position: [-2.2, 0.05, 0.5],
+    target: [-0.40, -0.05, 0.18],
   },
 };
 
