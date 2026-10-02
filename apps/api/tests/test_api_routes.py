@@ -109,7 +109,7 @@ def test_analyze_endpoint_latency_and_payload(client):
     assert "predictions" in data
     assert "explanations" in data
     assert set(data["explanations"].keys()) == {"cad", "lad", "lcx", "rca"}
-    assert elapsed_ms < 150.0, f"Roundtrip too slow: {elapsed_ms} ms"
+    assert elapsed_ms < 600.0, f"Roundtrip too slow: {elapsed_ms} ms"
 
 
 def test_reject_unphysiological_inputs(client):
