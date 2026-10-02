@@ -4,32 +4,34 @@
 # ==============================================================================
 
 # --- Web Framework & API Inference ---
-fastapi>=0.110.0,<0.112.0
-uvicorn[standard]>=0.28.0,<0.30.0
-pydantic>=2.6.4,<3.0.0
-pydantic-settings>=2.2.1,<3.0.0
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.4
+pydantic-settings>=2.2.1
 python-multipart>=0.0.9
 
 # --- Machine Learning & Statistics ---
-scikit-learn>=1.4.1,<1.6.0
-xgboost>=2.0.3,<2.2.0
-lightgbm>=4.3.0,<4.5.0
-shap>=0.44.1,<0.46.0
-scipy>=1.12.0,<1.14.0
+scikit-learn>=1.4.1
+xgboost>=2.0.3
+lightgbm>=4.3.0
+shap>=0.44.1
+scipy>=1.12.0
 
 # --- Data Processing & Serialization ---
-pandas>=2.2.1,<2.3.0
-numpy>=1.26.4,<2.0.0
-joblib>=1.3.2,<1.5.0
-pyarrow>=15.0.0,<17.0.0
+pandas>=2.2.1
+numpy>=1.26.4
+joblib>=1.3.2
+pyarrow>=15.0.0
+openpyxl>=3.1.2
 
 # --- Testing & Quality Assurance ---
-pytest>=8.1.1,<9.0.0
-pytest-asyncio>=0.23.5,<0.24.0
-httpx>=0.27.0,<0.28.0
-pytest-cov>=4.1.0,<5.0.0
+pytest>=8.1.1
+pytest-asyncio>=0.23.5
+httpx>=0.27.0
+pytest-cov>=4.1.0
 
 # --- Utilities & Performance ---
 tqdm>=4.66.2
 rich>=13.7.1
 python-dotenv>=1.0.1
+ucimlrepo>=0.0.7

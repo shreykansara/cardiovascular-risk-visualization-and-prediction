@@ -1,0 +1,113 @@
+{
+  "model_name": "heart_coronary_optimized.glb",
+  "created_at": "2026-10-02T06:17:11.548Z",
+  "nodes": {
+    "ventricles_mesh": {
+      "center": [
+        -0.07788246870040894,
+        0,
+        0.11255869269371033
+      ],
+      "vertices": 2401,
+      "triangles": 4512
+    },
+    "aorta_mesh": {
+      "center": [
+        -0.15002235770225525,
+        1.4801611006259918,
+        -0.16838113963603973
+      ],
+      "vertices": 693,
+      "triangles": 1280
+    },
+    "pulmonary_mesh": {
+      "center": [
+        -0.10969807207584381,
+        1.1833142042160034,
+        0.24354170262813568
+      ],
+      "vertices": 609,
+      "triangles": 1120
+    },
+    "vessel_LAD": {
+      "center": [
+        0.1526637151837349,
+        -0.4169099032878876,
+        0.5687439665198326
+      ],
+      "vertices": 1105,
+      "triangles": 2048
+    },
+    "vessel_LCX": {
+      "center": [
+        0.6095952019095421,
+        -0.1934090256690979,
+        -0.18065278232097626
+      ],
+      "vertices": 1105,
+      "triangles": 2048
+    },
+    "vessel_RCA": {
+      "center": [
+        -0.4749158462509513,
+        -0.40107059478759766,
+        0.04659533500671387
+      ],
+      "vertices": 1105,
+      "triangles": 2048
+    }
+  },
+  "camera_presets": {
+    "default": {
+      "position": [
+        0,
+        0.5,
+        4.2
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ]
+    },
+    "vessel_LAD": {
+      "position": [
+        0.35,
+        -0.2,
+        2.6
+      ],
+      "target": [
+        0.18,
+        -0.5,
+        0.5
+      ],
+      "display_name": "Left Anterior Descending (Anterior View)"
+    },
+    "vessel_LCX": {
+      "position": [
+        2.8,
+        -0.2,
+        -0.5
+      ],
+      "target": [
+        0.65,
+        -0.3,
+        -0.3
+      ],
+      "display_name": "Left Circumflex (Left Lateral/Posterior View)"
+    },
+    "vessel_RCA": {
+      "position": [
+        -2.6,
+        -0.2,
+        1.2
+      ],
+      "target": [
+        -0.55,
+        -0.4,
+        0.1
+      ],
+      "display_name": "Right Coronary Artery (Right Lateral View)"
+    }
+  }
+}
