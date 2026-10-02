@@ -5,18 +5,14 @@
 
 import React, { useState } from 'react';
 import {
-  Activity,
-  Heart,
   Sliders,
   User,
   X,
   Zap,
   FlaskConical,
   Stethoscope,
-  Info,
 } from 'lucide-react';
 import { usePatientStore } from '../../store/usePatientStore';
-import type { PatientData } from '../../types/clinical';
 
 interface PatientFormProps {
   isOpen: boolean;
@@ -25,97 +21,185 @@ interface PatientFormProps {
 
 type TabKey = 'vitals' | 'symptoms' | 'ecg' | 'echo_labs';
 
+interface SliderControlProps {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  unit: string;
+  minLabel?: string;
+  medianLabel?: string;
+  maxLabel?: string;
+  valueColor?: string;
+  onChange: (value: number) => void;
+}
+
+const SliderControl: React.FC<SliderControlProps> = ({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  unit,
+  minLabel,
+  medianLabel,
+  maxLabel,
+  valueColor,
+  onChange,
+}) => {
+  const pct = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+
+  return (
+    <div className="glass-card p-3 rounded-xl border border-white/[0.06] bg-slate-900/30 hover:border-white/[0.12] transition-colors">
+      <div className="flex justify-between items-center mb-1.5">
+        <span className="text-xs text-slate-400 font-medium">{label}</span>
+        <span
+          className={`text-xs font-mono font-semibold px-2 py-0.5 rounded border border-white/[0.06] bg-slate-800/60 tabular-nums ${
+            valueColor || 'text-slate-100'
+          }`}
+        >
+          {value} {unit}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+        style={{
+          background: `linear-gradient(to right, #475569 0%, #06b6d4 ${pct}%, rgba(30, 41, 59, 0.8) ${pct}%, rgba(30, 41, 59, 0.8) 100%)`,
+        }}
+      />
+      {(minLabel || medianLabel || maxLabel) && (
+        <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+          <span>{minLabel || `${min} ${unit}`}</span>
+          {medianLabel && <span>{medianLabel}</span>}
+          <span>{maxLabel || `${max} ${unit}`}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => {
-  const { patient, updateField, isLoading } = usePatientStore();
+  const { patient, patientData, updatePatientField, isCalculating, isLoading } = usePatientStore();
   const [activeTab, setActiveTab] = useState<TabKey>('vitals');
+
+  // Single source of truth: fallback safe binding to patientData
+  const p = patientData || patient;
 
   if (!isOpen) return null;
 
   return (
-    <aside className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] ultra-glass border-l border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col animate-in slide-in-from-right duration-300 select-none">
+    <aside className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-slate-950/80 backdrop-blur-2xl border-l border-white/[0.08] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 select-none">
       {/* Drawer Top Header */}
-      <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/40">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
+      <div className="p-4 border-b border-white/[0.08] flex items-center justify-between bg-slate-950/60">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
             <Sliders className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
-              Patient Physiological Parameters
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-bold text-white tracking-wider uppercase font-mono">
+                Patient Physiological Parameters
+              </h3>
+              {/* Optimistic Live Telemetry Pulse Dot */}
+              <span
+                className="relative flex h-2 w-2 items-center justify-center"
+                title={isCalculating || isLoading ? 'Live calculating telemetry...' : 'Telemetry connected'}
+              >
+                {isCalculating || isLoading ? (
+                  <>
+                    <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-cyan-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)]"></span>
+                  </>
+                ) : (
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400/80 shadow-[0_0_6px_rgba(16,185,129,0.5)]"></span>
+                )}
+              </span>
+            </div>
             <p className="text-[11px] text-slate-400 font-sans">
-              Instant live re-scoring & 3D WebGL twin sync
+              {isCalculating || isLoading ? (
+                <span className="text-cyan-400/90 font-mono text-[10px] font-medium animate-pulse">
+                  ● Live recalculating risk &amp; 3D geometry...
+                </span>
+              ) : (
+                'Instant live re-scoring & 3D WebGL twin sync'
+              )}
             </p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-1 p-2 bg-surface-2/60 border-b border-slate-800 overflow-x-auto">
+      {/* Category Navigation Tabs (Sleek Glass Pills) */}
+      <div className="flex items-center gap-1.5 p-2 bg-slate-950/50 border-b border-white/[0.06] overflow-x-auto">
         {[
-          { key: 'vitals', label: 'Vitals & Anamnesis', icon: User },
-          { key: 'symptoms', label: 'Symptoms', icon: Stethoscope },
-          { key: 'ecg', label: 'ECG Findings', icon: Zap },
-          { key: 'echo_labs', label: 'Echo & Labs', icon: FlaskConical },
-        ].map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key as TabKey)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 whitespace-nowrap transition-all ${
-              activeTab === key
-                ? 'bg-cyan-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-            }`}
-          >
-            <Icon className="w-3.5 h-3.5" />
-            <span>{label}</span>
-          </button>
-        ))}
+          { key: 'vitals', label: '[ Vitals ]', icon: User },
+          { key: 'symptoms', label: '[ Symptoms ]', icon: Stethoscope },
+          { key: 'ecg', label: '[ ECG Leads ]', icon: Zap },
+          { key: 'echo_labs', label: '[ Echo & Labs ]', icon: FlaskConical },
+        ].map(({ key, label, icon: Icon }) => {
+          const isActive = activeTab === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveTab(key as TabKey)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                isActive
+                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                  : 'bg-slate-900/40 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-white/[0.05]'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span>{label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Interactive Controls Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs font-sans">
-        {/* Tab 1: Vitals & Demographics */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs font-sans custom-scrollbar">
+        {/* Tab 1: Vitals */}
         {activeTab === 'vitals' && (
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {/* Age Slider */}
-            <div className="glass-card p-3 rounded-xl">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="font-semibold text-slate-200">Patient Age</span>
-                <span className="font-mono text-cyan-400 font-bold">{patient.Age} yrs</span>
-              </div>
-              <input
-                type="range"
-                min="30"
-                max="86"
-                step="1"
-                value={patient.Age}
-                onChange={(e) => updateField('Age', Number(e.target.value))}
-                className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
-                <span>30 yrs</span>
-                <span>Cohort Median: 58</span>
-                <span>86 yrs</span>
-              </div>
-            </div>
+            <SliderControl
+              label="Patient Age"
+              value={p.Age}
+              min={30}
+              max={86}
+              step={1}
+              unit="yrs"
+              minLabel="30 yrs"
+              medianLabel="Cohort Median: 58"
+              maxLabel="86 yrs"
+              onChange={(val) => updatePatientField('Age', val)}
+            />
 
-            {/* Sex Toggle */}
-            <div className="glass-card p-3 rounded-xl flex items-center justify-between">
-              <span className="font-semibold text-slate-200">Biological Sex</span>
-              <div className="flex gap-1 bg-slate-900 p-1 rounded-lg border border-slate-700/60">
+            {/* Biological Sex */}
+            <div className="glass-card p-3 rounded-xl border border-white/[0.06] bg-slate-900/30 flex items-center justify-between">
+              <span className="text-xs text-slate-400 font-medium">Biological Sex</span>
+              <div className="flex gap-1.5 bg-slate-900/60 p-1 rounded-lg border border-white/[0.06]">
                 {(['Male', 'Female'] as const).map((s) => (
                   <button
                     key={s}
-                    onClick={() => updateField('Sex', s)}
+                    type="button"
+                    onClick={() => updatePatientField('Sex', s)}
                     className={`px-3 py-1 rounded text-xs font-medium transition-all ${
-                      patient.Sex === s ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white'
+                      p.Sex === s
+                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 shadow-[0_0_10px_rgba(6,182,212,0.15)] font-semibold'
+                        : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     {s}
@@ -125,121 +209,131 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
             </div>
 
             {/* Systolic Blood Pressure */}
-            <div className="glass-card p-3 rounded-xl">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="font-semibold text-slate-200">Systolic Blood Pressure</span>
-                <span className="font-mono text-cyan-400 font-bold">{patient.BP} mmHg</span>
-              </div>
-              <input
-                type="range"
-                min="90"
-                max="190"
-                step="5"
-                value={patient.BP}
-                onChange={(e) => updateField('BP', Number(e.target.value))}
-                className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
-                <span>90 mmHg</span>
-                <span>Normal: &lt;120</span>
-                <span>190 mmHg</span>
-              </div>
-            </div>
+            <SliderControl
+              label="Systolic Blood Pressure"
+              value={p.BP}
+              min={90}
+              max={190}
+              step={5}
+              unit="mmHg"
+              minLabel="90 mmHg"
+              medianLabel="Normal: <120"
+              maxLabel="190 mmHg"
+              onChange={(val) => updatePatientField('BP', val)}
+            />
 
             {/* Resting Pulse Rate */}
-            <div className="glass-card p-3 rounded-xl">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="font-semibold text-slate-200">Resting Pulse Rate</span>
-                <span className="font-mono text-cyan-400 font-bold">{patient.PR} bpm</span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="110"
-                step="2"
-                value={patient.PR}
-                onChange={(e) => updateField('PR', Number(e.target.value))}
-                className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
-              />
-            </div>
+            <SliderControl
+              label="Resting Pulse Rate"
+              value={p.PR}
+              min={50}
+              max={110}
+              step={2}
+              unit="bpm"
+              minLabel="50 bpm"
+              medianLabel="Target: 60-80"
+              maxLabel="110 bpm"
+              onChange={(val) => updatePatientField('PR', val)}
+            />
 
-            {/* Weight and Height */}
+            {/* Weight and Height: Balanced 2-Column Grid */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="glass-card p-3 rounded-xl">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-slate-300 font-medium">Weight</span>
-                  <span className="font-mono text-slate-100 font-bold">{patient.Weight} kg</span>
+              <div className="glass-card p-3 rounded-xl border border-white/[0.06] bg-slate-900/30">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs text-slate-400 font-medium">Weight</span>
+                  <span className="text-xs font-mono font-semibold text-slate-100 bg-slate-800/60 px-2 py-0.5 rounded border border-white/[0.06] tabular-nums">
+                    {p.Weight} kg
+                  </span>
                 </div>
                 <input
                   type="range"
                   min="48"
                   max="120"
-                  value={patient.Weight}
-                  onChange={(e) => updateField('Weight', Number(e.target.value))}
-                  className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer"
+                  step="1"
+                  value={p.Weight}
+                  onChange={(e) => updatePatientField('Weight', Number(e.target.value))}
+                  className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+                  style={{
+                    background: `linear-gradient(to right, #475569 0%, #06b6d4 ${((p.Weight - 48) / (120 - 48)) * 100}%, rgba(30, 41, 59, 0.8) ${((p.Weight - 48) / (120 - 48)) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
+                  }}
                 />
               </div>
-              <div className="glass-card p-3 rounded-xl">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-slate-300 font-medium">Height</span>
-                  <span className="font-mono text-slate-100 font-bold">{patient.Length} cm</span>
+
+              <div className="glass-card p-3 rounded-xl border border-white/[0.06] bg-slate-900/30">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs text-slate-400 font-medium">Height</span>
+                  <span className="text-xs font-mono font-semibold text-slate-100 bg-slate-800/60 px-2 py-0.5 rounded border border-white/[0.06] tabular-nums">
+                    {p.Length} cm
+                  </span>
                 </div>
                 <input
                   type="range"
                   min="140"
                   max="188"
-                  value={patient.Length}
-                  onChange={(e) => updateField('Length', Number(e.target.value))}
-                  className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer"
+                  step="1"
+                  value={p.Length}
+                  onChange={(e) => updatePatientField('Length', Number(e.target.value))}
+                  className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+                  style={{
+                    background: `linear-gradient(to right, #475569 0%, #06b6d4 ${((p.Length - 140) / (188 - 140)) * 100}%, rgba(30, 41, 59, 0.8) ${((p.Length - 140) / (188 - 140)) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
+                  }}
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-2/40 text-slate-400 font-mono text-[11px]">
-              <span>Calculated BMI:</span>
-              <span className="text-cyan-300 font-bold">{patient.BMI} kg/m²</span>
+            {/* Calculated BMI */}
+            <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-900/40 border border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 font-medium">Calculated Body Mass Index (BMI)</span>
+                <span className="text-[10px] font-mono text-slate-500">
+                  {p.BMI < 18.5 ? '(Underweight)' : p.BMI < 25 ? '(Normal)' : p.BMI < 30 ? '(Overweight)' : '(Obese)'}
+                </span>
+              </div>
+              <span className="text-xs font-mono font-semibold text-cyan-300 bg-cyan-950/40 px-2.5 py-0.5 rounded border border-cyan-500/20 tabular-nums">
+                {p.BMI} kg/m²
+              </span>
             </div>
           </div>
         )}
 
-        {/* Tab 2: Symptoms & Anamnesis */}
+        {/* Tab 2: Symptoms */}
         {activeTab === 'symptoms' && (
           <div className="space-y-3">
             {[
-              { key: 'Typical Chest Pain', label: 'Typical Exertional Angina', desc: 'Substernal chest pressure on exertion' },
+              { key: 'Typical Chest Pain', label: 'Typical Exertional Angina', desc: 'Substernal chest pressure or constriction on exertion' },
               { key: 'DM', label: 'Diabetes Mellitus', desc: 'Diagnosed Type 1 or Type 2 Diabetes' },
               { key: 'HTN', label: 'Hypertension', desc: 'History of chronic elevated blood pressure' },
               { key: 'Current Smoker', label: 'Active Tobacco Smoker', desc: 'Current daily or frequent smoking' },
-              { key: 'FH', label: 'Family History of CAD', desc: 'First-degree relative premature CAD' },
-              { key: 'Dyspnea', label: 'Exertional Dyspnea', desc: 'Shortness of breath on mild exertion' },
-              { key: 'DLP', label: 'Dyslipidemia', desc: 'Documented hypercholesterolemia' },
+              { key: 'FH', label: 'Family History of CAD', desc: 'First-degree relative premature coronary disease' },
+              { key: 'Dyspnea', label: 'Exertional Dyspnea', desc: 'Shortness of breath on mild to moderate exertion' },
+              { key: 'DLP', label: 'Dyslipidemia', desc: 'Documented hypercholesterolemia or lipid abnormality' },
             ].map(({ key, label, desc }) => {
-              const isChecked = (patient as any)[key] === '1' || (patient as any)[key] === 'Y';
+              const isChecked = (p as any)[key] === '1' || (p as any)[key] === 'Y';
               return (
                 <div
                   key={key}
                   onClick={() => {
-                    const currentVal = (patient as any)[key];
+                    const currentVal = (p as any)[key];
                     const nextVal = currentVal === '1' ? '0' : currentVal === '0' ? '1' : currentVal === 'Y' ? 'N' : 'Y';
-                    updateField(key as any, nextVal);
+                    updatePatientField(key as any, nextVal);
                   }}
                   className={`p-3 rounded-xl glass-card flex items-center justify-between cursor-pointer border transition-all ${
                     isChecked
-                      ? 'border-cyan-500/60 bg-cyan-950/20 text-white'
-                      : 'border-slate-800 text-slate-300 hover:border-slate-700'
+                      ? 'border-cyan-500/40 bg-cyan-950/20 text-white shadow-[0_0_12px_rgba(6,182,212,0.1)]'
+                      : 'border-white/[0.06] bg-slate-900/30 text-slate-300 hover:border-white/10 hover:bg-slate-800/40'
                   }`}
                 >
                   <div>
-                    <span className="font-semibold text-xs block">{label}</span>
+                    <span className="font-semibold text-xs block text-slate-200">{label}</span>
                     <span className="text-[10px] text-slate-400">{desc}</span>
                   </div>
                   <div
                     className={`w-9 h-5 rounded-full p-0.5 transition-colors ${
-                      isChecked ? 'bg-cyan-500' : 'bg-slate-700'
+                      isChecked ? 'bg-cyan-500' : 'bg-slate-800 border border-white/[0.08]'
                     }`}
                   >
                     <div
-                      className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                      className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${
                         isChecked ? 'translate-x-4' : 'translate-x-0'
                       }`}
                     />
@@ -249,17 +343,23 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
             })}
 
             {/* NYHA Functional Class */}
-            <div className="glass-card p-3 rounded-xl">
-              <span className="font-semibold text-slate-200 block mb-1.5">NYHA Functional Class</span>
-              <div className="grid grid-cols-4 gap-1.5">
+            <div className="glass-card p-3 rounded-xl border border-white/[0.06] bg-slate-900/30">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs text-slate-400 font-medium">NYHA Functional Class</span>
+                <span className="text-xs font-mono font-semibold text-slate-100 bg-slate-800/60 px-2 py-0.5 rounded border border-white/[0.06]">
+                  Class {p['Function Class']}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-1.5 mt-2">
                 {['0', '1', '2', '3'].map((fc) => (
                   <button
                     key={fc}
-                    onClick={() => updateField('Function Class', fc)}
-                    className={`py-1.5 rounded-lg font-mono text-xs font-semibold transition-all ${
-                      patient['Function Class'] === fc
-                        ? 'bg-cyan-600 text-white'
-                        : 'bg-slate-800 text-slate-400 hover:text-white'
+                    type="button"
+                    onClick={() => updatePatientField('Function Class', fc)}
+                    className={`py-1.5 rounded-lg font-mono text-xs font-semibold transition-all border ${
+                      p['Function Class'] === fc
+                        ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
+                        : 'bg-slate-900/40 border-white/[0.06] text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                     }`}
                   >
                     Class {fc}
@@ -270,43 +370,43 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
           </div>
         )}
 
-        {/* Tab 3: ECG Findings */}
+        {/* Tab 3: ECG Leads */}
         {activeTab === 'ecg' && (
           <div className="space-y-3">
             {[
-              { key: 'St Elevation', label: 'ECG ST-Segment Elevation', desc: 'Localized elevation (V1-V4 indicative of LAD territory)' },
-              { key: 'St Depression', label: 'ECG ST-Segment Depression', desc: 'Subendocardial ischemia finding' },
-              { key: 'Tinversion', label: 'T-Wave Inversion', desc: 'Repolarization abnormality' },
-              { key: 'Q Wave', label: 'Pathologic Q-Wave', desc: 'Previous transmural myocardial infarction sign' },
+              { key: 'St Elevation', label: 'ECG ST-Segment Elevation', desc: 'Localized elevation (V1-V4 indicative of LAD territory ischemia)' },
+              { key: 'St Depression', label: 'ECG ST-Segment Depression', desc: 'Subendocardial ischemia finding (leads II, III, aVF / V5-V6)' },
+              { key: 'Tinversion', label: 'T-Wave Inversion', desc: 'Myocardial repolarization abnormality' },
+              { key: 'Q Wave', label: 'Pathologic Q-Wave', desc: 'Prior transmural myocardial infarction sign' },
               { key: 'LVH', label: 'Left Ventricular Hypertrophy', desc: 'Sokolow-Lyon voltage criteria met' },
-              { key: 'Poor R Progression', label: 'Poor R-Wave Progression', desc: 'Loss of anterior electromotive forces' },
+              { key: 'Poor R Progression', label: 'Poor R-Wave Progression', desc: 'Loss of anterior electromotive forces across precordial leads' },
             ].map(({ key, label, desc }) => {
-              const isChecked = (patient as any)[key] === '1' || (patient as any)[key] === 'Y';
+              const isChecked = (p as any)[key] === '1' || (p as any)[key] === 'Y';
               return (
                 <div
                   key={key}
                   onClick={() => {
-                    const currentVal = (patient as any)[key];
+                    const currentVal = (p as any)[key];
                     const nextVal = currentVal === '1' ? '0' : currentVal === '0' ? '1' : currentVal === 'Y' ? 'N' : 'Y';
-                    updateField(key as any, nextVal);
+                    updatePatientField(key as any, nextVal);
                   }}
                   className={`p-3 rounded-xl glass-card flex items-center justify-between cursor-pointer border transition-all ${
                     isChecked
-                      ? 'border-rose-500/60 bg-rose-950/20 text-white shadow-glow-critical'
-                      : 'border-slate-800 text-slate-300 hover:border-slate-700'
+                      ? 'border-rose-500/40 bg-rose-950/20 text-white shadow-[0_0_14px_rgba(244,63,94,0.15)]'
+                      : 'border-white/[0.06] bg-slate-900/30 text-slate-300 hover:border-white/10 hover:bg-slate-800/40'
                   }`}
                 >
                   <div>
-                    <span className="font-semibold text-xs block">{label}</span>
+                    <span className="font-semibold text-xs block text-slate-200">{label}</span>
                     <span className="text-[10px] text-slate-400">{desc}</span>
                   </div>
                   <div
                     className={`w-9 h-5 rounded-full p-0.5 transition-colors ${
-                      isChecked ? 'bg-rose-500' : 'bg-slate-700'
+                      isChecked ? 'bg-rose-500' : 'bg-slate-800 border border-white/[0.08]'
                     }`}
                   >
                     <div
-                      className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                      className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${
                         isChecked ? 'translate-x-4' : 'translate-x-0'
                       }`}
                     />
@@ -316,17 +416,23 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
             })}
 
             {/* Bundle Branch Block */}
-            <div className="glass-card p-3 rounded-xl">
-              <span className="font-semibold text-slate-200 block mb-1.5">Bundle Branch Block (BBB)</span>
-              <div className="grid grid-cols-3 gap-2">
+            <div className="glass-card p-3 rounded-xl border border-white/[0.06] bg-slate-900/30">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs text-slate-400 font-medium">Bundle Branch Block (BBB)</span>
+                <span className="text-xs font-mono font-semibold text-slate-100 bg-slate-800/60 px-2 py-0.5 rounded border border-white/[0.06]">
+                  {p.BBB === 'N' ? 'None' : p.BBB}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-2">
                 {(['N', 'LBBB', 'RBBB'] as const).map((b) => (
                   <button
                     key={b}
-                    onClick={() => updateField('BBB', b)}
-                    className={`py-1.5 rounded-lg font-mono text-xs font-semibold transition-all ${
-                      patient.BBB === b
-                        ? 'bg-cyan-600 text-white'
-                        : 'bg-slate-800 text-slate-400 hover:text-white'
+                    type="button"
+                    onClick={() => updatePatientField('BBB', b)}
+                    className={`py-1.5 rounded-lg font-mono text-xs font-semibold transition-all border ${
+                      p.BBB === b
+                        ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
+                        : 'bg-slate-900/40 border-white/[0.06] text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                     }`}
                   >
                     {b === 'N' ? 'None (N)' : b}
@@ -337,42 +443,29 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
           </div>
         )}
 
-        {/* Tab 4: Echo & Blood Biomarkers */}
+        {/* Tab 4: Echo & Labs */}
         {activeTab === 'echo_labs' && (
           <div className="space-y-4">
-            {/* Left Ventricular Ejection Fraction */}
-            <div className="glass-card p-3 rounded-xl">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="font-semibold text-slate-200">Ejection Fraction (EF-TTE)</span>
-                <span
-                  className={`font-mono font-bold ${
-                    patient['EF-TTE'] < 40 ? 'text-rose-400' : 'text-emerald-400'
-                  }`}
-                >
-                  {patient['EF-TTE']}%
-                </span>
-              </div>
-              <input
-                type="range"
-                min="15"
-                max="60"
-                step="5"
-                value={patient['EF-TTE']}
-                onChange={(e) => updateField('EF-TTE', Number(e.target.value))}
-                className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
-                <span>Severe (&lt;35%)</span>
-                <span>Borderline (40-49%)</span>
-                <span>Normal (&ge;50%)</span>
-              </div>
-            </div>
+            {/* Ejection Fraction */}
+            <SliderControl
+              label="Ejection Fraction (EF-TTE)"
+              value={p['EF-TTE']}
+              min={15}
+              max={60}
+              step={5}
+              unit="%"
+              minLabel="Severe (<35%)"
+              medianLabel="Borderline (40-49%)"
+              maxLabel="Normal (≥50%)"
+              valueColor={p['EF-TTE'] < 40 ? 'text-rose-400' : p['EF-TTE'] < 50 ? 'text-amber-400' : 'text-emerald-400'}
+              onChange={(val) => updatePatientField('EF-TTE', val)}
+            />
 
             {/* Regional Wall Motion Abnormality (Region RWMA) */}
-            <div className="glass-card p-3 rounded-xl">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="font-semibold text-slate-200">Echocardiography RWMA Territory</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800/60">
+            <div className="glass-card p-3 rounded-xl border border-white/[0.06] bg-slate-900/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-slate-400 font-medium">Echocardiography RWMA Territory</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-500/30">
                   CRITICAL PREDICTOR
                 </span>
               </div>
@@ -384,18 +477,19 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
                   { code: '3', label: 'Class 3: Lateral Wall Hypokinesia', territory: 'LCX Vascular Bed' },
                   { code: '4', label: 'Class 4: Septal / Multi-Territory Dyskinesia', territory: 'Diffuse CAD' },
                 ].map(({ code, label, territory }) => {
-                  const isSelected = patient['Region RWMA'] === code;
+                  const isSelected = p['Region RWMA'] === code;
                   return (
                     <button
                       key={code}
-                      onClick={() => updateField('Region RWMA', code)}
-                      className={`p-2 rounded-lg text-left transition-all border ${
+                      type="button"
+                      onClick={() => updatePatientField('Region RWMA', code)}
+                      className={`p-2.5 rounded-xl text-left transition-all border ${
                         isSelected
-                          ? 'bg-cyan-600/30 border-cyan-500/80 text-white shadow-glow-cyan'
-                          : 'bg-slate-800/60 border-slate-700/40 text-slate-300 hover:bg-slate-700/50'
+                          ? 'bg-cyan-500/15 border-cyan-500/40 text-white shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                          : 'bg-slate-900/40 border-white/[0.06] text-slate-300 hover:bg-slate-800/40 hover:border-white/10'
                       }`}
                     >
-                      <div className="font-semibold text-xs">{label}</div>
+                      <div className="font-semibold text-xs text-slate-200">{label}</div>
                       <div className="text-[10px] font-mono text-cyan-400/90">{territory}</div>
                     </button>
                   );
@@ -404,65 +498,59 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
             </div>
 
             {/* Fasting Blood Sugar */}
-            <div className="glass-card p-3 rounded-xl">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="font-semibold text-slate-200">Fasting Blood Sugar (FBS)</span>
-                <span className="font-mono text-cyan-400 font-bold">{patient.FBS} mg/dL</span>
-              </div>
-              <input
-                type="range"
-                min="62"
-                max="300"
-                step="2"
-                value={patient.FBS}
-                onChange={(e) => updateField('FBS', Number(e.target.value))}
-                className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer"
-              />
-            </div>
+            <SliderControl
+              label="Fasting Blood Sugar (FBS)"
+              value={p.FBS}
+              min={62}
+              max={300}
+              step={2}
+              unit="mg/dL"
+              minLabel="62 mg/dL"
+              medianLabel="Normal: <100"
+              maxLabel="300 mg/dL"
+              onChange={(val) => updatePatientField('FBS', val)}
+            />
 
             {/* Triglycerides */}
-            <div className="glass-card p-3 rounded-xl">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="font-semibold text-slate-200">Triglycerides (TG)</span>
-                <span className="font-mono text-cyan-400 font-bold">{patient.TG} mg/dL</span>
-              </div>
-              <input
-                type="range"
-                min="37"
-                max="500"
-                step="5"
-                value={patient.TG}
-                onChange={(e) => updateField('TG', Number(e.target.value))}
-                className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer"
-              />
-            </div>
+            <SliderControl
+              label="Triglycerides (TG)"
+              value={p.TG}
+              min={37}
+              max={500}
+              step={5}
+              unit="mg/dL"
+              minLabel="37 mg/dL"
+              medianLabel="Normal: <150"
+              maxLabel="500 mg/dL"
+              onChange={(val) => updatePatientField('TG', val)}
+            />
 
             {/* Serum Creatinine */}
-            <div className="glass-card p-3 rounded-xl">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="font-semibold text-slate-200">Serum Creatinine (CR)</span>
-                <span className="font-mono text-cyan-400 font-bold">{patient.CR} mg/dL</span>
-              </div>
-              <input
-                type="range"
-                min="0.5"
-                max="2.2"
-                step="0.1"
-                value={patient.CR}
-                onChange={(e) => updateField('CR', Number(e.target.value))}
-                className="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded cursor-pointer"
-              />
-            </div>
+            <SliderControl
+              label="Serum Creatinine (CR)"
+              value={p.CR}
+              min={0.5}
+              max={2.2}
+              step={0.1}
+              unit="mg/dL"
+              minLabel="0.5 mg/dL"
+              medianLabel="Normal: 0.7-1.2"
+              maxLabel="2.2 mg/dL"
+              onChange={(val) => updatePatientField('CR', val)}
+            />
           </div>
         )}
       </div>
 
       {/* Drawer Footer */}
-      <div className="p-4 border-t border-slate-800 bg-surface-1/90 flex items-center justify-between text-xs font-mono text-slate-400">
-        <span>55 Clinical Parameters</span>
+      <div className="p-4 border-t border-white/[0.08] bg-slate-950/80 backdrop-blur-xl flex items-center justify-between text-xs font-mono text-slate-400">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span>55 Clinical Parameters</span>
+        </div>
         <button
           onClick={onClose}
-          className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition-all shadow-sm"
+          className="px-4 py-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-semibold transition-all shadow-[0_0_12px_rgba(6,182,212,0.15)]"
         >
           Apply & Close
         </button>

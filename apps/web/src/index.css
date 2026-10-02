@@ -155,17 +155,67 @@
 }
 
 /* Custom Sleek Dark Telemetry Scrollbars */
-::-webkit-scrollbar {
+::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
-::-webkit-scrollbar-track {
+::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(5, 7, 11, 0.3);
 }
-::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* AuraCor Custom Range Slider Track and 14px Thumb */
+input[type="range"].auracor-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(30, 41, 59, 0.8);
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"].auracor-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #22d3ee;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(6, 182, 212, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+input[type="range"].auracor-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6), 0 0 14px rgba(6, 182, 212, 0.7);
+}
+input[type="range"].auracor-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #22d3ee;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(6, 182, 212, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+input[type="range"].auracor-slider::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6), 0 0 14px rgba(6, 182, 212, 0.7);
 }
