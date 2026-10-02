@@ -14,6 +14,8 @@ import { Eye } from 'lucide-react';
 export const HeartCanvas: React.FC = () => {
   const controlsRef = useRef<any>(null);
   const [hoveredVessel, setHoveredVessel] = useState<string | null>(null);
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
+  const { activeVesselFocus, setVesselFocus } = usePatientStore();
 
   return (
     <div className="relative w-full h-full bg-[#05070B] overflow-hidden select-none animate-cinema-canvas">
@@ -57,15 +59,24 @@ export const HeartCanvas: React.FC = () => {
         <OrbitControls
           ref={controlsRef}
           enableDamping
-          dampingFactor={0.06}
+          dampingFactor={0.08}
           minDistance={1.8}
           maxDistance={6.0}
           maxPolarAngle={Math.PI * 0.85}
           minPolarAngle={Math.PI * 0.15}
           makeDefault
+          onStart={() => {
+            setIsUserInteracting(true);
+            if (activeVesselFocus !== 'default') {
+              setVesselFocus('default');
+            }
+          }}
+          onEnd={() => {
+            setIsUserInteracting(false);
+          }}
         />
 
-        <CameraRig controlsRef={controlsRef} />
+        <CameraRig controlsRef={controlsRef} isUserInteracting={isUserInteracting} />
       </Canvas>
 
       {/* Subtle Vessel Hover Inspection Chip */}

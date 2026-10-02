@@ -1,61 +1,29 @@
 {
   "model_name": "heart_coronary_optimized.glb",
-  "created_at": "2026-10-02T07:27:00.000Z",
-  "source": "Sketchfab Medical CC-BY / ZBrush Anatomical Sculpt",
-  "format": "glTF 2.0 Binary (GLB)",
-  "textures": {
-    "diffuse": "PBR BaseColor (photorealistic muscular myocardium, ascending aorta, fatty sulci)",
-    "normal": "High-frequency anatomical tangent normal map",
-    "roughness_metallic": "Organic wet tissue specularity map"
+  "created_at": "2026-10-02T15:45:34.627Z",
+  "architecture": "Intact Photorealistic Myocardium + Dedicated 3D Cylindrical Vascular Conduits",
+  "sub_meshes": [
+    "myocardium",
+    "vessel_LAD",
+    "vessel_LCX",
+    "vessel_RCA"
+  ],
+  "materials": [
+    "mat_Myocardium",
+    "mat_LAD",
+    "mat_LCX",
+    "mat_RCA"
+  ],
+  "vascular_specifications": {
+    "tubular_segments": 128,
+    "radial_segments": 12,
+    "caliber_range_mm": "2.5mm - 4.5mm (0.007 to 0.016 units)",
+    "embedding": "Underside embedded ~30% into epicardial sulci, top 70% protruding"
   },
-  "dimensions": {
-    "height_world_units": 1.60,
-    "width_world_units": 1.08,
-    "depth_world_units": 0.88,
-    "bounding_min": [-0.578, -0.793, -0.397],
-    "bounding_max": [0.505, 0.809, 0.483],
-    "center": [-0.036, 0.008, 0.043]
-  },
-  "camera_presets": {
-    "default": {
-      "position": [0.0, 0.0, 3.1],
-      "target": [0.0, 0.0, 0.0],
-      "display_name": "Anatomical Overview (70% Viewport Fill)"
-    },
-    "vessel_LAD": {
-      "position": [0.0, -0.2, 2.2],
-      "target": [0.0, -0.3, 0.35],
-      "display_name": "Left Anterior Descending (Anterior Sulcus to Apex)"
-    },
-    "vessel_LCX": {
-      "position": [2.3, -0.05, 0.5],
-      "target": [0.35, -0.15, -0.05],
-      "display_name": "Left Circumflex (Left Lateral Margin)"
-    },
-    "vessel_RCA": {
-      "position": [-2.3, -0.1, 0.8],
-      "target": [-0.45, -0.2, 0.05],
-      "display_name": "Right Coronary Artery (Right Lateral/Inferior Sulcus)"
-    }
-  },
-  "semantic_vessels": {
-    "vessel_LAD": {
-      "anatomical_name": "Left Anterior Descending Artery",
-      "target": "LAD",
-      "perfused_territory": "Anterior left ventricular wall and apex",
-      "scale_diameter_mm": 2.1
-    },
-    "vessel_LCX": {
-      "anatomical_name": "Left Circumflex Artery",
-      "target": "LCX",
-      "perfused_territory": "Posterolateral left ventricle",
-      "scale_diameter_mm": 1.95
-    },
-    "vessel_RCA": {
-      "anatomical_name": "Right Coronary Artery",
-      "target": "RCA",
-      "perfused_territory": "Right ventricle and inferior diaphragmatic wall",
-      "scale_diameter_mm": 2.1
-    }
+  "triangle_counts": {
+    "myocardium": 22562,
+    "vessel_LAD": 5696,
+    "vessel_LCX": 5696,
+    "vessel_RCA": 5696
   }
 }

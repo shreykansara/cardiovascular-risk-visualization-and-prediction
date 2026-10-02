@@ -120,4 +120,4 @@ export interface CompleteAnalysisResponse {
   disclaimer: string;
 }
 
-export type PatientProfileKey = 'normal' | 'high_risk_lad' | 'triple_vessel';
+export type PatientProfileKey = 'normal' | 'high_risk_lad' | 'rca_ischemia' | 'triple_vessel';
