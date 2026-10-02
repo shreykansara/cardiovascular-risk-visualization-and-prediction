@@ -1,0 +1,68 @@
+{
+  "project": "Cardiovascular Risk Visualization & Prediction",
+  "dataset": "Extension of Z-Alizadeh Sani (303 records)",
+  "models": {
+    "CAD": {
+      "roc_auc": 0.908225897829181,
+      "roc_auc_std": 0.06470960057232399,
+      "brier_score": 0.11344833421578379,
+      "optimal_threshold": 0.58,
+      "optimal_recall": 0.9027777777777778,
+      "optimal_f1": 0.9006928406466512,
+      "top_5_features": [
+        "Typical Chest Pain 0",
+        "Region RWMA 0",
+        "Age",
+        "EF-TTE",
+        "FBS"
+      ]
+    },
+    "LAD": {
+      "roc_auc": 0.8449890109890109,
+      "roc_auc_std": 0.05662143629530976,
+      "brier_score": 0.161110510896654,
+      "optimal_threshold": 0.41,
+      "optimal_recall": 0.9152542372881356,
+      "optimal_f1": 0.8286445012787724,
+      "top_5_features": [
+        "Typical Chest Pain 0",
+        "Region RWMA 0",
+        "EF-TTE",
+        "Age",
+        "Lymph"
+      ]
+    },
+    "LCX": {
+      "roc_auc": 0.6988072311441875,
+      "roc_auc_std": 0.05555745664704008,
+      "brier_score": 0.21257225717787936,
+      "optimal_threshold": 0.31,
+      "optimal_recall": 0.8991596638655462,
+      "optimal_f1": 0.6331360946745562,
+      "top_5_features": [
+        "Age",
+        "Typical Chest Pain 0",
+        "CR",
+        "PLT",
+        "TG"
+      ]
+    },
+    "RCA": {
+      "roc_auc": 0.7393738860558082,
+      "roc_auc_std": 0.05980473568057228,
+      "brier_score": 0.20117616209455394,
+      "optimal_threshold": 0.31,
+      "optimal_recall": 0.8421052631578947,
+      "optimal_f1": 0.6254071661237784,
+      "top_5_features": [
+        "Typical Chest Pain 0",
+        "DM 0",
+        "Neut",
+        "Age",
+        "ESR"
+      ]
+    }
+  },
+  "transformed_features_count": 96,
+  "target_leakage_audit": "PASSED - Strict exclusion of Cath, CAD, LAD, LCX, RCA enforced."
+}
