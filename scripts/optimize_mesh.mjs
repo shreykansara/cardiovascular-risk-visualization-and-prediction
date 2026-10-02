@@ -143,7 +143,7 @@ export async function processAndSegmentHeart() {
     prim0.getMaterial().setName('mat_Myocardium');
   }
 
-  // 2. Extract world transform to align artery spline paths
+  // 2. Extract world transform and bake directly onto myocardium geometry
   const m0 = new THREE.Matrix4().compose(
     new THREE.Vector3(0, 0, 0),
     new THREE.Quaternion(-0.7071067811865475, 0, 0, 0.7071067811865476),
@@ -162,23 +162,46 @@ export async function processAndSegmentHeart() {
   const worldM = new THREE.Matrix4().multiply(m0).multiply(m1).multiply(m3);
   const normM = new THREE.Matrix3().getNormalMatrix(worldM);
 
-  const posArr = prim0.getAttribute('POSITION').getArray();
-  const normArr = prim0.getAttribute('NORMAL').getArray();
+  const rawPos = prim0.getAttribute('POSITION').getArray();
+  const rawNorm = prim0.getAttribute('NORMAL').getArray();
+  const posArr = new Float32Array(rawPos.length);
+  const normArr = new Float32Array(rawNorm.length);
 
   const worldPos = [];
   const worldNorm = [];
   const v = new THREE.Vector3();
   const n = new THREE.Vector3();
 
-  for (let i = 0; i < posArr.length; i += 3) {
-    v.set(posArr[i], posArr[i + 1], posArr[i + 2]).applyMatrix4(worldM);
-    n.set(normArr[i], normArr[i + 1], normArr[i + 2]).applyMatrix3(normM).normalize();
+  for (let i = 0; i < rawPos.length; i += 3) {
+    v.set(rawPos[i], rawPos[i + 1], rawPos[i + 2]).applyMatrix4(worldM);
+    n.set(rawNorm[i], rawNorm[i + 1], rawNorm[i + 2]).applyMatrix3(normM).normalize();
+    posArr[i] = v.x;
+    posArr[i + 1] = v.y;
+    posArr[i + 2] = v.z;
+    normArr[i] = n.x;
+    normArr[i + 1] = n.y;
+    normArr[i + 2] = n.z;
     worldPos.push(new THREE.Vector3(v.x, v.y, v.z));
     worldNorm.push(new THREE.Vector3(n.x, n.y, n.z));
   }
 
-  // Snaps control points flush onto epicardial sulci with ~30% embedded depth
-  // Center is at surface + (0.7 * radius), so bottom is 0.3*radius embedded, top 0.7*radius protrudes
+  // Bake baked positions and normals directly into GLTF primitive accessors
+  prim0.getAttribute('POSITION').setArray(posArr);
+  prim0.getAttribute('NORMAL').setArray(normArr);
+
+  // Normalize myocardium node transforms to identity and place directly in scene
+  oldNode.setName('myocardium');
+  oldNode.getMesh().setName('myocardium');
+  oldNode.setScale([1, 1, 1]);
+  oldNode.setRotation([0, 0, 0, 1]);
+  oldNode.setTranslation([0, 0, 0]);
+
+  root.listNodes().forEach((n) => {
+    if (n !== oldNode) n.dispose();
+  });
+  scene.addChild(oldNode);
+
+  // Snaps control points flush onto epicardial sulci with ~50% protrusion
   function snapAndEmbedControlPoints(controlPoints, rStart, rEnd) {
     return controlPoints.map((pt, idx) => {
       const u = idx / (controlPoints.length - 1);
@@ -194,7 +217,7 @@ export async function processAndSegmentHeart() {
       }
       const closestVertex = worldPos[minIdx];
       const surfaceNormal = worldNorm[minIdx];
-      const offset = 0.7 * r;
+      const offset = 0.5 * r;
       return closestVertex.clone().addScaledVector(surfaceNormal, offset);
     });
   }
@@ -262,13 +285,13 @@ export async function processAndSegmentHeart() {
     new THREE.Vector3(-0.392, -0.32, 0.192),
   ];
 
-  // 4. Generate smoothly embedded Catmull-Rom splines
-  const ladPts = snapAndEmbedControlPoints(ladBasePoints, 0.016, 0.007);
-  const ladD1Pts = snapAndEmbedControlPoints(ladD1BasePoints, 0.009, 0.005);
-  const lcxPts = snapAndEmbedControlPoints(lcxBasePoints, 0.015, 0.0065);
-  const lcxOm1Pts = snapAndEmbedControlPoints(lcxOm1BasePoints, 0.0085, 0.005);
-  const rcaPts = snapAndEmbedControlPoints(rcaBasePoints, 0.016, 0.007);
-  const rcaMarginalPts = snapAndEmbedControlPoints(rcaMarginalBasePoints, 0.009, 0.005);
+  // 4. Generate smoothly embedded Catmull-Rom splines (proximal radius 0.024 -> distal 0.014)
+  const ladPts = snapAndEmbedControlPoints(ladBasePoints, 0.024, 0.014);
+  const ladD1Pts = snapAndEmbedControlPoints(ladD1BasePoints, 0.013, 0.008);
+  const lcxPts = snapAndEmbedControlPoints(lcxBasePoints, 0.024, 0.014);
+  const lcxOm1Pts = snapAndEmbedControlPoints(lcxOm1BasePoints, 0.013, 0.008);
+  const rcaPts = snapAndEmbedControlPoints(rcaBasePoints, 0.024, 0.014);
+  const rcaMarginalPts = snapAndEmbedControlPoints(rcaMarginalBasePoints, 0.013, 0.008);
 
   const ladMainCurve = new THREE.CatmullRomCurve3(ladPts, false, 'centripetal');
   const ladD1Curve = new THREE.CatmullRomCurve3(ladD1Pts, false, 'centripetal');
@@ -277,18 +300,18 @@ export async function processAndSegmentHeart() {
   const rcaMainCurve = new THREE.CatmullRomCurve3(rcaPts, false, 'centripetal');
   const rcaMarginalCurve = new THREE.CatmullRomCurve3(rcaMarginalPts, false, 'centripetal');
 
-  // 5. Generate authentic cylindrical vascular conduits (128 tubular segments, 12 radial segments)
-  console.log('Generating vascular conduits (128 segments, 12 radial segments, tapering caliber)...');
-  const ladMainGeo = createTaperedArteryGeometry(ladMainCurve, 128, 12, 0.016, 0.007);
-  const ladD1Geo = createTaperedArteryGeometry(ladD1Curve, 48, 12, 0.009, 0.005);
+  // 5. Generate authentic cylindrical vascular conduits (128 tubular segments, 12 radial segments, r = 0.024 -> 0.014)
+  console.log('Generating vascular conduits (128 segments, 12 radial segments, tapering caliber r = 0.024 -> 0.014)...');
+  const ladMainGeo = createTaperedArteryGeometry(ladMainCurve, 128, 12, 0.024, 0.014);
+  const ladD1Geo = createTaperedArteryGeometry(ladD1Curve, 48, 12, 0.013, 0.008);
   const ladGeo = BufferGeometryUtils.mergeGeometries([ladMainGeo, ladD1Geo]);
 
-  const lcxMainGeo = createTaperedArteryGeometry(lcxMainCurve, 128, 12, 0.015, 0.0065);
-  const lcxOm1Geo = createTaperedArteryGeometry(lcxOm1Curve, 48, 12, 0.0085, 0.005);
+  const lcxMainGeo = createTaperedArteryGeometry(lcxMainCurve, 128, 12, 0.024, 0.014);
+  const lcxOm1Geo = createTaperedArteryGeometry(lcxOm1Curve, 48, 12, 0.013, 0.008);
   const lcxGeo = BufferGeometryUtils.mergeGeometries([lcxMainGeo, lcxOm1Geo]);
 
-  const rcaMainGeo = createTaperedArteryGeometry(rcaMainCurve, 128, 12, 0.016, 0.007);
-  const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 12, 0.009, 0.005);
+  const rcaMainGeo = createTaperedArteryGeometry(rcaMainCurve, 128, 12, 0.024, 0.014);
+  const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 12, 0.013, 0.008);
   const rcaGeo = BufferGeometryUtils.mergeGeometries([rcaMainGeo, rcaMarginalGeo]);
 
   // 6. Integrate vascular conduits as dedicated mesh nodes in GLTF document
