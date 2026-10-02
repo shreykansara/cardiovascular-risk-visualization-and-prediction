@@ -1,10 +1,10 @@
 /**
- * Global Telemetry Header Bar (AuraCor DLS)
+ * Floating Island Header Bar (AuraCor Spatial DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
 import React from 'react';
-import { Activity, RotateCcw, Sliders, ShieldAlert, Cpu } from 'lucide-react';
+import { Activity, RotateCcw, Sliders, Sparkles } from 'lucide-react';
 import { usePatientStore, PATIENT_PROFILES } from '../../store/usePatientStore';
 import type { PatientProfileKey } from '../../types/clinical';
 
@@ -23,111 +23,100 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
     isLoading,
   } = usePatientStore();
 
-  const latency = analysis?.latency_ms ?? 18.0;
+  const latency = analysis?.latency_ms ?? 14.8;
+
+  const presets: { key: PatientProfileKey; label: string }[] = [
+    { key: 'normal', label: 'Healthy' },
+    { key: 'high_risk_lad', label: 'LAD Ischemia' },
+    { key: 'triple_vessel', label: 'Triple Vessel' },
+  ];
 
   return (
-    <header className="h-16 border-b border-slate-800/80 bg-surface-1/90 backdrop-blur-md px-4 md:px-6 flex items-center justify-between z-30 select-none">
-      {/* Brand Identity & Live Status */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-glow-cyan">
-            <Activity className="w-5 h-5 animate-pulse" />
+    <header className="w-full flex justify-center items-center pointer-events-none z-30 select-none animate-cinema-top">
+      <div className="pointer-events-auto flex items-center gap-2 sm:gap-3.5 px-3.5 sm:px-5 py-2 rounded-full border border-white/10 bg-slate-950/55 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transition-all">
+        {/* Brand Mark */}
+        <div className="flex items-center gap-2 pr-1 sm:pr-2">
+          <div className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.3)]">
+            <Activity className="w-3.5 h-3.5 animate-pulse" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold tracking-tight text-white">AuraCor</span>
-              <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">
-                CAD-3D
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400 font-mono tracking-wide">
-              MULTIMODAL ANATOMICAL TWIN
-            </p>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-semibold tracking-tight text-white font-sans">
+              AuraCor
+            </span>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-white/[0.06] text-slate-300 border border-white/10">
+              CAD-3D
+            </span>
           </div>
         </div>
 
-        {/* Real-Time Telemetry Badge */}
-        <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-slate-800">
-          <div
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono border ${
-              offlineMode
-                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                offlineMode ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 animate-ping'
-              }`}
-            />
-            <span>
-              {offlineMode ? 'CALIBRATED SIMULATION' : 'FASTAPI INFERENCE'} // {latency.toFixed(1)}ms
-            </span>
-          </div>
+        <div className="w-px h-4 bg-white/10 hidden sm:block" />
 
-          {isLoading && (
-            <span className="text-xs font-mono text-cyan-400 animate-pulse">
-              ANALYZING...
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Persistent Ambient Regulatory Notice */}
-      <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-lg bg-surface-2/80 border border-amber-500/20 text-[11px] text-slate-300">
-        <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-        <span className="font-mono text-amber-300/90 font-medium">RESEARCH PROTOTYPE</span>
-        <span className="text-slate-400">— NOT FOR PRIMARY DIAGNOSIS</span>
-      </div>
-
-      {/* Preset Profiles & Drawer Toggle */}
-      <div className="flex items-center gap-2.5">
-        {/* Quick Phenotype Loader */}
-        <div className="hidden sm:flex items-center gap-1 bg-surface-2/70 p-1 rounded-xl border border-slate-700/50">
-          {(['normal', 'high_risk_lad', 'triple_vessel'] as PatientProfileKey[]).map((key) => {
+        {/* Preset Phenotype Selectors */}
+        <div className="flex items-center gap-1 bg-white/[0.04] p-1 rounded-full border border-white/5">
+          {presets.map(({ key, label }) => {
             const isActive = activeProfile === key;
-            const labels: Record<PatientProfileKey, string> = {
-              normal: 'Healthy Normal',
-              high_risk_lad: 'LAD Ischemia',
-              triple_vessel: 'Triple Vessel',
-            };
             return (
               <button
                 key={key}
                 onClick={() => loadProfile(key)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-cyan-600 text-white shadow-sm'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/15 scale-[1.02]'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.06]'
                 }`}
               >
-                {labels[key]}
+                {label}
               </button>
             );
           })}
         </div>
 
-        {/* Anatomical Camera Reset */}
-        <button
-          onClick={() => setVesselFocus('default')}
-          title="Reset Camera View"
-          className="p-2 rounded-lg glass-btn hover:border-cyan-500/40 text-slate-300 hover:text-cyan-400"
-        >
-          <RotateCcw className="w-4 h-4" />
-        </button>
+        <div className="w-px h-4 bg-white/10 hidden md:block" />
 
-        {/* Drawer Toggle */}
-        <button
-          onClick={onToggleDrawer}
-          className={`px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all border ${
-            isDrawerOpen
-              ? 'bg-cyan-600/20 text-cyan-300 border-cyan-500/50 shadow-glow-cyan'
-              : 'glass-btn hover:border-slate-600 text-slate-200'
-          }`}
-        >
-          <Sliders className="w-4 h-4 text-cyan-400" />
-          <span className="hidden md:inline">Clinical Parameters</span>
-        </button>
+        {/* Unobtrusive Telemetry Status Indicator */}
+        <div className="hidden md:flex items-center gap-2 text-[11px] font-mono">
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              offlineMode
+                ? 'bg-amber-400 shadow-[0_0_8px_#f59e0b]'
+                : 'bg-emerald-400 shadow-[0_0_8px_#10b981]'
+            }`}
+          />
+          <span className="text-slate-400">
+            {isLoading
+              ? 'Inferring...'
+              : offlineMode
+              ? `Simulated // ${latency.toFixed(1)}ms`
+              : `FastAPI // ${latency.toFixed(1)}ms`}
+          </span>
+        </div>
+
+        <div className="w-px h-4 bg-white/10 hidden sm:block" />
+
+        {/* Tactical Actions */}
+        <div className="flex items-center gap-1.5">
+          {/* Camera Reset */}
+          <button
+            onClick={() => setVesselFocus('default')}
+            title="Reset Camera View"
+            className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Drawer Toggle */}
+          <button
+            onClick={onToggleDrawer}
+            className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-xs font-medium transition-all border ${
+              isDrawerOpen
+                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-[0_0_12px_rgba(6,182,212,0.3)]'
+                : 'bg-white/[0.04] text-slate-300 border-white/10 hover:bg-white/[0.08] hover:text-white'
+            }`}
+          >
+            <Sliders className="w-3 h-3 text-cyan-400" />
+            <span className="hidden sm:inline">Parameters</span>
+          </button>
+        </div>
       </div>
     </header>
   );

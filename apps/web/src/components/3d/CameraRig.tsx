@@ -3,7 +3,7 @@
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { usePatientStore } from '../../store/usePatientStore';
@@ -35,6 +35,15 @@ interface CameraRigProps {
 export const CameraRig: React.FC<CameraRigProps> = ({ controlsRef }) => {
   const { camera } = useThree();
   const activeFocus = usePatientStore((s) => s.activeVesselFocus);
+  const isInitialMount = useRef(true);
+
+  // Cinematic Entry: Start slightly pulled back and smoothly dolly-in over the first 1.2s
+  useEffect(() => {
+    if (isInitialMount.current) {
+      camera.position.set(0.0, 0.0, 3.9);
+      isInitialMount.current = false;
+    }
+  }, [camera]);
 
   // Pre-allocated scratch vectors to prevent runtime GC pressure
   const targetPos = useRef(new THREE.Vector3());
@@ -45,8 +54,8 @@ export const CameraRig: React.FC<CameraRigProps> = ({ controlsRef }) => {
     targetPos.current.set(...preset.position);
     targetLook.current.set(...preset.target);
 
-    // Smooth exponential damping (speed factor 4.0)
-    const lerpFactor = Math.min(1.0, delta * 4.0);
+    // Smooth exponential damping (speed factor 3.2 for buttery cinematic ease)
+    const lerpFactor = Math.min(1.0, delta * 3.2);
 
     camera.position.lerp(targetPos.current, lerpFactor);
 

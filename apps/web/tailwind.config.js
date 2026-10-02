@@ -20,10 +20,10 @@ export default {
       colors: {
         // AuraCor Surface Elevation System
         surface: {
-          0: '#070A10', // Deep Obsidian Canvas
-          1: '#0F172A', // Slate Obsidian Panels
-          2: '#1E293B', // Deep Navy Cards
-          3: '#334155', // Polished Obsidian Modals
+          0: '#05070B', // Deep Obsidian Canvas Void
+          1: '#0A0F1A', // Slate Obsidian Panels
+          2: '#131C2E', // Deep Navy Cards
+          3: '#1E293B', // Polished Obsidian Modals
         },
         // Clinical Risk Semantic Palette
         risk: {
