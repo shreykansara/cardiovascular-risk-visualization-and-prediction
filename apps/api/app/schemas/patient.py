@@ -6,6 +6,8 @@ Enforces physiological boundaries on all 55 clinical, ECG, and echocardiographic
 Provides robust coercion and aliases for seamless frontend interaction.
 """
 
+from __future__ import annotations
+
 from typing import Any, Literal
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator

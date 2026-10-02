@@ -3,6 +3,8 @@ Explainable AI (XAI) Schemas: TreeSHAP Attributions & Complete Analysis
 Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
 """
 
+from __future__ import annotations
+
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any

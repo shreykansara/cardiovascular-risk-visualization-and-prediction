@@ -3,6 +3,8 @@ Model Service: In-Memory Artifact Manager
 Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
 """
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Any
