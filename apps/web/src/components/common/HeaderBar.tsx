@@ -28,6 +28,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
   const presets: { key: PatientProfileKey; label: string }[] = [
     { key: 'normal', label: 'Healthy' },
     { key: 'high_risk_lad', label: 'LAD Ischemia' },
+    { key: 'rca_ischemia', label: 'RCA Ischemia' },
     { key: 'triple_vessel', label: 'Triple Vessel' },
   ];
 

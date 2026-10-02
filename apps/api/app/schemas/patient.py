@@ -168,10 +168,21 @@ class PatientInputSchema(BaseModel):
     )
     @classmethod
     def coerce_to_str(cls, v: Any) -> str:
-        """Coerce boolean/int inputs to clean string representations matching metadata."""
+        """Coerce boolean/int inputs and anatomical territory names to clean string representations."""
         if isinstance(v, bool):
             return "1" if v else "0"
-        return str(v).strip()
+        s = str(v).strip()
+        rwma_map = {
+            "anterior": "1",
+            "inferior": "2",
+            "lateral": "3",
+            "septal": "4",
+            "multiple": "4",
+            "none": "0",
+        }
+        if s.lower() in rwma_map:
+            return rwma_map[s.lower()]
+        return s
 
     @model_validator(mode="after")
     def compute_or_validate_bmi(self) -> PatientInputSchema:

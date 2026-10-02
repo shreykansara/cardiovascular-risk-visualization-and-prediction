@@ -35,13 +35,53 @@ def test_health_endpoints(client):
 
 def test_get_sample_patient(client):
     """Verify retrieval of valid sample patient fixtures."""
-    for profile in ["normal", "high_risk_lad", "triple_vessel"]:
+    for profile in ["normal", "high_risk_lad", "rca_ischemia", "triple_vessel"]:
         res = client.get(f"/api/v1/sample-patient?profile={profile}")
         assert res.status_code == 200
         patient_data = res.json()
         assert "Age" in patient_data
         assert "BP" in patient_data
         assert "EF-TTE" in patient_data
+
+
+def test_preset_differentiation_profiles(client):
+    """Verify that all 4 clinical presets yield distinct, localized vessel risk profiles and DLS colors."""
+    # 1. Healthy Normal: LAD < 20% (Green), LCX < 20% (Green), RCA < 25% (Green), CAD < 25% (Green)
+    res_normal = client.post("/api/v1/predict", json=client.get("/api/v1/sample-patient?profile=normal").json()).json()
+    assert res_normal["vessels"]["lad"]["probability"] < 0.20
+    assert res_normal["vessels"]["lcx"]["probability"] < 0.20
+    assert res_normal["vessels"]["rca"]["probability"] < 0.25
+    assert res_normal["overall_cad"]["probability"] < 0.25
+    assert res_normal["vessels"]["lad"]["color_hex"] == "#10B981"
+    assert res_normal["vessels"]["lcx"]["color_hex"] == "#10B981"
+    assert res_normal["vessels"]["rca"]["color_hex"] == "#10B981"
+
+    # 2. LAD Ischemia: LAD > 85% (Red), LCX < 35% (Green), RCA < 40% (Green), CAD High (Red)
+    res_lad = client.post("/api/v1/predict", json=client.get("/api/v1/sample-patient?profile=high_risk_lad").json()).json()
+    assert res_lad["vessels"]["lad"]["probability"] > 0.85
+    assert res_lad["vessels"]["lcx"]["probability"] < 0.35
+    assert res_lad["vessels"]["rca"]["probability"] < 0.40
+    assert res_lad["vessels"]["lad"]["color_hex"] == "#EF4444"
+    assert res_lad["vessels"]["lcx"]["color_hex"] == "#10B981"
+    assert res_lad["vessels"]["rca"]["color_hex"] == "#10B981"
+
+    # 3. RCA / Inferior Ischemia: RCA > 80% (Red), LAD < 40% (Green), LCX ~ 45-55% (Amber)
+    res_rca = client.post("/api/v1/predict", json=client.get("/api/v1/sample-patient?profile=rca_ischemia").json()).json()
+    assert res_rca["vessels"]["rca"]["probability"] > 0.80
+    assert res_rca["vessels"]["lad"]["probability"] < 0.40
+    assert 0.40 <= res_rca["vessels"]["lcx"]["probability"] <= 0.60
+    assert res_rca["vessels"]["rca"]["color_hex"] == "#EF4444"
+    assert res_rca["vessels"]["lad"]["color_hex"] == "#10B981"
+    assert res_rca["vessels"]["lcx"]["color_hex"] == "#F59E0B"
+
+    # 4. Triple Vessel Disease: LAD > 85% (Red), LCX > 75% (Red), RCA > 80% (Red)
+    res_tv = client.post("/api/v1/predict", json=client.get("/api/v1/sample-patient?profile=triple_vessel").json()).json()
+    assert res_tv["vessels"]["lad"]["probability"] > 0.85
+    assert res_tv["vessels"]["lcx"]["probability"] > 0.75
+    assert res_tv["vessels"]["rca"]["probability"] > 0.80
+    assert res_tv["vessels"]["lad"]["color_hex"] == "#EF4444"
+    assert res_tv["vessels"]["lcx"]["color_hex"] == "#EF4444"
+    assert res_tv["vessels"]["rca"]["color_hex"] == "#EF4444"
 
 
 def test_predict_endpoint_success(client):
