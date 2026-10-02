@@ -1,5 +1,5 @@
 /**
- * Clinical Parameter Input Drawer & Physiological Controls (AuraCor DLS)
+ * Clinical Parameter Input Drawer & Physiological Controls (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
@@ -69,7 +69,7 @@ const SliderControl: React.FC<SliderControlProps> = ({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+        className="w-full perfusion3d-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
         style={{
           background: `linear-gradient(to right, #475569 0%, #06b6d4 ${pct}%, rgba(30, 41, 59, 0.8) ${pct}%, rgba(30, 41, 59, 0.8) 100%)`,
         }}
@@ -252,7 +252,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
                   step="1"
                   value={p.Weight}
                   onChange={(e) => updatePatientField('Weight', Number(e.target.value))}
-                  className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+                  className="w-full perfusion3d-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
                   style={{
                     background: `linear-gradient(to right, #475569 0%, #06b6d4 ${((p.Weight - 48) / (120 - 48)) * 100}%, rgba(30, 41, 59, 0.8) ${((p.Weight - 48) / (120 - 48)) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
                   }}
@@ -273,7 +273,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
                   step="1"
                   value={p.Length}
                   onChange={(e) => updatePatientField('Length', Number(e.target.value))}
-                  className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+                  className="w-full perfusion3d-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
                   style={{
                     background: `linear-gradient(to right, #475569 0%, #06b6d4 ${((p.Length - 140) / (188 - 140)) * 100}%, rgba(30, 41, 59, 0.8) ${((p.Length - 140) / (188 - 140)) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
                   }}

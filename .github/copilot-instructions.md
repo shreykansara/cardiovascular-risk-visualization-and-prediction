@@ -1,5 +1,5 @@
-# GitHub Copilot & Coding Assistant Instructions
-# Track A: Cardiovascular Risk Visualization & Prediction
+# GitHub Copilot & Coding Assistant Instructions: Perfusion3D
+# Track A: Perfusion3D - Real-Time Spatial Coronary Digital Twin & Multi-Vessel Ischemia Telemetry
 
 These instructions apply to all code generated for this repository. Adhere strictly to the design patterns and clinical safety requirements specified below.
 

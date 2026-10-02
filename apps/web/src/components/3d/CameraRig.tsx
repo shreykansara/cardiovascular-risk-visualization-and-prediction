@@ -1,5 +1,5 @@
 /**
- * 3D Camera Rig & Smooth Focal Interpolation (AuraCor Clinical DLS)
+ * 3D Camera Rig & Smooth Focal Interpolation (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 

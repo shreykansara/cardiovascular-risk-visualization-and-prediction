@@ -1,4 +1,4 @@
-# AuraCor CAD-3D: Model Exploration & Ensemble Leaderboard
+# Perfusion3D: Model Exploration & Ensemble Leaderboard
 
 **Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction**  
 **Validation Protocol:** Repeated Stratified 5-Fold Cross-Validation (5 folds × 2 repeats = 10 iterations per model)  

@@ -1,5 +1,5 @@
 /**
- * Local TreeSHAP Feature Attribution Waterfall Chart (AuraCor Clinical DLS)
+ * Local TreeSHAP Feature Attribution Waterfall Chart (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 

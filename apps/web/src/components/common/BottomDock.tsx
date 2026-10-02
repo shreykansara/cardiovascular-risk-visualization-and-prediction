@@ -1,5 +1,5 @@
 /**
- * Anatomical Focus Floating Bottom Dock (AuraCor Spatial DLS)
+ * Anatomical Focus Floating Bottom Dock (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 

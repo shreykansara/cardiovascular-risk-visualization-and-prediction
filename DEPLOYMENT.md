@@ -1,7 +1,7 @@
-# AuraCor CAD-3D Deployment Guide
+# Perfusion3D Deployment Guide
 **Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction**
 
-AuraCor is packaged as an **All-in-One Multi-Stage Docker Container** uniting the React 19 + Three.js WebGL spatial frontend and the FastAPI + TreeSHAP machine learning inference engine into a single unified service with zero CORS complexity.
+Perfusion3D is packaged as an **All-in-One Multi-Stage Docker Container** uniting the React 19 + Three.js WebGL spatial frontend and the FastAPI + TreeSHAP machine learning inference engine into a single unified service with zero CORS complexity.
 
 ---
 
@@ -36,7 +36,7 @@ Render provides free hosting with automatic continuous deployment from your GitH
    - **Plan**: `Free`
    - **Health Check Path**: `/health`
 7. Click **Create Web Service**.
-8. In ~3 minutes, your live URL will be active (e.g., `https://auracor-cad3d.onrender.com`).
+8. In ~3 minutes, your live URL will be active (e.g., `https://perfusion3d-app.onrender.com`).
 
 ---
 
@@ -59,11 +59,11 @@ Hugging Face Spaces provides permanent free hosting for ML applications.
 
 ### Step-by-Step:
 1. Go to [huggingface.co/spaces](https://huggingface.co/spaces) and click **Create new Space**.
-2. Name your space (e.g., `auracor-cad3d`).
+2. Name your space (e.g., `perfusion3d-app`).
 3. Select **Docker** as the Space SDK (Blank template).
 4. Clone the Hugging Face repo or set this GitHub repo as a remote:
    ```bash
-   git remote add hf https://huggingface.co/spaces/YOUR_USERNAME/auracor-cad3d
+   git remote add hf https://huggingface.co/spaces/YOUR_USERNAME/perfusion3d-app
    git push hf main
    ```
 5. Hugging Face builds the Docker container and exposes port `7860` automatically (or respects `PORT=7860`).
@@ -76,11 +76,11 @@ For enterprise-grade auto-scaling on Google Cloud:
 
 ```bash
 # 1. Build and tag the image
-gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/auracor-cad3d
+gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/perfusion3d-app
 
 # 2. Deploy to Cloud Run
-gcloud run deploy auracor-cad3d \
-  --image gcr.io/YOUR_PROJECT_ID/auracor-cad3d \
+gcloud run deploy perfusion3d-app \
+  --image gcr.io/YOUR_PROJECT_ID/perfusion3d-app \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \

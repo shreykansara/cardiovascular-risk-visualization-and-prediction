@@ -497,7 +497,7 @@ def generate_markdown_leaderboard(
 ) -> None:
     """Writes a structured clinical leaderboard report in GitHub-flavored markdown."""
     lines = [
-        "# AuraCor CAD-3D: Model Exploration & Ensemble Leaderboard",
+        "# Perfusion3D: Model Exploration & Ensemble Leaderboard",
         "",
         "**Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction**  ",
         "**Validation Protocol:** Repeated Stratified 5-Fold Cross-Validation (5 folds × 2 repeats = 10 iterations per model)  ",
@@ -561,7 +561,7 @@ def generate_markdown_leaderboard(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="AuraCor CAD-3D Model Exploration Benchmark")
+    parser = argparse.ArgumentParser(description="Perfusion3D Model Exploration Benchmark")
     parser.add_argument("--data-dir", type=Path, default=Path("data/processed"))
     parser.add_argument("--reports-dir", type=Path, default=Path("reports"))
     parser.add_argument("--calibration", type=str, default="sigmoid", choices=["sigmoid", "isotonic"])

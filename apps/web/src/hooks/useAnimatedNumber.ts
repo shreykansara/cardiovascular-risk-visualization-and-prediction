@@ -1,6 +1,6 @@
 /**
  * Smooth Animated Number Ticker Hook
- * AuraCor Clinical Spatial UI
+ * Perfusion3D Clinical Spatial UI
  */
 
 import { useState, useEffect, useRef } from 'react';

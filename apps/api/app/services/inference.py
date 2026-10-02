@@ -22,7 +22,7 @@ TARGET_DISPLAY_NAMES = {
 
 def map_probability_to_color(p: float) -> tuple[str, list[float]]:
     """
-    Maps calibrated stenosis probability to discrete AuraCor DLS clinical risk colors:
+    Maps calibrated stenosis probability to discrete Perfusion3D Clinical DLS risk colors:
     - Optimal / Patent (<= 0.40): Crisp Emerald Green (#10B981 / [0.063, 0.725, 0.506])
     - Borderline (0.40 - 0.70): Amber (#F59E0B / [0.961, 0.620, 0.043])
     - Critical Ischemia (> 0.70): Crimson Red (#EF4444 / [0.937, 0.267, 0.267])

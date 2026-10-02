@@ -1,5 +1,5 @@
 /**
- * Floating Island Header Bar (AuraCor Spatial DLS)
+ * Floating Island Header Bar (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
@@ -42,10 +42,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-semibold tracking-tight text-white font-sans">
-              AuraCor
+              Perfusion3D
             </span>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-white/[0.06] text-slate-300 border border-white/10">
-              CAD-3D
+              TWIN
             </span>
           </div>
         </div>
@@ -85,10 +85,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
           />
           <span className="text-slate-400">
             {isLoading
-              ? 'Inferring...'
+              ? 'PERFUSION3D INFERRING...'
               : offlineMode
-              ? `Simulated // ${latency.toFixed(1)}ms`
-              : `FastAPI // ${latency.toFixed(1)}ms`}
+              ? `CALIBRATED SIMULATION // ${latency.toFixed(1)}ms`
+              : `PERFUSION3D ENGINE READY // LATENCY ${latency.toFixed(1)}ms`}
           </span>
         </div>
 

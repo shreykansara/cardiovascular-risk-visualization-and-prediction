@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 
 class HealthResponse(BaseModel):
+    service: str = Field(default="Perfusion3D API", description="Service identifier")
     status: str = Field(..., description="System operational readiness status ('READY' or 'DEGRADED')")
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     version: str = Field(..., description="API Version")
