@@ -316,20 +316,22 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       clearTimeout(debounceTimer);
       debounceTimer = null;
     }
-    const simulated = generateLocalSimulation(patient);
+    const updated = { ...patient, patient_id: 'PT-CUSTOM' };
+    const simulated = generateLocalSimulation(updated);
     set({
-      patient,
-      patientData: patient,
+      patient: updated,
+      patientData: updated,
       activeProfile: 'custom',
       activePreset: 'custom',
       analysis: simulated,
+      isCalculating: true,
     });
     get().analyzePatient();
   },
 
   updatePatientField: (key, value) => {
     const current = get().patientData || get().patient;
-    const updated = { ...current, [key]: value };
+    const updated = { ...current, patient_id: 'PT-CUSTOM', [key]: value };
 
     // Auto calculate BMI if weight or length changes
     if (key === 'Weight' || key === 'Length') {
@@ -352,45 +354,13 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       isCalculating: true,
     });
 
-    // 2. Debounced API call to POST /api/v1/analyze (250ms) with latest patientData
+    // 2. Debounced API call to analyzePatient() (250ms) with latest patientData
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
 
-    debounceTimer = setTimeout(async () => {
-      try {
-        const latestPatient = get().patientData;
-        const response = await fetch('/api/v1/analyze?top_k=6', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(latestPatient),
-        });
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status} ${response.statusText}`);
-        }
-
-        const data: CompleteAnalysisResponse = await response.json();
-        // STRICT GUARD: Only update predictions, vessel telemetry, and explanations.
-        // NEVER overwrite, re-assign, or reset patientData or activePreset.
-        set({
-          analysis: data,
-          isCalculating: false,
-          isLoading: false,
-          offlineMode: false,
-        });
-      } catch (err: any) {
-        console.warn('Backend API unreachable, using local calibrated simulation fallback:', err?.message);
-        const fallback = generateLocalSimulation(get().patientData);
-        set({
-          analysis: fallback,
-          isCalculating: false,
-          isLoading: false,
-          offlineMode: true,
-        });
-      }
+    debounceTimer = setTimeout(() => {
+      get().analyzePatient();
     }, 250);
   },
 
@@ -436,6 +406,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   analyzePatient: async () => {
     set({ isLoading: true, isCalculating: true, error: null });
     const currentPatient = get().patientData;
+    console.log('[DEBUG analyzePatient] Sending patientData:', currentPatient.Age, currentPatient.patient_id, currentPatient);
 
     try {
       const response = await fetch('/api/v1/analyze?top_k=6', {
@@ -451,6 +422,12 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       }
 
       const data: CompleteAnalysisResponse = await response.json();
+      console.log(
+        '[DEBUG analyzePatient] Received response:',
+        data.predictions.overall_cad.probability,
+        data.predictions.vessels
+      );
+
       // STRICT GUARD: Only update analysis payload. NEVER overwrite patientData or activePreset.
       set({
         analysis: data,
@@ -459,7 +436,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         offlineMode: false,
       });
     } catch (err: any) {
-      console.warn('Backend API unreachable, using local calibrated simulation fallback:', err?.message);
+      console.warn('[DEBUG analyzePatient] Backend API unreachable, using local calibrated simulation fallback:', err?.message);
       const simulated = generateLocalSimulation(currentPatient);
       set({
         analysis: simulated,
