@@ -93,13 +93,14 @@ export interface TechnicalReportData {
     }>;
   };
   parameters_outside_reference_range: string[];
-  model_attribution_shap: {
+  model_attribution: {
     targets: Array<{
       target: string;
       top_features: Array<{
         feature: string;
         shap_value: number;
-        patient_value: string | number;
+        input_value?: string | number;
+        patient_value?: string | number;
         direction: 'INCREASES_RISK' | 'DECREASES_RISK';
       }>;
     }>;
@@ -127,9 +128,9 @@ export interface PatientReportData {
   what_this_summary_is: string;
   overall_picture: string;
   your_three_main_heart_arteries: {
-    lad: { description: string; probability_pct: number; category: string };
-    lcx: { description: string; probability_pct: number; category: string };
-    rca: { description: string; probability_pct: number; category: string };
+    lad: { name?: string; description: string; probability_pct: number; category: string };
+    lcx: { name?: string; description: string; probability_pct: number; category: string };
+    rca: { name?: string; description: string; probability_pct: number; category: string };
   };
   your_measurements: {
     groups: Array<{
