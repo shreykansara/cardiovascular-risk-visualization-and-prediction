@@ -6,7 +6,7 @@
 import React from 'react';
 import { Activity, RotateCcw, Sliders, Sparkles } from 'lucide-react';
 import { usePatientStore, PATIENT_PROFILES } from '../../store/usePatientStore';
-import type { PatientProfileKey } from '../../types/clinical';
+import type { PatientPresetId, PatientProfileKey } from '../../types/clinical';
 
 interface HeaderBarProps {
   onToggleDrawer: () => void;
@@ -25,11 +25,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
 
   const latency = analysis?.latency_ms ?? 14.8;
 
-  const presets: { key: PatientProfileKey; label: string }[] = [
+  const presets: { key: PatientPresetId; label: string }[] = [
     { key: 'normal', label: 'Healthy' },
     { key: 'high_risk_lad', label: 'LAD Ischemia' },
     { key: 'rca_ischemia', label: 'RCA Ischemia' },
     { key: 'triple_vessel', label: 'Triple Vessel' },
+    { key: 'custom', label: 'Custom' },
   ];
 
   return (
@@ -52,14 +53,44 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
 
         <div className="w-px h-4 bg-white/10 hidden sm:block" />
 
-        {/* Preset Phenotype Selectors */}
+        {/* Preset Phenotype Selectors (Permanent fixed slots — zero layout shift) */}
         <div className="flex items-center gap-1 bg-white/[0.04] p-1 rounded-full border border-white/5">
           {presets.map(({ key, label }) => {
             const isActive = activeProfile === key;
+            const isCustom = key === 'custom';
+
+            if (isCustom) {
+              return (
+                <button
+                  key={key}
+                  onClick={onToggleDrawer}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)] scale-[1.02]'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title={
+                    isActive
+                      ? 'Custom parameter mode active — click to edit parameters'
+                      : 'Click to open parameter drawer and customize'
+                  }
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isActive
+                        ? 'bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]'
+                        : 'bg-slate-500'
+                    }`}
+                  />
+                  <span>{label}</span>
+                </button>
+              );
+            }
+
             return (
               <button
                 key={key}
-                onClick={() => loadProfile(key)}
+                onClick={() => loadProfile(key as PatientProfileKey)}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                   isActive
                     ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/15 scale-[1.02]'
@@ -70,15 +101,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
               </button>
             );
           })}
-          {activeProfile === 'custom' && (
-            <span
-              className="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 flex items-center gap-1.5 shadow-[0_0_10px_rgba(6,182,212,0.2)] animate-in fade-in duration-200"
-              title="Manual parameter mode active"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              <span>Custom</span>
-            </span>
-          )}
         </div>
 
         <div className="w-px h-4 bg-white/10 hidden md:block" />

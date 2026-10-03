@@ -14,6 +14,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { usePatientStore, PATIENT_PROFILES } from '../../store/usePatientStore';
+import type { PatientProfileKey } from '../../types/clinical';
 
 interface PatientFormProps {
   isOpen: boolean;
@@ -151,8 +152,8 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
         </button>
       </div>
 
-      {/* Active Mode / Preset Status Banner */}
-      <div className="px-4 py-2 bg-slate-900/50 border-b border-white/[0.06] flex items-center justify-between text-xs">
+      {/* Active Mode / Preset Status Banner (Permanent fixed slot — zero layout shift) */}
+      <div className="px-4 py-2 bg-slate-900/50 border-b border-white/[0.06] flex items-center justify-between text-xs min-h-[40px]">
         <div className="flex items-center gap-2">
           {activeProfile === 'custom' ? (
             <>
@@ -166,21 +167,25 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
             <>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
               <span className="text-slate-400 font-medium">Active Preset:</span>
-              <span className="text-slate-200 font-semibold">{PATIENT_PROFILES[activeProfile]?.name}</span>
+              <span className="text-slate-200 font-semibold">{PATIENT_PROFILES[activeProfile as PatientProfileKey]?.name}</span>
             </>
           )}
         </div>
-        {activeProfile === 'custom' && (
-          <button
-            type="button"
-            onClick={resetToPreset}
-            className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-mono font-medium text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all shadow-[0_0_8px_rgba(6,182,212,0.15)]"
-            title="Revert all parameters back to baseline preset"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span>Reset</span>
-          </button>
-        )}
+        <div className="h-6 flex items-center">
+          {activeProfile === 'custom' ? (
+            <button
+              type="button"
+              onClick={resetToPreset}
+              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-mono font-medium text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all shadow-[0_0_8px_rgba(6,182,212,0.15)]"
+              title="Revert all parameters back to baseline preset"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          ) : (
+            <span className="text-[10px] text-slate-500 font-mono">Live Sync Active</span>
+          )}
+        </div>
       </div>
 
       {/* Category Navigation Tabs (Sleek Glass Pills) */}
@@ -594,7 +599,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
           onClick={onClose}
           className="px-4 py-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-semibold transition-all shadow-[0_0_12px_rgba(6,182,212,0.15)]"
         >
-          Apply & Close
+          Close Drawer
         </button>
       </div>
     </aside>

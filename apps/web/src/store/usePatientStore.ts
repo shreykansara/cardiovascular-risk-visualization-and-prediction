@@ -290,6 +290,7 @@ interface PatientStore {
   resetToPreset: () => void;
   acceptDisclaimer: () => void;
   runAnalysis: () => Promise<void>;
+  analyzePatient: () => Promise<void>;
 }
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -323,11 +324,11 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       activePreset: 'custom',
       analysis: simulated,
     });
-    get().runAnalysis();
+    get().analyzePatient();
   },
 
   updatePatientField: (key, value) => {
-    const current = get().patient;
+    const current = get().patientData || get().patient;
     const updated = { ...current, [key]: value };
 
     // Auto calculate BMI if weight or length changes
@@ -340,7 +341,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }
 
     // 1. Optimistic live calculation: update risk, colors, and SHAP immediately with 0ms visual latency
-    // Automatically switch active mode to 'custom' upon any manual parameter manipulation
+    // Immediately mutate patientData and switch active preset to 'custom'
     const simulated = generateLocalSimulation(updated);
     set({
       patient: updated,
@@ -351,19 +352,20 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       isCalculating: true,
     });
 
-    // 2. Debounced API call to POST /api/v1/analyze (250ms)
+    // 2. Debounced API call to POST /api/v1/analyze (250ms) with latest patientData
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
 
     debounceTimer = setTimeout(async () => {
       try {
+        const latestPatient = get().patientData;
         const response = await fetch('/api/v1/analyze?top_k=6', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(updated),
+          body: JSON.stringify(latestPatient),
         });
 
         if (!response.ok) {
@@ -371,11 +373,23 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         }
 
         const data: CompleteAnalysisResponse = await response.json();
-        set({ analysis: data, isCalculating: false, isLoading: false, offlineMode: false });
+        // STRICT GUARD: Only update predictions, vessel telemetry, and explanations.
+        // NEVER overwrite, re-assign, or reset patientData or activePreset.
+        set({
+          analysis: data,
+          isCalculating: false,
+          isLoading: false,
+          offlineMode: false,
+        });
       } catch (err: any) {
         console.warn('Backend API unreachable, using local calibrated simulation fallback:', err?.message);
-        const fallback = generateLocalSimulation(get().patient);
-        set({ analysis: fallback, isCalculating: false, isLoading: false, offlineMode: true });
+        const fallback = generateLocalSimulation(get().patientData);
+        set({
+          analysis: fallback,
+          isCalculating: false,
+          isLoading: false,
+          offlineMode: true,
+        });
       }
     }, 250);
   },
@@ -406,7 +420,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         analysis: simulated,
         isCalculating: true,
       });
-      get().runAnalysis();
+      get().analyzePatient();
     }
   },
 
@@ -419,9 +433,9 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     set({ disclaimerAccepted: true });
   },
 
-  runAnalysis: async () => {
+  analyzePatient: async () => {
     set({ isLoading: true, isCalculating: true, error: null });
-    const patientData = get().patient;
+    const currentPatient = get().patientData;
 
     try {
       const response = await fetch('/api/v1/analyze?top_k=6', {
@@ -429,7 +443,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(patientData),
+        body: JSON.stringify(currentPatient),
       });
 
       if (!response.ok) {
@@ -437,12 +451,27 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       }
 
       const data: CompleteAnalysisResponse = await response.json();
-      set({ analysis: data, isLoading: false, isCalculating: false, offlineMode: false });
+      // STRICT GUARD: Only update analysis payload. NEVER overwrite patientData or activePreset.
+      set({
+        analysis: data,
+        isLoading: false,
+        isCalculating: false,
+        offlineMode: false,
+      });
     } catch (err: any) {
       console.warn('Backend API unreachable, using local calibrated simulation fallback:', err?.message);
-      const simulated = generateLocalSimulation(patientData);
-      set({ analysis: simulated, isLoading: false, isCalculating: false, offlineMode: true });
+      const simulated = generateLocalSimulation(currentPatient);
+      set({
+        analysis: simulated,
+        isLoading: false,
+        isCalculating: false,
+        offlineMode: true,
+      });
     }
+  },
+
+  runAnalysis: async () => {
+    return get().analyzePatient();
   },
 }));
 
