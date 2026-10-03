@@ -71,57 +71,75 @@ Rather than presenting clinicians and patients with abstract, non-localized risk
 
 ---
 
-## Quickstart & Local Execution
+## 4-Step Clinical Assessment Workflow
 
-### Prerequisites
-- Node.js 18+ & npm
-- Python 3.11+
-- (Optional) Docker & Docker Compose
+The platform features a structured 4-step clinical workflow with state persistence and step locking:
 
-### Option A: Local Development Stack
+1. **Step 1: Clinical Welcome & Consent (`/welcome`)**
+   - Overview of the Perfusion3D decision-support platform.
+   - Mandatory affirmative consent checkbox: *"I understand that predictions are for decision-support and educational purposes only..."*
+   - Persistent `<DisclaimerBanner />` displayed across all application steps.
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/shreykansara/cardiovascular-risk-visualization-and-prediction.git
-   cd cardiovascular-risk-visualization-and-prediction
-   ```
+2. **Step 2: Manual Clinical Verification & Input (`/enter-data`)**
+   - Complete 55-feature clinical input catalog grouped into 5 collapsible anatomical/diagnostic categories: Demographics, Clinical Examination, ECG, Laboratory, and Echocardiography.
+   - Category completion counters (e.g. `5/5 filled`), validation ranges, neutral out-of-range indicators, and field-level provenance badges (`manual` | `extracted` | `unverified`).
+   - "Load Sample Patient" one-click action for rapid clinical profiling and testing.
+   - Disabled "Upload report (coming soon)" action in preparation for automated OCR extraction.
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   pip install -r requirements.txt
-   ```
+3. **Step 3: Interactive 3D Digital Twin & Explainability (`/results`)**
+   - **3D Spatial Digital Twin**: Interactive 3D WebGL myocardial and coronary arterial mesh (LAD, LCX, RCA) with continuous color risk mapping (Emerald $\le 40\%$, Amber $40-70\%$, Crimson $> 70\%$).
+   - Bidirectional vessel selection synchronization between 3D canvas and clinical dashboard cards.
+   - Multi-target TreeSHAP attribution waterfall chart showing top 8 physiological drivers with directional risk indicators.
+   - Physiological parameter breakdown table sortable by SHAP contribution percentage.
+   - Empirical model performance validation tab displaying ROC-AUC, PR-AUC, Recall, Specificity, and F1 metrics.
 
-3. **Start the FastAPI backend**:
-   ```bash
-   python -m uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000 --reload
-   ```
-
-4. **Start the React frontend** (in a separate terminal):
-   ```bash
-   npm run dev:web
-   ```
-   Open `http://localhost:5173` in your browser.
+4. **Step 4: Clinical & Patient AI Report Generation (`/reports`)**
+   - Dual-tab report interface: **Technical Report (Clinician)** and **Patient Report (Plain Language)**.
+   - LLM-powered report synthesis with strict medical boundary enforcement (SHARED RULES), anti-hallucination number verification, section order verification, and 2-attempt retry loop.
+   - Built-in zero-hallucination deterministic fallback template if the LLM provider is unconfigured or unreachable.
+   - One-click Print and Download PDF actions.
 
 ---
 
-### Option B: Production Container (Docker Compose)
+## Environment Variable Configuration
 
-Launch the unified production image hosting both the React 19 spatial frontend and FastAPI inference backend:
+Create a `.env` file in the project root based on [.env.example](file:///.env.example):
 
 ```bash
-docker compose up --build
+# LLM Provider Configuration (Backend Only - Keys never sent to browser)
+LLM_API_KEY=your_api_key_here
+LLM_PROVIDER=openai          # Supported: openai, anthropic, gemini, groq, together, openrouter
+LLM_MODEL=gpt-4o-mini        # Or claude-3-5-sonnet-20241022, gemini-1.5-pro, etc.
 ```
 
-Access the application:
-- **Web UI & 3D Visualizer**: `http://localhost:8000`
-- **Health Check**: `http://localhost:8000/health`
-- **OpenAPI / Swagger Docs**: `http://localhost:8000/docs`
+If `LLM_API_KEY` is omitted or left as the placeholder, Perfusion3D automatically activates its deterministic clinical report synthesis engine, ensuring zero downtime and fully compliant reports.
 
-To stop:
-```bash
-docker compose down
-```
+---
+
+## Key Architectural File Locations
+
+| Component | File Path | Description |
+| :--- | :--- | :--- |
+| **Clinical Feature Schema** | [apps/web/src/config/featureSchema.ts](file:///apps/web/src/config/featureSchema.ts) | Definitive catalog of all 55 features with units, reference bounds, and clinical categories |
+| **Wizard Navigation State** | [apps/web/src/store/useWizardStore.ts](file:///apps/web/src/store/useWizardStore.ts) | Session-persisted Zustand store managing patient inputs, predictions, SHAP, and report cache |
+| **Clinical Disclaimer Banner** | [apps/web/src/components/common/DisclaimerBanner.tsx](file:///apps/web/src/components/common/DisclaimerBanner.tsx) | Mandatory persistent medical decision-support disclaimer banner |
+| **Technical Prompt Template** | [src/prompts/technical_report.md](file:///src/prompts/technical_report.md) | Clinician-facing report prompt containing SHARED RULES and 8 mandated sections |
+| **Patient Prompt Template** | [src/prompts/patient_report.md](file:///src/prompts/patient_report.md) | Plain-language patient report prompt (Grade 6-8 reading level) |
+| **LLM Service & Validator** | [apps/api/app/services/llm_service.py](file:///apps/api/app/services/llm_service.py) | Provider adapter, anti-hallucination validator, and deterministic fallback templates |
+| **Runtime Leakage Guard** | [apps/api/app/services/leakage_guard.py](file:///apps/api/app/services/leakage_guard.py) | Strict runtime guard blocking input injection of `Cath`, `CAD`, `LAD`, `LCX`, `RCA` |
+
+---
+
+## Future: Document Upload & Automated Extraction
+
+Perfusion3D includes foundational architecture for automated multimodal document ingestion (EHR summaries, lab PDFs, echocardiogram printouts):
+
+- **Store Hook**: `applyExtractedValues(values: Partial<PatientData>, confidences?: Record<keyof PatientData, number>)` in [useWizardStore.ts](file:///apps/web/src/store/useWizardStore.ts).
+- **Field Provenance**: Each field in the form schema tracks a `source` state:
+  - `manual`: Direct clinician or user manual entry.
+  - `extracted`: Populated via automated OCR or NLP pipeline.
+  - `unverified`: Flagged for mandatory clinical review (e.g. OCR confidence $< 0.85$).
+- **UI Indicators**: Non-intrusive badges display the extraction source and confidence rating on `/enter-data`, allowing clinicians to review and verify before prediction.
 
 ---
 
@@ -130,7 +148,7 @@ docker compose down
 Run the full automated verification test suite:
 
 ```bash
-# Run backend API & inference tests (25/25 passing)
+# Run backend API, leakage guard, schema coverage, and report validator tests (37/37 passing)
 python -m pytest apps/api/tests/ -v
 
 # Run production web build verification
@@ -142,7 +160,7 @@ npm run build:web
 ## Clinical Safety & Regulatory Boundary
 
 > **IMPORTANT CLINICAL NOTICE**  
-> Perfusion3D is an educational and clinical decision-support prototype (SaMD Class IIa boundary). It is designed to assist clinicians in visualizing hemodynamic risk patterns and understanding machine learning model interpretations. It is **NOT** a replacement for formal coronary angiography, computed tomography coronary angiography (CTCA), or direct physician assessment. All clinical decisions must be confirmed by qualified medical professionals.
+> "Predictions are for decision-support and educational purposes only and are not a substitute for formal diagnostic imaging or professional medical evaluation."
 
 ---
 

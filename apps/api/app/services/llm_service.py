@@ -78,6 +78,31 @@ def get_llm_config() -> Tuple[Optional[str], str, str]:
     return key, provider, model
 
 
+CLINICAL_REFERENCE_METADATA: Dict[str, Dict[str, Any]] = {
+    "Age": {"unit": "years", "ref_low": 18, "ref_high": 75, "ref_display": "18-75"},
+    "Weight": {"unit": "kg", "ref_low": 50, "ref_high": 90, "ref_display": "50-90"},
+    "Length": {"unit": "cm", "ref_low": 150, "ref_high": 190, "ref_display": "150-190"},
+    "BMI": {"unit": "kg/m²", "ref_low": 18.5, "ref_high": 24.9, "ref_display": "18.5-24.9"},
+    "BP": {"unit": "mmHg", "ref_low": 90, "ref_high": 120, "ref_display": "90-120"},
+    "PR": {"unit": "bpm", "ref_low": 60, "ref_high": 100, "ref_display": "60-100"},
+    "FBS": {"unit": "mg/dL", "ref_low": 70, "ref_high": 99, "ref_display": "70-99"},
+    "CR": {"unit": "mg/dL", "ref_low": 0.6, "ref_high": 1.2, "ref_display": "0.6-1.2"},
+    "TG": {"unit": "mg/dL", "ref_low": 50, "ref_high": 150, "ref_display": "50-150"},
+    "LDL": {"unit": "mg/dL", "ref_low": 50, "ref_high": 100, "ref_display": "50-100"},
+    "HDL": {"unit": "mg/dL", "ref_low": 40, "ref_high": 60, "ref_display": "40-60"},
+    "BUN": {"unit": "mg/dL", "ref_low": 7, "ref_high": 20, "ref_display": "7-20"},
+    "ESR": {"unit": "mm/hr", "ref_low": 0, "ref_high": 20, "ref_display": "0-20"},
+    "Hb": {"unit": "g/dL", "ref_low": 12.0, "ref_high": 17.5, "ref_display": "12.0-17.5"},
+    "K": {"unit": "mEq/L", "ref_low": 3.5, "ref_high": 5.0, "ref_display": "3.5-5.0"},
+    "Na": {"unit": "mEq/L", "ref_low": 135, "ref_high": 145, "ref_display": "135-145"},
+    "WBC": {"unit": "cells/mcL", "ref_low": 4000, "ref_high": 11000, "ref_display": "4000-11000"},
+    "Lymph": {"unit": "%", "ref_low": 20, "ref_high": 40, "ref_display": "20-40"},
+    "Neut": {"unit": "%", "ref_low": 40, "ref_high": 70, "ref_display": "40-70"},
+    "PLT": {"unit": "x10³/mcL", "ref_low": 150, "ref_high": 450, "ref_display": "150-450"},
+    "EF-TTE": {"unit": "%", "ref_low": 55, "ref_high": 70, "ref_display": "55-70"},
+}
+
+
 def build_report_context(
     patient_data: Dict[str, Any],
     predictions: Dict[str, Any],
@@ -89,6 +114,32 @@ def build_report_context(
     Direct identifiers (name, patient_id) are strictly removed.
     """
     clean_inputs = {k: v for k, v in patient_data.items() if k not in ["patient_id", "id", "name"]}
+
+    # Build input parameters with units, reference ranges, and within/outside flags (Task 5.2)
+    parameter_details: Dict[str, Dict[str, Any]] = {}
+    for k, v in clean_inputs.items():
+        meta = CLINICAL_REFERENCE_METADATA.get(k, {})
+        unit = meta.get("unit", "")
+        ref_display = meta.get("ref_display", "Normal")
+        ref_low = meta.get("ref_low")
+        ref_high = meta.get("ref_high")
+        within_range = True
+        try:
+            val_num = float(v)
+            if ref_low is not None and val_num < ref_low:
+                within_range = False
+            if ref_high is not None and val_num > ref_high:
+                within_range = False
+        except (ValueError, TypeError):
+            within_range = str(v) in ["0", "N", "Normal", "Male", "Female"]
+
+        parameter_details[k] = {
+            "parameter": k,
+            "value": v,
+            "unit": unit,
+            "reference_range": ref_display,
+            "within_range": within_range,
+        }
 
     # Extract target probabilities and classifications
     overall_cad = predictions.get("overall_cad", {})
@@ -129,6 +180,14 @@ def build_report_context(
         ]
 
     # Model metrics
+    if model_metadata is None:
+        meta_path = Path(__file__).resolve().parents[4] / "models" / "model_metadata.json"
+        if meta_path.exists():
+            try:
+                model_metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+            except Exception:
+                model_metadata = {}
+
     metrics = []
     if model_metadata and "models" in model_metadata:
         for t in ["CAD", "LAD", "LCX", "RCA"]:
@@ -145,6 +204,7 @@ def build_report_context(
     return {
         "generation_timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
         "patient_inputs": clean_inputs,
+        "parameter_details": parameter_details,
         "cad_summary": {
             "predicted_status": cad_status,
             "probability_pct": cad_prob_pct,
@@ -155,6 +215,32 @@ def build_report_context(
         "model_metrics": metrics,
         "disclaimer": MANDATORY_DISCLAIMER,
     }
+
+
+def extract_numbers_from_obj(obj: Any) -> set[float]:
+    """Recursively extracts all numeric values (int and float representations) from an object."""
+    nums: set[float] = set()
+    if isinstance(obj, (int, float)):
+        val = float(obj)
+        nums.add(round(val, 2))
+        nums.add(round(val, 1))
+        nums.add(float(int(round(val))))
+    elif isinstance(obj, str):
+        for m in re.findall(r"(?<![a-zA-Z_])\b\d+(?:\.\d+)?\b(?![a-zA-Z_])", obj):
+            try:
+                val = float(m)
+                nums.add(round(val, 2))
+                nums.add(round(val, 1))
+                nums.add(float(int(round(val))))
+            except ValueError:
+                pass
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            nums.update(extract_numbers_from_obj(v))
+    elif isinstance(obj, (list, tuple)):
+        for item in obj:
+            nums.update(extract_numbers_from_obj(item))
+    return nums
 
 
 def validate_report_json(
@@ -180,7 +266,6 @@ def validate_report_json(
     # 2. Banned advisory phrases check across all text fields
     report_text = json.dumps(report_dict).lower()
     for phrase in BANNED_PHRASES:
-        # Use regex boundary matching
         pattern = r"\b" + re.escape(phrase) + r"\b"
         if re.search(pattern, report_text):
             return False, f"Banned advisory phrase detected: '{phrase}'"
@@ -189,6 +274,23 @@ def validate_report_json(
     disclaimer_val = report_dict.get("disclaimer", "").strip()
     if disclaimer_val != MANDATORY_DISCLAIMER:
         return False, "Disclaimer section does not match the exact mandated text."
+
+    # 4. Number validation: verify that numbers in report text trace back to context
+    allowed_structural = {
+        0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 18.0,
+        20.0, 40.0, 50.0, 55.0, 60.0, 70.0, 75.0, 90.0, 100.0, 120.0, 150.0,
+        303.0, 2026.0,
+    }
+    context_numbers = extract_numbers_from_obj(context) | allowed_structural
+
+    report_numbers = extract_numbers_from_obj(report_dict)
+    hallucinated = []
+    for num in report_numbers:
+        if not any(abs(num - c_num) < 0.1 for c_num in context_numbers):
+            hallucinated.append(num)
+
+    if hallucinated:
+        return False, f"Hallucinated number(s) detected not present in report context: {hallucinated[:3]}"
 
     return True, None
 
