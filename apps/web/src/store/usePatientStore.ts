@@ -291,8 +291,10 @@ interface PatientStore {
   acceptDisclaimer: () => void;
   runAnalysis: () => Promise<void>;
   analyzePatient: () => Promise<void>;
+  runLocalSimulation: (data?: PatientData) => void;
 }
 
+const API_BASE_URL = '';
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 const initialPatient = PATIENT_PROFILES.high_risk_lad.data;
 const initialSimulation = generateLocalSimulation(initialPatient);
@@ -403,47 +405,50 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     set({ disclaimerAccepted: true });
   },
 
+  runLocalSimulation: (data) => {
+    const p = data || get().patientData || get().patient;
+    const simulated = generateLocalSimulation(p);
+    set({ analysis: simulated });
+  },
+
   analyzePatient: async () => {
-    set({ isLoading: true, isCalculating: true, error: null });
     const currentPatient = get().patientData;
-    console.log('[DEBUG analyzePatient] Sending patientData:', currentPatient.Age, currentPatient.patient_id, currentPatient);
+    console.log('[API Request Payload]', currentPatient);
+    set({ isCalculating: true });
 
     try {
-      const response = await fetch('/api/v1/analyze?top_k=6', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/analyze?top_k=5`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentPatient),
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+        throw new Error(`Inference error: ${response.statusText}`);
       }
 
       const data: CompleteAnalysisResponse = await response.json();
       console.log(
-        '[DEBUG analyzePatient] Received response:',
+        '[API Response]',
         data.predictions.overall_cad.probability,
         data.predictions.vessels
       );
 
-      // STRICT GUARD: Only update analysis payload. NEVER overwrite patientData or activePreset.
+      // STRICT GUARD:
+      // 1. Only update analysis results.
+      // 2. Do NOT overwrite patientData or activePreset.
+      // 3. Do NOT reset analysis to any preset fallback.
       set({
         analysis: data,
-        isLoading: false,
         isCalculating: false,
+        isLoading: false,
         offlineMode: false,
       });
-    } catch (err: any) {
-      console.warn('[DEBUG analyzePatient] Backend API unreachable, using local calibrated simulation fallback:', err?.message);
-      const simulated = generateLocalSimulation(currentPatient);
-      set({
-        analysis: simulated,
-        isLoading: false,
-        isCalculating: false,
-        offlineMode: true,
-      });
+    } catch (error: any) {
+      console.warn('[analyzePatient] Falling back to local simulation:', error);
+      // When falling back, use currentPatient, NOT a hardcoded preset!
+      get().runLocalSimulation(currentPatient);
+      set({ isCalculating: false, isLoading: false, offlineMode: true });
     }
   },
 
