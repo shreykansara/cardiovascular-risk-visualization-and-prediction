@@ -19,13 +19,13 @@ import type {
 export const PATIENT_PROFILES: Record<PatientProfileKey, { name: string; description: string; data: PatientData }> = {
   normal: {
     name: 'Healthy Normal',
-    description: '38yo Female, asymptomatic, normotensive, normal ECG and echocardiogram (EF 60%).',
+    description: '38yo Male, asymptomatic, normotensive, normal ECG and echocardiogram (EF 60%).',
     data: {
       patient_id: 'PT-HEALTHY-01',
       Age: 38,
       Weight: 66,
       Length: 166,
-      Sex: 'Female',
+      Sex: 'Male',
       BMI: 23.95,
       DM: '0',
       HTN: '0',
@@ -267,6 +267,8 @@ export const PATIENT_PROFILES: Record<PatientProfileKey, { name: string; descrip
   },
 };
 
+export const PRESET_PROFILES = PATIENT_PROFILES;
+
 interface PatientStore {
   patient: PatientData;
   patientData: PatientData;
@@ -318,7 +320,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       clearTimeout(debounceTimer);
       debounceTimer = null;
     }
-    const updated = { ...patient, patient_id: 'PT-CUSTOM' };
+    const updated = { ...patient };
     if (get().offlineMode) {
       const simulated = generateLocalSimulation(updated);
       set({
@@ -344,7 +346,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
 
   updatePatientField: (key, value) => {
     const current = get().patientData || get().patient;
-    const updated = { ...current, patient_id: 'PT-CUSTOM', [key]: value };
+    const updated = { ...current, [key]: value };
 
     // Auto calculate BMI if weight or length changes
     if (key === 'Weight' || key === 'Length') {
@@ -396,26 +398,28 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     set({ activeVesselFocus: focus });
   },
 
-  loadProfile: (profileKey) => {
+  loadProfile: (profileKey: PatientProfileKey) => {
     const profile = PATIENT_PROFILES[profileKey];
-    if (profile) {
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-        debounceTimer = null;
-      }
-      const data = { ...profile.data };
-      const simulated = generateLocalSimulation(data);
-      set({
-        patient: data,
-        patientData: data,
-        activeProfile: profileKey,
-        activePreset: profileKey,
-        lastSelectedPreset: profileKey,
-        analysis: simulated,
-        isCalculating: true,
-      });
-      get().analyzePatient();
+    if (!profile) return;
+
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
     }
+
+    const profileData = { ...profile.data };
+
+    set({
+      patientData: { ...profileData },
+      patient: { ...profileData },
+      activeProfile: profileKey,
+      activePreset: profileKey,
+      lastSelectedPreset: profileKey,
+      isCalculating: true,
+    });
+
+    // Dynamically compute real model probabilities
+    get().analyzePatient();
   },
 
   resetToPreset: () => {

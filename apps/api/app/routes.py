@@ -153,7 +153,7 @@ def get_sample_patient(
             Age=38.0,
             Weight=66.0,
             Length=166.0,
-            Sex="Female",
+            Sex="Male",
             BMI=23.95,
             DM="0",
             HTN="0",

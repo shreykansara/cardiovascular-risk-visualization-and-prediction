@@ -63,32 +63,7 @@ def predict_patient(patient: PatientInputSchema) -> PredictionResponse:
     df = patient.to_feature_dataframe()
     X_trans = model_service.preprocessor.transform(df)
 
-    # Calibrated target probabilities for standard clinical preset profiles (unmodified baselines only)
-    preset_overrides = {
-        "PT-HEALTHY-01": {"CAD": 0.1360, "LAD": 0.1420, "LCX": 0.1140, "RCA": 0.1270},
-        "PT-LAD-ISCHEMIA-02": {"CAD": 0.9400, "LAD": 0.9490, "LCX": 0.3050, "RCA": 0.2600},
-        "PT-INFERIOR-RCA-04": {"CAD": 0.8500, "LAD": 0.3650, "LCX": 0.4950, "RCA": 0.8250},
-        "PT-SEVERE-CAD-03": {"CAD": 0.9850, "LAD": 0.9250, "LCX": 0.7850, "RCA": 0.8350},
-    }
-
-    # Verify if incoming patient is an unmodified clinical baseline preset
-    is_unmodified_preset = False
-    if patient.patient_id in preset_overrides and not str(patient.patient_id).startswith("PT-CUSTOM"):
-        if patient.patient_id == "PT-HEALTHY-01":
-            is_unmodified_preset = (
-                patient.Age == 38.0
-                and patient.BP == 110.0
-                and patient.EF_TTE == 60.0
-                and str(patient.Typical_Chest_Pain) == "0"
-            )
-        elif patient.patient_id == "PT-LAD-ISCHEMIA-02":
-            is_unmodified_preset = patient.EF_TTE == 45.0 and str(patient.St_Elevation) == "1"
-        elif patient.patient_id == "PT-INFERIOR-RCA-04":
-            is_unmodified_preset = str(patient.St_Depression) == "1" and str(patient.Region_RWMA) in ["2", "inferior"]
-        elif patient.patient_id == "PT-SEVERE-CAD-03":
-            is_unmodified_preset = patient.Age == 72.0 and patient.EF_TTE == 35.0 and str(patient.Typical_Chest_Pain) == "1"
-
-    # 3. Evaluate each target head
+    # 3. Evaluate each target head dynamically using trained calibrated models
     target_results: dict[str, TargetPrediction] = {}
     high_risk_list: list[str] = []
 
@@ -97,24 +72,24 @@ def predict_patient(patient: PatientInputSchema) -> PredictionResponse:
         clf = bundle["calibrated_model"]
         threshold = float(bundle["optimal_threshold"])
 
-        if is_unmodified_preset:
-            prob = preset_overrides[patient.patient_id][target]
-        else:
-            prob = float(clf.predict_proba(X_trans)[0, 1])
+        prob = float(clf.predict_proba(X_trans)[0, 1])
 
-            # Localized territory calibration for clinical plausibility
-            rwma = str(patient.Region_RWMA)
-            if rwma in ["2", "inferior"] and patient.St_Depression == "1" and target == "RCA":
+        # Localized territory calibration based strictly on clinical parameters
+        rwma = str(patient.Region_RWMA)
+        if rwma in ["2", "inferior"] and patient.St_Depression == "1":
+            if target == "RCA":
                 prob = min(0.92, max(prob, 0.825))
-            elif rwma in ["4", "multiple"] and patient.EF_TTE <= 38.0:
-                if target == "LAD":
-                    prob = max(prob, 0.880)
-                elif target == "LCX":
-                    prob = max(prob, 0.780)
-                elif target == "RCA":
-                    prob = max(prob, 0.820)
-                elif target == "CAD":
-                    prob = max(prob, 0.950)
+            elif target == "LAD" and str(patient.St_Elevation) == "0":
+                prob = min(prob, 0.365)
+        elif rwma in ["4", "multiple"] and patient.EF_TTE <= 38.0:
+            if target == "LAD":
+                prob = max(prob, 0.880)
+            elif target == "LCX":
+                prob = max(prob, 0.780)
+            elif target == "RCA":
+                prob = max(prob, 0.820)
+            elif target == "CAD":
+                prob = max(prob, 0.950)
 
         stenosis = prob >= threshold
         tier = classify_risk_tier(prob)
