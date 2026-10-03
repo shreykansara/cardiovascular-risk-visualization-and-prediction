@@ -1,54 +1,44 @@
-# Model Validation & Calibration Report
+# Model Validation & Calibration Report (Ensemble Optimized)
 **Track A: Cardiovascular Risk Visualization & Prediction**  
 **Validation Methodology:** Stratified 5-Fold Cross-Validation with Nested Imputation/Scaling  
 **Target Leakage Safeguard:** Absolute exclusion of `Cath`, `CAD`, `LAD`, `LCX`, `RCA` from feature matrix $X$.
 
 ## 1. Cross-Validation Performance Summary
 
-| Target Head | Vessel / Diagnosis | ROC-AUC (Mean ± Std) | PR-AUC | Brier Score | Opt. Threshold | Sensitivity (Recall) | F1-Score | Balanced Acc |
+| Target Head | Winning Architecture | ROC-AUC (Mean ± Std) | PR-AUC | Brier Score | Opt. Threshold | Sensitivity (Recall) | Specificity | F1-Score |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **CAD** | Overall Coronary Artery Disease | 0.908 ± 0.065 | 0.960 | 0.113 | **0.58** | **0.903** | **0.901** | **0.825** |
-| **LAD** | Left Anterior Descending Artery | 0.845 ± 0.057 | 0.880 | 0.161 | **0.41** | **0.915** | **0.829** | **0.751** |
-| **LCX** | Left Circumflex Artery | 0.699 ± 0.056 | 0.577 | 0.213 | **0.31** | **0.899** | **0.633** | **0.645** |
-| **RCA** | Right Coronary Artery | 0.739 ± 0.060 | 0.634 | 0.201 | **0.31** | **0.842** | **0.625** | **0.664** |
+| **CAD** | `RandomForest-120 (Balanced Subsample)` | **0.923 ± 0.043** | 0.966 | 0.101 | 0.48 | **0.944** | 0.690 | 0.913 |
+| **LAD** | `RandomForest-120 (Balanced Subsample)` | **0.853 ± 0.066** | 0.883 | 0.152 | 0.43 | **0.915** | 0.643 | 0.844 |
+| **LCX** | `RandomForest-120 (Balanced Subsample)` | **0.735 ± 0.073** | 0.615 | 0.208 | 0.31 | **0.916** | 0.413 | 0.649 |
+| **RCA** | `SoftVoting (LGBM + XGB + RF)` | **0.738 ± 0.064** | 0.627 | 0.202 | 0.29 | **0.895** | 0.455 | 0.639 |
 
-## 2. Key Clinical Observations & Probability Calibration
+## 2. Global Feature Attributions (Top-5 TreeSHAP)
 
-- **Overall CAD (ROC-AUC 0.907)**: Strong discrimination across demographics, ECG, and echocardiographic biomarkers with high sensitivity (0.92+), minimizing false negatives in primary screening.
-- **LAD Stenosis (ROC-AUC 0.845)**: Left anterior descending disease demonstrates strong correlation with anterior regional wall motion abnormalities (`Region RWMA`) and anterior ST elevations.
-- **LCX & RCA Stenosis**: Moderate baseline prevalence in cohort. Optimal decision thresholds calibrate sensitivity to $> 0.60$ while maintaining well-calibrated posterior probabilities (Brier score ~0.20) for continuous 3D color mapping.
+### CAD Key Risk Drivers
+1. **Typical Chest Pain 0** (Mean |SHAP|: 0.0834)
+2. **Typical Chest Pain 1** (Mean |SHAP|: 0.0651)
+3. **Age** (Mean |SHAP|: 0.0367)
+4. **Atypical N** (Mean |SHAP|: 0.0294)
+5. **Region RWMA 0** (Mean |SHAP|: 0.0287)
 
-## 3. Top-5 Global Clinical Drivers per Target (TreeSHAP)
+### LAD Key Risk Drivers
+1. **Typical Chest Pain 0** (Mean |SHAP|: 0.0654)
+2. **Typical Chest Pain 1** (Mean |SHAP|: 0.0497)
+3. **Region RWMA 0** (Mean |SHAP|: 0.0357)
+4. **EF-TTE** (Mean |SHAP|: 0.0328)
+5. **Age** (Mean |SHAP|: 0.0296)
 
-### Target: CAD
-1. **Typical Chest Pain 0** (Mean |SHAP|: `0.9945`)
-2. **Region RWMA 0** (Mean |SHAP|: `0.3985`)
-3. **Age** (Mean |SHAP|: `0.2653`)
-4. **EF-TTE** (Mean |SHAP|: `0.2577`)
-5. **FBS** (Mean |SHAP|: `0.1793`)
+### LCX Key Risk Drivers
+1. **Age** (Mean |SHAP|: 0.0452)
+2. **Typical Chest Pain 0** (Mean |SHAP|: 0.0382)
+3. **Typical Chest Pain 1** (Mean |SHAP|: 0.0359)
+4. **PLT** (Mean |SHAP|: 0.0233)
+5. **TG** (Mean |SHAP|: 0.0218)
 
-### Target: LAD
-1. **Typical Chest Pain 0** (Mean |SHAP|: `0.6805`)
-2. **Region RWMA 0** (Mean |SHAP|: `0.3881`)
-3. **EF-TTE** (Mean |SHAP|: `0.2880`)
-4. **Age** (Mean |SHAP|: `0.1939`)
-5. **Lymph** (Mean |SHAP|: `0.1121`)
+### RCA Key Risk Drivers
+1. **Typical Chest Pain 0** (Mean |SHAP|: 0.3065)
+2. **DM 0** (Mean |SHAP|: 0.2777)
+3. **Neut** (Mean |SHAP|: 0.2163)
+4. **Age** (Mean |SHAP|: 0.2066)
+5. **ESR** (Mean |SHAP|: 0.1931)
 
-### Target: LCX
-1. **Age** (Mean |SHAP|: `0.3708`)
-2. **Typical Chest Pain 0** (Mean |SHAP|: `0.3317`)
-3. **CR** (Mean |SHAP|: `0.1393`)
-4. **PLT** (Mean |SHAP|: `0.1255`)
-5. **TG** (Mean |SHAP|: `0.1166`)
-
-### Target: RCA
-1. **Typical Chest Pain 0** (Mean |SHAP|: `0.2842`)
-2. **DM 0** (Mean |SHAP|: `0.2197`)
-3. **Neut** (Mean |SHAP|: `0.1849`)
-4. **Age** (Mean |SHAP|: `0.1711`)
-5. **ESR** (Mean |SHAP|: `0.1458`)
-
-## 4. Regulatory & Leakage Audit Certification
-- `Cath` (invasive angiography outcome) was strictly withheld from all training and validation feature sets.
-- Target vessel labels (`LAD`, `LCX`, `RCA`) and overall label (`CAD`) were strictly withheld from inputs.
-- All probabilities calibrated for continuous WebGL shader mapping $[0.0, 1.0]$.

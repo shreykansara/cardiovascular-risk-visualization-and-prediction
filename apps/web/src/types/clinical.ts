@@ -120,4 +120,5 @@ export interface CompleteAnalysisResponse {
   disclaimer: string;
 }
 
+export type PatientPresetId = 'normal' | 'high_risk_lad' | 'rca_ischemia' | 'triple_vessel' | 'custom';
 export type PatientProfileKey = 'normal' | 'high_risk_lad' | 'rca_ischemia' | 'triple_vessel';

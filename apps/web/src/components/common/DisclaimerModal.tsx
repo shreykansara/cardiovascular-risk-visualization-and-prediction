@@ -1,5 +1,5 @@
 /**
- * Subtle Regulatory Safety Floating Pill & Popover (AuraCor Spatial DLS)
+ * Subtle Regulatory Safety Floating Pill & Popover (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
@@ -47,7 +47,7 @@ export const DisclaimerModal: React.FC = () => {
         {isExpanded && (
           <div className="mt-2.5 pt-2.5 border-t border-white/10 space-y-2 text-[11px] text-slate-300 font-sans leading-relaxed">
             <p className="text-slate-400">
-              <strong className="text-white">AuraCor CAD-3D</strong> is an investigational decision-support prototype. 3D ischemic color maps do not replace catheter angiography.
+              <strong className="text-white">Perfusion3D</strong> is an investigational decision-support prototype. 3D ischemic color maps do not replace catheter angiography.
             </p>
             <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
               <ShieldCheck className="w-3.5 h-3.5 shrink-0" />

@@ -1,5 +1,5 @@
 /**
- * Fullscreen 3D Heart WebGL Viewport (AuraCor Spatial DLS)
+ * Fullscreen 3D Heart WebGL Viewport (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 

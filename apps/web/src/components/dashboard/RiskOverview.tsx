@@ -1,5 +1,5 @@
 /**
- * Vessel Risk Matrix Overview (AuraCor Clinical DLS)
+ * Vessel Risk Matrix Overview (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 

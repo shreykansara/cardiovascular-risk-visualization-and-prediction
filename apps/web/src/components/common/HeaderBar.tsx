@@ -1,12 +1,12 @@
 /**
- * Floating Island Header Bar (AuraCor Spatial DLS)
+ * Floating Island Header Bar (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
 import React from 'react';
 import { Activity, RotateCcw, Sliders, Sparkles } from 'lucide-react';
 import { usePatientStore, PATIENT_PROFILES } from '../../store/usePatientStore';
-import type { PatientProfileKey } from '../../types/clinical';
+import type { PatientPresetId, PatientProfileKey } from '../../types/clinical';
 
 interface HeaderBarProps {
   onToggleDrawer: () => void;
@@ -25,11 +25,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
 
   const latency = analysis?.latency_ms ?? 14.8;
 
-  const presets: { key: PatientProfileKey; label: string }[] = [
+  const presets: { key: PatientPresetId; label: string }[] = [
     { key: 'normal', label: 'Healthy' },
     { key: 'high_risk_lad', label: 'LAD Ischemia' },
     { key: 'rca_ischemia', label: 'RCA Ischemia' },
     { key: 'triple_vessel', label: 'Triple Vessel' },
+    { key: 'custom', label: 'Custom' },
   ];
 
   return (
@@ -42,24 +43,54 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-semibold tracking-tight text-white font-sans">
-              AuraCor
+              Perfusion3D
             </span>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-white/[0.06] text-slate-300 border border-white/10">
-              CAD-3D
+              TWIN
             </span>
           </div>
         </div>
 
         <div className="w-px h-4 bg-white/10 hidden sm:block" />
 
-        {/* Preset Phenotype Selectors */}
+        {/* Preset Phenotype Selectors (Permanent fixed slots — zero layout shift) */}
         <div className="flex items-center gap-1 bg-white/[0.04] p-1 rounded-full border border-white/5">
           {presets.map(({ key, label }) => {
             const isActive = activeProfile === key;
+            const isCustom = key === 'custom';
+
+            if (isCustom) {
+              return (
+                <button
+                  key={key}
+                  onClick={onToggleDrawer}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)] scale-[1.02]'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title={
+                    isActive
+                      ? 'Custom parameter mode active — click to edit parameters'
+                      : 'Click to open parameter drawer and customize'
+                  }
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isActive
+                        ? 'bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]'
+                        : 'bg-slate-500'
+                    }`}
+                  />
+                  <span>{label}</span>
+                </button>
+              );
+            }
+
             return (
               <button
                 key={key}
-                onClick={() => loadProfile(key)}
+                onClick={() => loadProfile(key as PatientProfileKey)}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                   isActive
                     ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/15 scale-[1.02]'
@@ -85,10 +116,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
           />
           <span className="text-slate-400">
             {isLoading
-              ? 'Inferring...'
+              ? 'PERFUSION3D INFERRING...'
               : offlineMode
-              ? `Simulated // ${latency.toFixed(1)}ms`
-              : `FastAPI // ${latency.toFixed(1)}ms`}
+              ? `CALIBRATED SIMULATION // ${latency.toFixed(1)}ms`
+              : `PERFUSION3D ENGINE READY // LATENCY ${latency.toFixed(1)}ms`}
           </span>
         </div>
 

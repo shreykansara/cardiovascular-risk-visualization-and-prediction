@@ -1,5 +1,5 @@
 /**
- * Minimal Diagnostic Telemetry Blade (AuraCor Spatial DLS)
+ * Minimal Diagnostic Telemetry Blade (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 

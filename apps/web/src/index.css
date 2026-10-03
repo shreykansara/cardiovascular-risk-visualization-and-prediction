@@ -16,7 +16,7 @@
 }
 
 @layer components {
-  /* AuraCor Surface 1: Glassmorphic Floating Telemetry Panel */
+  /* Perfusion3D Surface 1: Glassmorphic Floating Telemetry Panel */
   .glass-panel {
     background-color: rgba(8, 12, 20, 0.65);
     backdrop-filter: blur(20px);
@@ -25,7 +25,7 @@
     box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.5);
   }
 
-  /* AuraCor Ultra-Glass (Luxury spatial medical HUD) */
+  /* Perfusion3D Ultra-Glass (Luxury spatial medical HUD) */
   .ultra-glass {
     background-color: rgba(5, 7, 11, 0.52);
     backdrop-filter: blur(28px) saturate(180%);
@@ -42,7 +42,7 @@
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
   }
 
-  /* AuraCor Surface 2: Diagnostic Metric Card */
+  /* Perfusion3D Surface 2: Diagnostic Metric Card */
   .glass-card {
     background-color: rgba(15, 23, 42, 0.4);
     backdrop-filter: blur(12px);
@@ -58,7 +58,7 @@
     transform: scale(1.015);
   }
 
-  /* AuraCor Surface 3: Tactical Button / Action Chip */
+  /* Perfusion3D Surface 3: Tactical Button / Action Chip */
   .glass-btn {
     background-color: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -179,8 +179,8 @@
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
-/* AuraCor Custom Range Slider Track and 14px Thumb */
-input[type="range"].auracor-slider {
+/* Perfusion3D Custom Range Slider Track and 14px Thumb */
+input[type="range"].perfusion3d-slider {
   -webkit-appearance: none;
   appearance: none;
   background: rgba(30, 41, 59, 0.8);
@@ -189,7 +189,7 @@ input[type="range"].auracor-slider {
   outline: none;
   cursor: pointer;
 }
-input[type="range"].auracor-slider::-webkit-slider-thumb {
+input[type="range"].perfusion3d-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 14px;
@@ -201,11 +201,11 @@ input[type="range"].auracor-slider::-webkit-slider-thumb {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-input[type="range"].auracor-slider::-webkit-slider-thumb:hover {
+input[type="range"].perfusion3d-slider::-webkit-slider-thumb:hover {
   transform: scale(1.15);
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6), 0 0 14px rgba(6, 182, 212, 0.7);
 }
-input[type="range"].auracor-slider::-moz-range-thumb {
+input[type="range"].perfusion3d-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -215,7 +215,7 @@ input[type="range"].auracor-slider::-moz-range-thumb {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-input[type="range"].auracor-slider::-moz-range-thumb:hover {
+input[type="range"].perfusion3d-slider::-moz-range-thumb:hover {
   transform: scale(1.15);
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6), 0 0 14px rgba(6, 182, 212, 0.7);
 }

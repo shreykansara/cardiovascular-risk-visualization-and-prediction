@@ -1,12 +1,12 @@
-# Operational Skills & Execution Runbooks
-**Track A: Multimodal AI Hackathon 2026**
+# Operational Skills & Execution Runbooks: Perfusion3D
+**Perfusion3D: Spatial Hemodynamic Ischemia & Coronary Twin (Track A: Multimodal AI Hackathon 2026)**
 **Document Version:** 1.0.0 | **Status:** Approved Execution Recipes
 
 ---
 
 ## 1. Overview of Operational Skills
 
-This document defines the production recipes, operational runbooks, and automation scripts required to execute all phases of the Cardiovascular Risk Visualization & Prediction system. Each skill can be executed directly by human developers or orchestrated by autonomous coding agents.
+This document defines the production recipes, operational runbooks, and automation scripts required to execute all phases of the Perfusion3D system. Each skill can be executed directly by human developers or orchestrated by autonomous coding agents.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐

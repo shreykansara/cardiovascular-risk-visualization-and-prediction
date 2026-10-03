@@ -18,7 +18,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // AuraCor Surface Elevation System
+        // Perfusion3D Surface Elevation System
         surface: {
           0: '#05070B', // Deep Obsidian Canvas Void
           1: '#0A0F1A', // Slate Obsidian Panels

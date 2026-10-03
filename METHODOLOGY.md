@@ -1,4 +1,4 @@
-# Methodology & System Blueprint: Cardiovascular Risk Visualization & Prediction
+# Methodology & System Blueprint: Perfusion3D
 **Track A: Multimodal AI Hackathon 2026**
 **Document Version:** 1.0.0 | **Status:** Approved Architecture Specification  
 **Roles:** Principal AI Systems Architect & Lead Full-Stack 3D Graphics Engineer

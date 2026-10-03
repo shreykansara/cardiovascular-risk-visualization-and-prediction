@@ -1,7 +1,7 @@
 {
-  "name": "multimodal-cardiovascular-risk-visualization",
+  "name": "perfusion3d-cad",
   "version": "1.0.0",
-  "description": "Interactive 3D Cardiovascular Risk Visualization and Multi-Target Prediction Platform (Track A - Multimodal AI Hackathon 2026)",
+  "description": "Perfusion3D: Real-Time Spatial Coronary Digital Twin & Multi-Vessel Ischemia Telemetry (Track A - Multimodal AI Hackathon 2026)",
   "private": true,
   "type": "module",
   "scripts": {

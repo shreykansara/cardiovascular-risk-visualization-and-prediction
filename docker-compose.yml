@@ -1,10 +1,10 @@
 services:
-  auracor-app:
+  perfusion3d-app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: auracor-cad3d:latest
-    container_name: auracor_platform
+    image: perfusion3d-app:latest
+    container_name: perfusion3d_platform
     ports:
       - "8000:8000"
     environment:

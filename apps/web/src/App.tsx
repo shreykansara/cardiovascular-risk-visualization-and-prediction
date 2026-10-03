@@ -1,5 +1,5 @@
 /**
- * AuraCor CAD-3D Spatial Medical Experience Root
+ * Perfusion3D Spatial Medical Experience Root
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 

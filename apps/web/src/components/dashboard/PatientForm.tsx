@@ -1,5 +1,5 @@
 /**
- * Clinical Parameter Input Drawer & Physiological Controls (AuraCor DLS)
+ * Clinical Parameter Input Drawer & Physiological Controls (Perfusion3D Clinical DLS)
  * Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
  */
 
@@ -11,8 +11,10 @@ import {
   Zap,
   FlaskConical,
   Stethoscope,
+  RotateCcw,
 } from 'lucide-react';
-import { usePatientStore } from '../../store/usePatientStore';
+import { usePatientStore, PATIENT_PROFILES } from '../../store/usePatientStore';
+import type { PatientProfileKey } from '../../types/clinical';
 
 interface PatientFormProps {
   isOpen: boolean;
@@ -69,7 +71,7 @@ const SliderControl: React.FC<SliderControlProps> = ({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+        className="w-full perfusion3d-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
         style={{
           background: `linear-gradient(to right, #475569 0%, #06b6d4 ${pct}%, rgba(30, 41, 59, 0.8) ${pct}%, rgba(30, 41, 59, 0.8) 100%)`,
         }}
@@ -86,7 +88,16 @@ const SliderControl: React.FC<SliderControlProps> = ({
 };
 
 export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => {
-  const { patient, patientData, updatePatientField, isCalculating, isLoading } = usePatientStore();
+  const {
+    patient,
+    patientData,
+    updatePatientField,
+    isCalculating,
+    isLoading,
+    activeProfile,
+    lastSelectedPreset,
+    resetToPreset,
+  } = usePatientStore();
   const [activeTab, setActiveTab] = useState<TabKey>('vitals');
 
   // Single source of truth: fallback safe binding to patientData
@@ -139,6 +150,42 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
         >
           <X className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* Active Mode / Preset Status Banner (Permanent fixed slot — zero layout shift) */}
+      <div className="px-4 py-2 bg-slate-900/50 border-b border-white/[0.06] flex items-center justify-between text-xs min-h-[40px]">
+        <div className="flex items-center gap-2">
+          {activeProfile === 'custom' ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse" />
+              <span className="font-semibold text-cyan-300">Custom Mode Active</span>
+              <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                (from {PATIENT_PROFILES[lastSelectedPreset]?.name || 'Preset'})
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+              <span className="text-slate-400 font-medium">Active Preset:</span>
+              <span className="text-slate-200 font-semibold">{PATIENT_PROFILES[activeProfile as PatientProfileKey]?.name}</span>
+            </>
+          )}
+        </div>
+        <div className="h-6 flex items-center">
+          {activeProfile === 'custom' ? (
+            <button
+              type="button"
+              onClick={resetToPreset}
+              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-mono font-medium text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all shadow-[0_0_8px_rgba(6,182,212,0.15)]"
+              title="Revert all parameters back to baseline preset"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          ) : (
+            <span className="text-[10px] text-slate-500 font-mono">Live Sync Active</span>
+          )}
+        </div>
       </div>
 
       {/* Category Navigation Tabs (Sleek Glass Pills) */}
@@ -252,7 +299,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
                   step="1"
                   value={p.Weight}
                   onChange={(e) => updatePatientField('Weight', Number(e.target.value))}
-                  className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+                  className="w-full perfusion3d-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
                   style={{
                     background: `linear-gradient(to right, #475569 0%, #06b6d4 ${((p.Weight - 48) / (120 - 48)) * 100}%, rgba(30, 41, 59, 0.8) ${((p.Weight - 48) / (120 - 48)) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
                   }}
@@ -273,7 +320,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
                   step="1"
                   value={p.Length}
                   onChange={(e) => updatePatientField('Length', Number(e.target.value))}
-                  className="w-full auracor-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
+                  className="w-full perfusion3d-slider h-1.5 bg-slate-800/80 rounded-full cursor-pointer accent-cyan-400"
                   style={{
                     background: `linear-gradient(to right, #475569 0%, #06b6d4 ${((p.Length - 140) / (188 - 140)) * 100}%, rgba(30, 41, 59, 0.8) ${((p.Length - 140) / (188 - 140)) * 100}%, rgba(30, 41, 59, 0.8) 100%)`,
                   }}
@@ -552,7 +599,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({ isOpen, onClose }) => 
           onClick={onClose}
           className="px-4 py-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-semibold transition-all shadow-[0_0_12px_rgba(6,182,212,0.15)]"
         >
-          Apply & Close
+          Close Drawer
         </button>
       </div>
     </aside>

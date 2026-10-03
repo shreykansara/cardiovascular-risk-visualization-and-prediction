@@ -84,6 +84,7 @@ assets/3d/raw/*
 models/checkpoints/
 data/scratch/
 data/temp/
+catboost_info/
 
 # Keep committed production model artifacts and schemas
 !models/*.joblib

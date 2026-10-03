@@ -1,12 +1,12 @@
-# Autonomous Agent Architecture: Cardiovascular Risk Visualization & Prediction
-**Track A: Multimodal AI Hackathon 2026**
+# Autonomous Agent Architecture: Perfusion3D
+**Perfusion3D: Spatial Hemodynamic Ischemia & Coronary Twin (Track A: Multimodal AI Hackathon 2026)**
 **Document Version:** 1.0.0 | **Status:** Approved Agent Role Specification
 
 ---
 
 ## 1. Overview & Multi-Agent Collaboration Model
 
-The development, validation, and deployment of the Multimodal Cardiovascular Risk Platform is driven by four specialized functional roles (autonomous agents). Each agent is assigned distinct lifecycle responsibilities, strict invariants, specific toolsets, and formal handoff contracts.
+The development, validation, and deployment of the Perfusion3D Clinical Platform is driven by four specialized functional roles (autonomous agents). Each agent is assigned distinct lifecycle responsibilities, strict invariants, specific toolsets, and formal handoff contracts.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐

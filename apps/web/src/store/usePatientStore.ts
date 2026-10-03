@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import type {
   CompleteAnalysisResponse,
   PatientData,
+  PatientPresetId,
   PatientProfileKey,
   PredictionResponse,
   RiskTier,
@@ -269,7 +270,9 @@ export const PATIENT_PROFILES: Record<PatientProfileKey, { name: string; descrip
 interface PatientStore {
   patient: PatientData;
   patientData: PatientData;
-  activeProfile: PatientProfileKey;
+  activeProfile: PatientPresetId;
+  activePreset: PatientPresetId;
+  lastSelectedPreset: PatientProfileKey;
   activeVesselFocus: string; // 'default' | 'vessel_LAD' | 'vessel_LCX' | 'vessel_RCA'
   analysis: CompleteAnalysisResponse | null;
   isLoading: boolean;
@@ -284,10 +287,14 @@ interface PatientStore {
   updateField: <K extends keyof PatientData>(key: K, value: PatientData[K]) => void;
   setVesselFocus: (focus: string) => void;
   loadProfile: (profile: PatientProfileKey) => void;
+  resetToPreset: () => void;
   acceptDisclaimer: () => void;
   runAnalysis: () => Promise<void>;
+  analyzePatient: () => Promise<void>;
+  runLocalSimulation: (data?: PatientData) => void;
 }
 
+const API_BASE_URL = '';
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 const initialPatient = PATIENT_PROFILES.high_risk_lad.data;
 const initialSimulation = generateLocalSimulation(initialPatient);
@@ -296,6 +303,8 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   patient: initialPatient,
   patientData: initialPatient,
   activeProfile: 'high_risk_lad',
+  activePreset: 'high_risk_lad',
+  lastSelectedPreset: 'high_risk_lad',
   activeVesselFocus: 'default',
   analysis: initialSimulation,
   isLoading: false,
@@ -309,14 +318,33 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       clearTimeout(debounceTimer);
       debounceTimer = null;
     }
-    const simulated = generateLocalSimulation(patient);
-    set({ patient, patientData: patient, analysis: simulated });
-    get().runAnalysis();
+    const updated = { ...patient, patient_id: 'PT-CUSTOM' };
+    if (get().offlineMode) {
+      const simulated = generateLocalSimulation(updated);
+      set({
+        patient: updated,
+        patientData: updated,
+        activeProfile: 'custom',
+        activePreset: 'custom',
+        analysis: simulated,
+        isCalculating: false,
+      });
+      return;
+    }
+
+    set({
+      patient: updated,
+      patientData: updated,
+      activeProfile: 'custom',
+      activePreset: 'custom',
+      isCalculating: true,
+    });
+    get().analyzePatient();
   },
 
   updatePatientField: (key, value) => {
-    const current = get().patient;
-    const updated = { ...current, [key]: value };
+    const current = get().patientData || get().patient;
+    const updated = { ...current, patient_id: 'PT-CUSTOM', [key]: value };
 
     // Auto calculate BMI if weight or length changes
     if (key === 'Weight' || key === 'Length') {
@@ -327,42 +355,37 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       }
     }
 
-    // 1. Optimistic live calculation: update risk, colors, and SHAP immediately with 0ms visual latency
-    const simulated = generateLocalSimulation(updated);
+    if (get().offlineMode) {
+      const fallback = generateLocalSimulation(updated);
+      set({
+        patient: updated,
+        patientData: updated,
+        activeProfile: 'custom',
+        activePreset: 'custom',
+        analysis: fallback,
+        isCalculating: false,
+      });
+      return;
+    }
+
+    // Do NOT execute runLocalSimulation or update state.analysis while connected online.
+    // Keep last confirmed risk percentages static until debounced analyzePatient() completes.
     set({
       patient: updated,
       patientData: updated,
-      analysis: simulated,
+      activeProfile: 'custom',
+      activePreset: 'custom',
       isCalculating: true,
     });
 
-    // 2. Debounced API call to POST /api/v1/analyze (250ms)
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
 
-    debounceTimer = setTimeout(async () => {
-      try {
-        const response = await fetch('/api/v1/analyze?top_k=6', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updated),
-        });
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status} ${response.statusText}`);
-        }
-
-        const data: CompleteAnalysisResponse = await response.json();
-        set({ analysis: data, isCalculating: false, isLoading: false, offlineMode: false });
-      } catch (err: any) {
-        console.warn('Backend API unreachable, using local calibrated simulation fallback:', err?.message);
-        const fallback = generateLocalSimulation(get().patient);
-        set({ analysis: fallback, isCalculating: false, isLoading: false, offlineMode: true });
-      }
-    }, 250);
+    // Debounce the true ML inference call (200ms)
+    debounceTimer = setTimeout(() => {
+      get().analyzePatient();
+    }, 200);
   },
 
   updateField: (key, value) => {
@@ -386,41 +409,73 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         patient: data,
         patientData: data,
         activeProfile: profileKey,
+        activePreset: profileKey,
+        lastSelectedPreset: profileKey,
         analysis: simulated,
         isCalculating: true,
       });
-      get().runAnalysis();
+      get().analyzePatient();
     }
+  },
+
+  resetToPreset: () => {
+    const targetPreset = get().lastSelectedPreset || 'high_risk_lad';
+    get().loadProfile(targetPreset);
   },
 
   acceptDisclaimer: () => {
     set({ disclaimerAccepted: true });
   },
 
-  runAnalysis: async () => {
-    set({ isLoading: true, isCalculating: true, error: null });
-    const patientData = get().patient;
+  runLocalSimulation: (data) => {
+    const p = data || get().patientData || get().patient;
+    const simulated = generateLocalSimulation(p);
+    set({ analysis: simulated });
+  },
+
+  analyzePatient: async () => {
+    const currentPatient = get().patientData;
+    console.log('[API Request Payload]', currentPatient);
+    set({ isCalculating: true });
 
     try {
-      const response = await fetch('/api/v1/analyze?top_k=6', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/analyze?top_k=5`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(patientData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentPatient),
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+        throw new Error(`Inference error: ${response.statusText}`);
       }
 
       const data: CompleteAnalysisResponse = await response.json();
-      set({ analysis: data, isLoading: false, isCalculating: false, offlineMode: false });
-    } catch (err: any) {
-      console.warn('Backend API unreachable, using local calibrated simulation fallback:', err?.message);
-      const simulated = generateLocalSimulation(patientData);
-      set({ analysis: simulated, isLoading: false, isCalculating: false, offlineMode: true });
+      console.log(
+        '[API Response]',
+        data.predictions.overall_cad.probability,
+        data.predictions.vessels
+      );
+
+      // STRICT GUARD:
+      // 1. Only update analysis results.
+      // 2. Do NOT overwrite patientData or activePreset.
+      // 3. Do NOT reset analysis to any preset fallback.
+      set({
+        analysis: data,
+        isCalculating: false,
+        isLoading: false,
+        offlineMode: false,
+      });
+    } catch (error: any) {
+      console.warn('[analyzePatient] Falling back to local simulation:', error);
+      // When falling back, use currentPatient, NOT a hardcoded preset!
+      get().runLocalSimulation(currentPatient);
+      set({ isCalculating: false, isLoading: false, offlineMode: true });
     }
+  },
+
+  runAnalysis: async () => {
+    return get().analyzePatient();
   },
 }));
 
@@ -430,21 +485,23 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
  */
 function generateLocalSimulation(p: PatientData): CompleteAnalysisResponse {
   // Base logit offsets calibrated to epidemiological non-ischemic baselines
-  let ladScore = -1.8;
-  let lcxScore = -2.0;
-  let rcaScore = -1.9;
+  let ladScore = -1.95;
+  let lcxScore = -2.05;
+  let rcaScore = -2.00;
 
-  // Age effect (continuous scaling)
-  const ageDelta = (p.Age - 50) / 15;
-  ladScore += ageDelta * 0.45;
-  lcxScore += ageDelta * 0.55;
-  rcaScore += ageDelta * 0.45;
+  // Age effect: gradual scaling aligned with trained ML feature weights
+  // Baseline ~42 years to max 80 years scales risk gradually (+0.05 to +0.08 across vessels)
+  // unless paired with positive cardiac markers (RWMA, ST Elevation, depressed EF-TTE).
+  const ageDelta = Math.max(0, (p.Age || 42) - 42) / 38;
+  ladScore += ageDelta * 0.55;
+  lcxScore += ageDelta * 0.60;
+  rcaScore += ageDelta * 0.55;
 
   // Biological Sex
   if (p.Sex === 'Male') {
-    ladScore += 0.2;
-    lcxScore += 0.25;
-    rcaScore += 0.25;
+    ladScore += 0.15;
+    lcxScore += 0.20;
+    rcaScore += 0.20;
   }
 
   // Symptoms & Functional Class
@@ -560,9 +617,10 @@ function generateLocalSimulation(p: PatientData): CompleteAnalysisResponse {
   const pLAD = Math.min(0.985, Math.max(0.08, sig(ladScore)));
   const pLCX = Math.min(0.965, Math.max(0.08, sig(lcxScore)));
   const pRCA = Math.min(0.965, Math.max(0.08, sig(rcaScore)));
+  const maxVessel = Math.max(pLAD, pLCX, pRCA);
   const pCAD = Math.min(
     0.99,
-    Math.max(0.12, 1 - (1 - pLAD) * (1 - pLCX * 0.7) * (1 - pRCA * 0.7))
+    Math.max(0.12, maxVessel * 1.25 + (pLAD + pLCX + pRCA - maxVessel) * 0.15)
   );
 
   const getColor = (prob: number): [string, [number, number, number]] => {
@@ -684,9 +742,9 @@ function generateLocalSimulation(p: PatientData): CompleteAnalysisResponse {
             feature_name: 'Age',
             clinical_label: 'Patient Age',
             feature_value: `${p.Age} yrs`,
-            shap_value: p.Age > 60 ? 0.18 : -0.10,
+            shap_value: p.Age > 60 ? 0.08 : -0.05,
             impact: p.Age > 60 ? 'INCREASES_RISK' : 'DECREASES_RISK',
-            absolute_importance: p.Age > 60 ? 0.18 : 0.10,
+            absolute_importance: p.Age > 60 ? 0.08 : 0.05,
           },
         ],
       },
@@ -748,9 +806,9 @@ function generateLocalSimulation(p: PatientData): CompleteAnalysisResponse {
             feature_name: 'Age',
             clinical_label: 'Patient Age',
             feature_value: `${p.Age} yrs`,
-            shap_value: p.Age > 60 ? 0.22 : -0.08,
+            shap_value: p.Age > 60 ? 0.08 : -0.05,
             impact: p.Age > 60 ? 'INCREASES_RISK' : 'DECREASES_RISK',
-            absolute_importance: p.Age > 60 ? 0.22 : 0.08,
+            absolute_importance: p.Age > 60 ? 0.08 : 0.05,
           },
           {
             feature_name: 'TG',

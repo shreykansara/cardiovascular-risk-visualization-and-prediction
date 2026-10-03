@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: auracor-cad3d
+    name: perfusion3d-app
     env: docker
     dockerfilePath: ./Dockerfile
     plan: free
