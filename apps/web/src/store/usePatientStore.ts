@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import type {
   CompleteAnalysisResponse,
   PatientData,
+  PatientPresetId,
   PatientProfileKey,
   PredictionResponse,
   RiskTier,
@@ -269,7 +270,9 @@ export const PATIENT_PROFILES: Record<PatientProfileKey, { name: string; descrip
 interface PatientStore {
   patient: PatientData;
   patientData: PatientData;
-  activeProfile: PatientProfileKey;
+  activeProfile: PatientPresetId;
+  activePreset: PatientPresetId;
+  lastSelectedPreset: PatientProfileKey;
   activeVesselFocus: string; // 'default' | 'vessel_LAD' | 'vessel_LCX' | 'vessel_RCA'
   analysis: CompleteAnalysisResponse | null;
   isLoading: boolean;
@@ -284,6 +287,7 @@ interface PatientStore {
   updateField: <K extends keyof PatientData>(key: K, value: PatientData[K]) => void;
   setVesselFocus: (focus: string) => void;
   loadProfile: (profile: PatientProfileKey) => void;
+  resetToPreset: () => void;
   acceptDisclaimer: () => void;
   runAnalysis: () => Promise<void>;
 }
@@ -296,6 +300,8 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   patient: initialPatient,
   patientData: initialPatient,
   activeProfile: 'high_risk_lad',
+  activePreset: 'high_risk_lad',
+  lastSelectedPreset: 'high_risk_lad',
   activeVesselFocus: 'default',
   analysis: initialSimulation,
   isLoading: false,
@@ -310,7 +316,13 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       debounceTimer = null;
     }
     const simulated = generateLocalSimulation(patient);
-    set({ patient, patientData: patient, analysis: simulated });
+    set({
+      patient,
+      patientData: patient,
+      activeProfile: 'custom',
+      activePreset: 'custom',
+      analysis: simulated,
+    });
     get().runAnalysis();
   },
 
@@ -328,10 +340,13 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }
 
     // 1. Optimistic live calculation: update risk, colors, and SHAP immediately with 0ms visual latency
+    // Automatically switch active mode to 'custom' upon any manual parameter manipulation
     const simulated = generateLocalSimulation(updated);
     set({
       patient: updated,
       patientData: updated,
+      activeProfile: 'custom',
+      activePreset: 'custom',
       analysis: simulated,
       isCalculating: true,
     });
@@ -386,11 +401,18 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         patient: data,
         patientData: data,
         activeProfile: profileKey,
+        activePreset: profileKey,
+        lastSelectedPreset: profileKey,
         analysis: simulated,
         isCalculating: true,
       });
       get().runAnalysis();
     }
+  },
+
+  resetToPreset: () => {
+    const targetPreset = get().lastSelectedPreset || 'high_risk_lad';
+    get().loadProfile(targetPreset);
   },
 
   acceptDisclaimer: () => {

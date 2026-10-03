@@ -70,6 +70,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
               </button>
             );
           })}
+          {activeProfile === 'custom' && (
+            <span
+              className="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 flex items-center gap-1.5 shadow-[0_0_10px_rgba(6,182,212,0.2)] animate-in fade-in duration-200"
+              title="Manual parameter mode active"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              <span>Custom</span>
+            </span>
+          )}
         </div>
 
         <div className="w-px h-4 bg-white/10 hidden md:block" />
