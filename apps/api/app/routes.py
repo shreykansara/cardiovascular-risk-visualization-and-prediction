@@ -293,7 +293,8 @@ def get_sample_patient(
 
 from apps.api.app.schemas.report import ReportRequestSchema, LLMConfigStatusResponse
 from apps.api.app.services.llm_service import (
-    get_llm_config,
+    get_groq_config,
+    get_groq_model_status,
     build_report_context,
     generate_report,
 )
@@ -302,15 +303,16 @@ from apps.api.app.services.llm_service import (
 @api_router.get(
     "/reports/status",
     response_model=LLMConfigStatusResponse,
-    summary="Check LLM API Configuration Status",
+    summary="Check Groq API Configuration Status",
     tags=["Reporting"],
 )
 def get_reports_status() -> LLMConfigStatusResponse:
-    key, provider, model = get_llm_config()
+    key, model = get_groq_config()
+    model_status = get_groq_model_status()
     return LLMConfigStatusResponse(
         configured=key is not None,
-        provider=provider,
         model=model,
+        model_status=model_status,
         fallback_available=True,
     )
 

@@ -22,6 +22,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     try:
         model_service.load_artifacts()
         logger.info("Startup complete: 4 prediction heads and TreeSHAP explainers ready.")
+        
+        # Verify Groq model availability on startup (Task B4)
+        from apps.api.app.services.llm_service import verify_groq_startup
+        verify_groq_startup()
     except Exception as e:
         logger.error(f"FATAL during model loading: {e}", exc_info=True)
         raise

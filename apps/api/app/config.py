@@ -7,6 +7,12 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+ROOT_DIR: Path = Path(__file__).resolve().parent.parent.parent.parent
+
+from dotenv import load_dotenv
+load_dotenv(ROOT_DIR / ".env")
+
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Perfusion3D API"
     VERSION: str = "1.0.0"
@@ -14,7 +20,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # Paths - resolve relative to repository root
-    ROOT_DIR: Path = Path(__file__).resolve().parent.parent.parent.parent
+    ROOT_DIR: Path = ROOT_DIR
     MODELS_DIR: Path = ROOT_DIR / "models"
     DATA_DIR: Path = ROOT_DIR / "data"
     WEB_DIST_DIR: Path = ROOT_DIR / "apps" / "web" / "dist"
@@ -35,7 +41,15 @@ class Settings(BaseSettings):
         "medical diagnosis or replace invasive coronary angiography or diagnostic imaging."
     )
 
-    model_config = SettingsConfigDict(case_sensitive=True)
+    # Groq Reporting LLM Configuration (Phase B)
+    GROQ_API_KEY: str | None = None
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        env_file=str(ROOT_DIR / ".env"),
+        extra="ignore",
+    )
 
 
 settings = Settings()

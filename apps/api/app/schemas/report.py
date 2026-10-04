@@ -1,13 +1,11 @@
 """
-Pydantic Schemas for Structured Clinical & Patient Reports
+Pydantic Schemas for Structured Clinical & Patient Reports (Task B1 & B4)
 Multimodal AI Hackathon 2026 - Perfusion3D
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field
 from apps.api.app.schemas.patient import PatientInputSchema
-from apps.api.app.schemas.prediction import PredictionResponse
-from apps.api.app.schemas.xai import VesselExplanation
 
 
 class ReportRequestSchema(BaseModel):
@@ -18,8 +16,8 @@ class ReportRequestSchema(BaseModel):
 
 
 class LLMConfigStatusResponse(BaseModel):
-    """Diagnostics on LLM API configuration status."""
+    """Diagnostics on Groq API configuration status."""
     configured: bool
-    provider: str
     model: str
-    fallback_available: bool
+    model_status: str = Field(default="ready", description="Status of Groq model ('ready' | 'unavailable' | 'unconfigured')")
+    fallback_available: bool = True

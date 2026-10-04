@@ -66,16 +66,22 @@ MANDATORY_DISCLAIMER = (
 )
 
 
-def get_llm_config() -> Tuple[Optional[str], str, str]:
-    """Reads LLM configuration from environment variables."""
-    key = os.environ.get("LLM_API_KEY", "").strip()
-    provider = os.environ.get("LLM_PROVIDER", "openai").strip().lower()
-    model = os.environ.get("LLM_MODEL", "gpt-4o-mini").strip()
+import logging
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[4] / ".env")
+logger = logging.getLogger("llm_service")
+
+
+def get_groq_config() -> Tuple[Optional[str], str]:
+    """Reads Groq configuration from environment variables (Task B1 & B2)."""
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+    model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
 
     # Reject placeholders
-    if not key or key == "PASTE_YOUR_API_KEY_HERE":
-        return None, provider, model
-    return key, provider, model
+    if not key or key == "PASTE_YOUR_GROQ_API_KEY_HERE":
+        return None, model
+    return key, model
 
 
 CLINICAL_REFERENCE_METADATA: Dict[str, Dict[str, Any]] = {
@@ -310,76 +316,94 @@ def validate_report_json(
     return True, None
 
 
-def call_llm_provider(prompt: str, system_prompt: str) -> str:
+_groq_model_status: str = "unconfigured"
+
+
+def check_groq_model_availability(api_key: str, model_name: str) -> Tuple[bool, Optional[str]]:
     """
-    Swappable single adapter function supporting OpenAI, Anthropic, Gemini, Groq, Ollama.
+    Task B4: Startup/runtime check verifying GROQ_MODEL against GET https://api.groq.com/openai/v1/models.
+    If GROQ_MODEL is not available, logs a clear warning and returns (False, error_reason).
     """
-    api_key, provider, model = get_llm_config()
+    url = "https://api.groq.com/openai/v1/models"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            available_models = [m.get("id") for m in data.get("data", [])]
+            if model_name not in available_models:
+                logger.warning(
+                    f"Groq model [{model_name}] not found in available models. "
+                    f"Report generation will fall back to deterministic templates until corrected."
+                )
+                return False, "Groq model unavailable"
+            return True, None
+    except Exception as e:
+        logger.warning(
+            f"Groq model [{model_name}] check failed ({e}). "
+            f"Report generation will fall back to deterministic templates until corrected."
+        )
+        return False, "Groq model unavailable"
+
+
+def verify_groq_startup() -> str:
+    """Task B4: Startup verification of Groq model."""
+    global _groq_model_status
+    api_key, model = get_groq_config()
     if not api_key:
-        raise ValueError("LLM API key not configured")
+        _groq_model_status = "unconfigured"
+        return _groq_model_status
 
-    if provider in ["openai", "groq", "together", "openrouter"]:
-        url = "https://api.openai.com/v1/chat/completions"
-        if provider == "groq":
-            url = "https://api.groq.com/openai/v1/chat/completions"
-        elif provider == "together":
-            url = "https://api.together.xyz/v1/chat/completions"
-        elif provider == "openrouter":
-            url = "https://openrouter.ai/api/v1/chat/completions"
-
-        payload = {
-            "model": model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
-            "response_format": {"type": "json_object"},
-            "temperature": 0.1,
-        }
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
-        req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
-        with urllib.request.urlopen(req, timeout=45) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["choices"][0]["message"]["content"]
-
-    elif provider == "anthropic":
-        url = "https://api.anthropic.com/v1/messages"
-        payload = {
-            "model": model,
-            "max_tokens": 4096,
-            "system": system_prompt,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.1,
-        }
-        headers = {
-            "x-api-key": api_key,
-            "anthropic-version": "2023-06-01",
-            "Content-Type": "application/json",
-        }
-        req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
-        with urllib.request.urlopen(req, timeout=45) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["content"][0]["text"]
-
-    elif provider in ["gemini", "google"]:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-        payload = {
-            "contents": [
-                {"role": "user", "parts": [{"text": f"{system_prompt}\n\n{prompt}"}]}
-            ],
-            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.1},
-        }
-        headers = {"Content-Type": "application/json"}
-        req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
-        with urllib.request.urlopen(req, timeout=45) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return data["candidates"][0]["content"]["parts"][0]["text"]
-
+    is_avail, _ = check_groq_model_availability(api_key, model)
+    if is_avail:
+        _groq_model_status = "ready"
+        logger.info(f"Groq model '{model}' verified and ready.")
     else:
-        raise ValueError(f"Unsupported LLM provider: {provider}")
+        _groq_model_status = "unavailable"
+    return _groq_model_status
+
+
+def get_groq_model_status() -> str:
+    """Returns current cached or verified Groq model status: 'ready' | 'unavailable' | 'unconfigured'."""
+    global _groq_model_status
+    api_key, model = get_groq_config()
+    if not api_key:
+        _groq_model_status = "unconfigured"
+        return _groq_model_status
+    if _groq_model_status == "unconfigured":
+        return verify_groq_startup()
+    return _groq_model_status
+
+
+def call_groq(prompt: str, system_prompt: str) -> str:
+    """
+    Task B1 & B2: Groq-only adapter using OpenAI-compatible endpoint with JSON object mode.
+    """
+    api_key, model = get_groq_config()
+    if not api_key:
+        raise ValueError("GROQ_API_KEY not configured")
+
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.1,
+    }
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
+    with urllib.request.urlopen(req, timeout=45) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+        return data["choices"][0]["message"]["content"]
 
 
 def generate_deterministic_technical_report(context: Dict[str, Any]) -> Dict[str, Any]:
@@ -637,17 +661,18 @@ def generate_report(
     context: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Main orchestration function for report generation:
-    1. Checks if LLM API key is configured. If not, returns fallback template.
+    Main orchestration function for report generation (Task B5 & B6):
+    1. Checks if Groq API key is configured. If not or if model is unavailable, returns fallback template.
     2. Reads prompt template.
-    3. Executes LLM provider with structured JSON request.
+    3. Executes Groq provider with structured JSON request.
     4. Validates response with up to 2 retries.
     5. If all retries fail, falls back to deterministic template.
     """
-    api_key, provider, model = get_llm_config()
+    api_key, model = get_groq_config()
+    model_status = get_groq_model_status()
 
-    if not api_key:
-        # LLM not configured - use deterministic template fallback immediately
+    if not api_key or model_status == "unavailable":
+        # Groq not configured or unavailable - use deterministic template fallback immediately
         if report_type == "patient":
             return generate_deterministic_patient_report(context)
         return generate_deterministic_technical_report(context)
@@ -665,10 +690,10 @@ def generate_report(
 
     user_prompt = f"REPORT CONTEXT DATA:\n{json.dumps(context, indent=2)}\n\nGenerate the complete report JSON conforming strictly to SHARED RULES and required section keys in exact order."
 
-    # Max 2 retries
+    # Max 2 retries (3 attempts total)
     for attempt in range(3):
         try:
-            raw_response = call_llm_provider(user_prompt, system_prompt)
+            raw_response = call_groq(user_prompt, system_prompt)
             # Clean markdown code blocks if present
             cleaned = re.sub(r"^```json\s*", "", raw_response.strip(), flags=re.MULTILINE)
             cleaned = re.sub(r"^```\s*", "", cleaned.strip(), flags=re.MULTILINE)
@@ -681,9 +706,10 @@ def generate_report(
             # Feed validation error back into retry prompt
             user_prompt += f"\n\nPREVIOUS OUTPUT REJECTED: {error_msg}. Regenerate valid JSON strictly following all rules."
         except Exception as e:
+            logger.warning(f"Groq report generation attempt {attempt + 1} failed: {e}")
             time.sleep(0.5)
 
-    # Fallback to deterministic template if LLM retries exhausted
+    # Fallback to deterministic template if Groq retries exhausted
     if report_type == "patient":
         return generate_deterministic_patient_report(context)
     return generate_deterministic_technical_report(context)

@@ -221,16 +221,92 @@ def test_deterministic_patient_report_compliance(sample_patient_dict):
 
 
 # ==============================================================================
-# 5. Integration Endpoints: /reports/technical and /reports/patient
+# 5. Integration Endpoints & Groq-Only Reporting Tests (Phase B)
 # ==============================================================================
 
-def test_api_report_endpoints(client, sample_patient_dict):
-    """Verify POST /reports/technical and POST /reports/patient endpoints."""
-    # Check status endpoint
+from unittest.mock import patch
+from apps.api.app.services.llm_service import (
+    get_groq_config,
+    check_groq_model_availability,
+    generate_report,
+)
+
+
+def test_api_report_status_endpoint_shape(client):
+    """Verify GET /reports/status conforms to Phase B Groq schema without provider."""
     status_res = client.get("/api/v1/reports/status")
     assert status_res.status_code == 200
-    assert status_res.json()["fallback_available"] is True
+    data = status_res.json()
+    assert "configured" in data
+    assert "model" in data
+    assert "model_status" in data
+    assert data["model_status"] in ["ready", "unavailable", "unconfigured"]
+    assert data["fallback_available"] is True
+    # Ensure provider is NOT present
+    assert "provider" not in data
 
+
+def test_get_groq_config(monkeypatch):
+    """Verify Groq config reads GROQ_API_KEY and GROQ_MODEL, ignoring legacy vars."""
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_test123456789")
+    monkeypatch.setenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    key, model = get_groq_config()
+    assert key == "gsk_test123456789"
+    assert model == "llama-3.3-70b-versatile"
+
+    # Placeholder rejection
+    monkeypatch.setenv("GROQ_API_KEY", "PASTE_YOUR_GROQ_API_KEY_HERE")
+    key, model = get_groq_config()
+    assert key is None
+
+
+def test_check_groq_model_availability():
+    """Verify Groq model availability check detects presence/absence."""
+    # When model is in list
+    with patch("urllib.request.urlopen") as mock_urlopen:
+        mock_response = mock_urlopen.return_value.__enter__.return_value
+        mock_response.read.return_value = b'{"data": [{"id": "llama-3.3-70b-versatile"}, {"id": "llama-3.1-8b-instant"}]}'
+        is_avail, err = check_groq_model_availability("test_key", "llama-3.3-70b-versatile")
+        assert is_avail is True
+        assert err is None
+
+    # When model is NOT in list
+    with patch("urllib.request.urlopen") as mock_urlopen:
+        mock_response = mock_urlopen.return_value.__enter__.return_value
+        mock_response.read.return_value = b'{"data": [{"id": "other-model"}]}'
+        is_avail, err = check_groq_model_availability("test_key", "llama-3.3-70b-versatile")
+        assert is_avail is False
+        assert "unavailable" in err
+
+
+def test_groq_report_generation_with_mock(sample_patient_dict):
+    """Verify report generation with mock Groq response."""
+    context = build_report_context(
+        patient_data=sample_patient_dict,
+        predictions={
+            "overall_cad": {"probability": 0.85, "stenosis_suspected": True},
+            "vessels": {
+                "lad": {"probability": 0.91, "display_name": "LAD", "stenosis_suspected": True},
+                "lcx": {"probability": 0.24, "display_name": "LCX", "stenosis_suspected": False},
+                "rca": {"probability": 0.22, "display_name": "RCA", "stenosis_suspected": False},
+            },
+        },
+        explanations={},
+    )
+    # Generate mock deterministic report as fake Groq JSON output
+    mock_report = generate_deterministic_technical_report(context)
+    import json
+
+    with patch("apps.api.app.services.llm_service.get_groq_config", return_value=("mock_key", "llama-3.3-70b-versatile")), \
+         patch("apps.api.app.services.llm_service.get_groq_model_status", return_value="ready"), \
+         patch("apps.api.app.services.llm_service.call_groq", return_value=json.dumps(mock_report)):
+        res = generate_report("technical", context)
+        assert list(res.keys()) == TECHNICAL_SECTIONS_ORDER
+        assert res["disclaimer"] == MANDATORY_DISCLAIMER
+
+
+def test_api_report_endpoints_deterministic_fallback(client, sample_patient_dict):
+    """Verify POST /reports/technical and POST /reports/patient fallback when Groq key is absent."""
     # Check technical report endpoint
     tech_res = client.post("/api/v1/reports/technical", json={"patient": sample_patient_dict})
     assert tech_res.status_code == 200
