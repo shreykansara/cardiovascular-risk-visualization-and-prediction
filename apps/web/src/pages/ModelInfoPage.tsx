@@ -1,4 +1,5 @@
 import React from 'react';
+import { Panel } from '../components/ui/Panel';
 import { Section } from '../components/ui/Section';
 import { DataTable } from '../components/ui/DataTable';
 
@@ -160,42 +161,70 @@ export const ModelInfoPage: React.FC = () => {
   ];
 
   return (
-    <div className="w-full max-w-[1000px] flex flex-col gap-8 pb-12">
-      <div>
-        <h1 className="text-page-title text-text">
-          Model information
-        </h1>
-        <p className="text-body text-text-muted mt-1">
-          Performance metrics, feature specifications, and data leakage safeguards for Perfusion3D.
-        </p>
-      </div>
+    <div className="w-full max-w-[1000px] mx-auto flex flex-col gap-6 pb-12">
+      {/* Task 5.6 Content inside ONE Panel: plain tables in the sheet table style */}
+      <Panel
+        className="wipe flex flex-col gap-6"
+        style={{
+          padding: '24px',
+          '--i': 0,
+        } as React.CSSProperties}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '20px',
+              fontWeight: 600,
+              color: 'var(--ink)',
+              margin: 0,
+            }}
+          >
+            Model information
+          </h1>
+          <p
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '13px',
+              color: 'var(--mut)',
+              marginTop: '4px',
+              marginBottom: 0,
+            }}
+          >
+            Performance metrics, feature specifications, and data leakage safeguards for Perfusion3D.
+          </p>
+        </div>
 
-      {/* 1. Performance Metrics Table */}
-      <Section title="Validation performance metrics">
-        <DataTable
-          columns={metricColumns}
-          data={metricData}
-          keyExtractor={(item) => item.target}
-        />
-      </Section>
+        {/* 1. Validation performance metrics */}
+        <Section title="Validation performance metrics">
+          <DataTable
+            columns={metricColumns}
+            data={metricData}
+            keyExtractor={(item) => item.target}
+            isSheet
+          />
+        </Section>
 
-      {/* 2. Feature Groups Used */}
-      <Section title="Feature groups used in prediction">
-        <DataTable
-          columns={featureGroupColumns}
-          data={featureGroupData}
-          keyExtractor={(item) => item.groupName}
-        />
-      </Section>
+        {/* 2. Feature groups used */}
+        <Section title="Feature groups used in prediction">
+          <DataTable
+            columns={featureGroupColumns}
+            data={featureGroupData}
+            keyExtractor={(item) => item.groupName}
+            isSheet
+          />
+        </Section>
 
-      {/* 3. Leakage Exclusions */}
-      <Section title="Leakage prevention and target exclusions">
-        <DataTable
-          columns={leakageColumns}
-          data={leakageData}
-          keyExtractor={(item) => item.column}
-        />
-      </Section>
+        {/* 3. Leakage prevention */}
+        <Section title="Leakage prevention and target exclusions">
+          <DataTable
+            columns={leakageColumns}
+            data={leakageData}
+            keyExtractor={(item) => item.column}
+            isSheet
+          />
+        </Section>
+      </Panel>
     </div>
   );
 };
