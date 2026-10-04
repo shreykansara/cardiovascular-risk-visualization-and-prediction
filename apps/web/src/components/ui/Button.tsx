@@ -15,33 +15,74 @@ export const Button: React.FC<ButtonProps> = ({
   rightIcon,
   disabled,
   className = '',
+  style,
   ...props
 }) => {
-  let variantClasses = '';
-  if (variant === 'primary') {
-    variantClasses = 'h-[36px] px-4 bg-accent hover:bg-accent-hover text-on-accent rounded text-[14px] font-medium border-0';
-  } else if (variant === 'secondary') {
-    variantClasses = 'h-[36px] px-4 bg-page hover:bg-panel border border-border-strong text-text rounded text-[14px] font-medium';
-  } else if (variant === 'link') {
-    variantClasses = 'h-auto p-0 bg-transparent text-accent hover:text-accent-hover underline text-[14px] font-medium border-0';
-  }
+  const isPrimary = variant === 'primary';
+  const isSecondary = variant === 'secondary';
+  const isLink = variant === 'link';
 
-  const baseClasses =
-    'inline-flex items-center justify-center gap-2 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyle: React.CSSProperties = {
+    fontFamily: 'var(--fs)',
+    fontSize: '13px',
+    fontWeight: 600,
+    lineHeight: '1',
+    textTransform: 'none',
+    letterSpacing: 'normal',
+    transition: 'opacity 120ms',
+    cursor: disabled || isLoading ? 'not-allowed' : 'pointer',
+    opacity: disabled || isLoading ? 0.5 : 1,
+    boxShadow: 'none',
+    outline: 'none',
+  };
+
+  let variantStyle: React.CSSProperties = {};
+  if (isPrimary) {
+    variantStyle = {
+      height: '36px',
+      padding: '0 16px',
+      borderRadius: '3px',
+      backgroundColor: 'var(--acc)',
+      border: '1px solid var(--acc)',
+      color: 'var(--onacc)',
+    };
+  } else if (isSecondary) {
+    variantStyle = {
+      height: '36px',
+      padding: '0 16px',
+      borderRadius: '3px',
+      backgroundColor: 'var(--panel)',
+      border: '1px solid var(--bds)',
+      color: 'var(--ink)',
+    };
+  } else if (isLink) {
+    variantStyle = {
+      height: 'auto',
+      padding: '0',
+      borderRadius: '0',
+      backgroundColor: 'transparent',
+      border: 'none',
+      color: 'var(--acc)',
+      textDecoration: 'underline',
+    };
+  }
 
   return (
     <button
-      className={`${baseClasses} ${variantClasses} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 select-none focus-visible:outline-[var(--focus)] focus-visible:outline-offset-[var(--focus-offset)] ${
+        isPrimary ? 'hover:opacity-88' : ''
+      } ${className}`}
       disabled={disabled || isLoading}
+      style={{
+        ...baseStyle,
+        ...variantStyle,
+        ...style,
+      }}
       {...props}
     >
-      {isLoading ? (
-        <span className="spinner" />
-      ) : (
-        leftIcon
-      )}
+      {leftIcon}
       <span>{children}</span>
-      {!isLoading && rightIcon}
+      {rightIcon}
     </button>
   );
 };

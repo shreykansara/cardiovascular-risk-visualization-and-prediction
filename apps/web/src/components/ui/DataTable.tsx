@@ -12,6 +12,7 @@ export interface DataTableProps<T> {
   data: T[];
   keyExtractor: (item: T, index: number) => string | number;
   className?: string;
+  isSheet?: boolean; // if rendered inside report sheet
 }
 
 export function DataTable<T>({
@@ -19,18 +20,36 @@ export function DataTable<T>({
   data,
   keyExtractor,
   className = '',
+  isSheet = false,
 }: DataTableProps<T>) {
+  const borderColor = isSheet ? 'var(--sbd)' : 'var(--bd)';
+  const thColor = isSheet ? 'var(--sheetmut)' : 'var(--mut)';
+
   return (
     <div className={`w-full overflow-x-auto ${className}`}>
-      <table className="w-full border-collapse text-left">
+      <table
+        style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontSize: '12px',
+          border: 'none',
+        }}
+      >
         <thead>
-          <tr className="border-b border-border">
+          <tr style={{ borderBottom: `1px solid ${borderColor}` }}>
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className={`py-2 px-3 text-[13px] leading-[20px] font-medium text-text-muted ${
-                  col.isNumeric ? 'text-right' : 'text-left'
-                } ${col.className || ''}`}
+                style={{
+                  fontFamily: 'var(--fs)',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: thColor,
+                  padding: '5px 0',
+                  textAlign: col.isNumeric ? 'right' : 'left',
+                  borderBottom: `1px solid ${borderColor}`,
+                }}
+                className={col.className || ''}
               >
                 {col.header}
               </th>
@@ -39,19 +58,33 @@ export function DataTable<T>({
         </thead>
         <tbody>
           {data.map((item, rowIdx) => (
-            <tr key={keyExtractor(item, rowIdx)} className="border-b border-border hover:bg-panel">
+            <tr
+              key={keyExtractor(item, rowIdx)}
+              style={{
+                borderBottom: `1px solid ${borderColor}`,
+              }}
+            >
               {columns.map((col, colIdx) => {
                 const content =
                   typeof col.accessor === 'function'
                     ? col.accessor(item)
                     : (item[col.accessor] as unknown as React.ReactNode);
 
+                const isFirstCol = colIdx === 0;
+
                 return (
                   <td
                     key={colIdx}
-                    className={`py-2.5 px-3 text-[14px] leading-[22px] text-text ${
-                      col.isNumeric ? 'text-right tabular-nums' : 'text-left'
-                    } ${col.className || ''}`}
+                    style={{
+                      fontFamily: isFirstCol && !col.isNumeric ? 'var(--fs)' : 'var(--fm)',
+                      fontSize: '12px',
+                      color: isSheet ? 'var(--sheetink)' : 'var(--ink)',
+                      padding: '6px 0',
+                      textAlign: col.isNumeric ? 'right' : 'left',
+                      fontVariantNumeric: 'tabular-nums',
+                      borderBottom: `1px solid ${borderColor}`,
+                    }}
+                    className={col.className || ''}
                   >
                     {content}
                   </td>

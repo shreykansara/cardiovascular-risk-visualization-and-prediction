@@ -26,37 +26,86 @@ export const SegmentedChoice: React.FC<SegmentedChoiceProps> = ({
 }) => {
   return (
     <div className={`flex flex-col ${className}`}>
-      <div className="flex items-center justify-between mb-1">
-        <label className="text-[13px] leading-[20px] font-medium text-text-muted">
+      {/* Label above */}
+      <div
+        className="flex items-center justify-between"
+        style={{ marginBottom: '3px' }}
+      >
+        <label
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '12px',
+            fontWeight: 400,
+            color: 'var(--mut)',
+            lineHeight: '1.2',
+          }}
+        >
           {label}
         </label>
         {source && source !== 'manual' && (
-          <span className="text-[11px] leading-[16px] px-1.5 py-0.5 border border-border text-text-faint rounded">
+          <span
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '11px',
+              padding: '0 4px',
+              border: '1px solid var(--bd)',
+              borderRadius: '3px',
+              color: 'var(--mut)',
+              lineHeight: '16px',
+            }}
+          >
             {source === 'extracted' ? 'Extracted' : 'Unverified'}
           </span>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        {options.map((opt) => {
+      {/* Two adjacent bordered buttons: 34px high, outer corners 3px radius only, 13px */}
+      <div className="flex items-center">
+        {options.map((opt, idx) => {
           const isSelected = String(value) === String(opt.value);
+          const isFirst = idx === 0;
+          const isLast = idx === options.length - 1;
+
+          const borderRadius = isFirst
+            ? '3px 0 0 3px'
+            : isLast
+            ? '0 3px 3px 0'
+            : '0';
+
           return (
             <button
               key={String(opt.value)}
               type="button"
               disabled={disabled}
               onClick={() => onChange(opt.value)}
-              className={`flex-1 h-[36px] px-3 border rounded text-[14px] leading-[22px] font-medium cursor-pointer transition-colors ${
-                isSelected
-                  ? 'bg-accent-subtle text-accent border-accent'
-                  : 'bg-page text-text border-border hover:bg-panel'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              style={{
+                flex: 1,
+                height: '34px',
+                padding: '0 12px',
+                borderRadius,
+                border: isSelected ? '1px solid var(--acc)' : '1px solid var(--bds)',
+                marginLeft: isFirst ? '0' : '-1px',
+                zIndex: isSelected ? 1 : 0,
+                backgroundColor: isSelected ? 'var(--hov)' : 'var(--panel)',
+                color: isSelected ? 'var(--acc)' : 'var(--ink)',
+                fontFamily: 'var(--fs)',
+                fontSize: '13px',
+                fontWeight: isSelected ? 600 : 400,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.5 : 1,
+                outline: 'none',
+                transition: 'all 120ms',
+              }}
+              className="focus-visible:outline-[var(--focus)] focus-visible:outline-offset-[var(--focus-offset)]"
             >
               {opt.label}
             </button>
           );
         })}
       </div>
+
+      {/* Spacer to match Field caption height */}
+      <div style={{ minHeight: '16px', marginTop: '3px' }} />
     </div>
   );
 };

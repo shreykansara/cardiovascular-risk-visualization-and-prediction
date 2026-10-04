@@ -3,12 +3,24 @@ import React from 'react';
 export interface ChipProps {
   label: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export const Chip: React.FC<ChipProps> = ({ label, className = '' }) => {
+export const Chip: React.FC<ChipProps> = ({ label, className = '', style }) => {
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 border border-border text-text-muted rounded text-[12px] leading-[16px] font-normal bg-page select-none ${className}`}
+      className={`inline-flex items-center select-none ${className}`}
+      style={{
+        fontFamily: 'var(--fs)',
+        fontSize: '11px',
+        padding: '0 6px',
+        lineHeight: '18px',
+        border: '1px solid var(--bd)',
+        borderRadius: '3px',
+        backgroundColor: 'var(--panel)',
+        color: 'var(--mut)',
+        ...style,
+      }}
     >
       {label}
     </span>

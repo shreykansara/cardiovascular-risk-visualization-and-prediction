@@ -11,6 +11,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   disabled,
   className = '',
   id,
+  style,
   ...props
 }) => {
   const autoId = id || React.useId();
@@ -18,9 +19,15 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   return (
     <label
       htmlFor={autoId}
-      className={`inline-flex items-center gap-2.5 cursor-pointer select-none ${
+      className={`inline-flex items-center gap-2 cursor-pointer select-none ${
         disabled ? 'opacity-50 cursor-not-allowed' : ''
       } ${className}`}
+      style={{
+        fontFamily: 'var(--fs)',
+        fontSize: '13px',
+        color: 'var(--ink)',
+        ...style,
+      }}
     >
       <input
         type="checkbox"
@@ -28,10 +35,19 @@ export const Checkbox: React.FC<CheckboxProps> = ({
         checked={checked}
         onChange={onChange}
         disabled={disabled}
-        className="w-4 h-4 rounded border-border text-accent focus:ring-accent focus:ring-offset-2 focus:ring-2 cursor-pointer accent-accent"
+        style={{
+          width: '16px',
+          height: '16px',
+          borderRadius: '3px',
+          border: '1px solid var(--bds)',
+          accentColor: 'var(--acc)',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          outlineOffset: '1px',
+        }}
+        className="focus-visible:outline-[var(--focus)] focus-visible:outline-offset-[var(--focus-offset)]"
         {...props}
       />
-      {label && <span className="text-[14px] leading-[22px] text-text">{label}</span>}
+      {label && <span>{label}</span>}
     </label>
   );
 };

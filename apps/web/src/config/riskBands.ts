@@ -1,6 +1,7 @@
 /**
- * Single source of truth for clinical risk bands (Task 2.7)
- * Strictly standardized to: "Low" | "Moderate" | "High"
+ * Single source of truth for clinical risk bands
+ * Standardized to: "Low" | "Moderate" | "High"
+ * Mapped directly to ECG Paper tokens: --low, --mod, --high
  */
 
 export type RiskLevel = 'Low' | 'Moderate' | 'High';
@@ -12,7 +13,6 @@ export interface RiskBandConfig {
   maxProb: number;
   rangeDisplay: string;
   tokenColor: string;
-  tokenBg: string;
 }
 
 export const RISK_BANDS: Record<RiskLevel, RiskBandConfig> = {
@@ -20,31 +20,28 @@ export const RISK_BANDS: Record<RiskLevel, RiskBandConfig> = {
     label: 'Low',
     minProb: 0.0,
     maxProb: 0.40,
-    rangeDisplay: '≤ 40%',
-    tokenColor: 'var(--risk-low)',
-    tokenBg: 'var(--risk-low-bg)',
+    rangeDisplay: 'under 40%',
+    tokenColor: 'var(--low)',
   },
   Moderate: {
     label: 'Moderate',
     minProb: 0.40,
     maxProb: 0.70,
-    rangeDisplay: '41% – 70%',
-    tokenColor: 'var(--risk-moderate)',
-    tokenBg: 'var(--risk-moderate-bg)',
+    rangeDisplay: '40 to 70%',
+    tokenColor: 'var(--mod)',
   },
   High: {
     label: 'High',
     minProb: 0.70,
     maxProb: 1.0,
-    rangeDisplay: '> 70%',
-    tokenColor: 'var(--risk-high)',
-    tokenBg: 'var(--risk-high-bg)',
+    rangeDisplay: 'over 70%',
+    tokenColor: 'var(--high)',
   },
 };
 
 export function riskLabel(probability: number): RiskLevel {
   const p = Math.max(0.0, Math.min(1.0, probability));
-  if (p <= 0.40) return 'Low';
+  if (p < 0.40) return 'Low';
   if (p <= 0.70) return 'Moderate';
   return 'High';
 }
@@ -53,12 +50,12 @@ export function getRiskBand(probability: number): RiskBandConfig {
   return RISK_BANDS[riskLabel(probability)];
 }
 
-// Backward-compatibility aliases during refactor
 export const getRiskLabel = riskLabel;
 export const getRiskLevel = (prob: number) => riskLabel(prob).toLowerCase();
-export const getRiskColorHex = (prob: number) => {
+export const getRiskColorToken = (prob: number) => {
   const l = riskLabel(prob);
-  if (l === 'Low') return 'var(--risk-low)';
-  if (l === 'Moderate') return 'var(--risk-moderate)';
-  return 'var(--risk-high)';
+  if (l === 'Low') return 'var(--low)';
+  if (l === 'Moderate') return 'var(--mod)';
+  return 'var(--high)';
 };
+export const getRiskColorHex = getRiskColorToken;

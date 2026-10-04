@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { Button } from '../components/ui/Button';
-import { TextField } from '../components/ui/TextField';
-import { NumberField } from '../components/ui/NumberField';
-import { SegmentedChoice } from '../components/ui/SegmentedChoice';
-import { Checkbox } from '../components/ui/Checkbox';
-import { Select } from '../components/ui/Select';
-import { Section } from '../components/ui/Section';
-import { DataTable } from '../components/ui/DataTable';
-import { RiskLabel } from '../components/ui/RiskLabel';
-import { Chip } from '../components/ui/Chip';
-import { Skeleton } from '../components/ui/Skeleton';
+import {
+  Panel,
+  Button,
+  TextField,
+  NumberField,
+  SegmentedChoice,
+  Checkbox,
+  Select,
+  Section,
+  DataTable,
+  RiskLabel,
+  Bar,
+  Trace,
+  Chip,
+  Tabs,
+  Skeleton,
+} from '../components/ui';
 
 interface ShowcasePanelProps {
   title: string;
@@ -17,20 +23,21 @@ interface ShowcasePanelProps {
 }
 
 const ShowcasePanel: React.FC<ShowcasePanelProps> = ({ title, themeScope }) => {
-  const [textVal, setTextVal] = useState('58');
-  const [choiceVal, setChoiceVal] = useState('Y');
+  const [activeTab, setActiveTab] = useState('one');
+  const [sbp, setSbp] = useState('145');
+  const [chol, setChol] = useState('180');
+  const [choiceVal, setChoiceVal] = useState('Yes');
   const [checkVal, setCheckVal] = useState(true);
 
   const sampleTableData = [
-    { target: 'CAD', vessel: 'Coronary artery disease (overall)', prob: '88.5%', band: 'High' as const },
-    { target: 'LAD', vessel: 'Left anterior descending stenosis', prob: '84.6%', band: 'High' as const },
-    { target: 'LCX', vessel: 'Left circumflex stenosis', prob: '24.1%', band: 'Low' as const },
-    { target: 'RCA', vessel: 'Right coronary artery stenosis', prob: '43.2%', band: 'Moderate' as const },
+    { target: 'CAD', vessel: 'Coronary artery disease', prob: '62.0%', band: 'Moderate' as const },
+    { target: 'LAD', vessel: 'Left anterior descending', prob: '84.6%', band: 'High' as const },
+    { target: 'LCX', vessel: 'Left circumflex', prob: '24.1%', band: 'Low' as const },
   ];
 
   const tableColumns = [
     { header: 'Target', accessor: 'target' as const },
-    { header: 'Condition / vessel', accessor: 'vessel' as const },
+    { header: 'Vessel', accessor: 'vessel' as const },
     { header: 'Probability', accessor: 'prob' as const, isNumeric: true },
     {
       header: 'Risk band',
@@ -41,186 +48,212 @@ const ShowcasePanel: React.FC<ShowcasePanelProps> = ({ title, themeScope }) => {
   return (
     <div
       data-theme={themeScope}
-      className="p-6 bg-page text-text border border-border rounded flex flex-col gap-8 w-full"
+      className="ecg-grid p-6 flex flex-col gap-6 w-full rounded"
+      style={{
+        borderRadius: '3px',
+        border: '1px solid var(--bd)',
+      }}
     >
-      <div className="border-b border-border pb-3">
-        <h2 className="text-[18px] leading-[26px] font-semibold text-text">
-          {title}
-        </h2>
-        <p className="text-[13px] leading-[20px] text-text-muted mt-0.5">
-          Theme scope: data-theme="{themeScope}"
-        </p>
-      </div>
-
-      {/* 1. Surfaces & Tokens */}
-      <Section title="Surfaces and borders">
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="p-3 border border-border rounded bg-page">
-            <p className="text-[13px] font-medium text-text">--page</p>
-            <p className="text-[12px] text-text-muted">Canvas surface</p>
-          </div>
-          <div className="p-3 border border-border rounded bg-panel">
-            <p className="text-[13px] font-medium text-text">--panel</p>
-            <p className="text-[12px] text-text-muted">Secondary surface</p>
-          </div>
-          <div className="p-3 border border-border-strong rounded bg-page">
-            <p className="text-[13px] font-medium text-text">--border</p>
-            <p className="text-[12px] text-text-muted">Hairline divider</p>
-          </div>
-          <div className="p-3 border border-border-strong rounded bg-panel">
-            <p className="text-[13px] font-medium text-text">--border-strong</p>
-            <p className="text-[12px] text-text-muted">Boundaries</p>
-          </div>
+      <Panel className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="type-page-title">{title}</span>
+          <Trace width={64} height={14} />
         </div>
-      </Section>
+        <p className="type-caption">Theme scope: data-theme="{themeScope}"</p>
+      </Panel>
 
-      {/* 2. Text Hierarchy */}
-      <Section title="Typography and text tokens">
-        <div className="flex flex-col gap-1.5 pt-2">
-          <p className="text-[15px] text-text font-medium">--text: Primary clinical document copy</p>
-          <p className="text-[13px] text-text-muted">--text-muted: Labels, table headers, unit captions</p>
-          <p className="text-[12px] text-text-faint">--text-faint: Secondary notes and timestamps</p>
-        </div>
-      </Section>
-
-      {/* 3. Risk Stratification */}
-      <Section title="Risk stratification tokens">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-          <div className="p-3 rounded border border-border bg-risk-low-bg">
-            <p className="text-[13px] font-semibold text-risk-low">Low risk</p>
-            <p className="text-[12px] text-text-muted">≤ 40% probability</p>
+      {/* 1. Tokens and Swatches */}
+      <Panel>
+        <Section title="Tokens">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+            {[
+              ['--page', 'var(--page)'],
+              ['--panel', 'var(--panel)'],
+              ['--ink', 'var(--ink)'],
+              ['--mut', 'var(--mut)'],
+              ['--acc', 'var(--acc)'],
+              ['--onacc', 'var(--onacc)'],
+              ['--bd', 'var(--bd)'],
+              ['--bds', 'var(--bds)'],
+              ['--hov', 'var(--hov)'],
+              ['--low', 'var(--low)'],
+              ['--mod', 'var(--mod)'],
+              ['--high', 'var(--high)'],
+              ['--sheet', 'var(--sheet)'],
+              ['--sheetink', 'var(--sheetink)'],
+              ['--sheetmut', 'var(--sheetmut)'],
+              ['--sbd', 'var(--sbd)'],
+            ].map(([name, val]) => (
+              <div
+                key={name}
+                style={{
+                  border: '1px solid var(--bd)',
+                  borderRadius: '3px',
+                  padding: '6px',
+                  backgroundColor: 'var(--panel)',
+                }}
+              >
+                <div
+                  style={{
+                    height: '16px',
+                    borderRadius: '3px',
+                    border: '1px solid var(--bd)',
+                    backgroundColor: val,
+                    marginBottom: '4px',
+                  }}
+                />
+                <span className="type-unit-count">{name}</span>
+              </div>
+            ))}
           </div>
-          <div className="p-3 rounded border border-border bg-risk-moderate-bg">
-            <p className="text-[13px] font-semibold text-risk-moderate">Moderate risk</p>
-            <p className="text-[12px] text-text-muted">41% – 70% probability</p>
+        </Section>
+      </Panel>
+
+      {/* 2. Type Scale */}
+      <Panel>
+        <Section title="Type scale">
+          <div className="flex flex-col gap-2 pt-2">
+            <span className="type-result-num">62%</span>
+            <span className="type-page-title">Page title 20px/600</span>
+            <span className="type-report-title">Report title 18px/600</span>
+            <span className="type-report-subheading">Report sub-heading 15px/600</span>
+            <span className="type-brand">Brand 15px/600</span>
+            <span className="type-section-heading">Section heading 14px/600</span>
+            <span className="type-input-val">Input value mono 14px/400</span>
+            <span className="type-body">Body 13px/1.45 regular text</span>
+            <span className="type-button">Button text 13px/600</span>
+            <span className="type-label">Label 12px/400</span>
+            <span className="type-unit-count">Unit and counts 12px/400</span>
+            <span className="type-caption">Caption 11px/400</span>
           </div>
-          <div className="p-3 rounded border border-border bg-risk-high-bg">
-            <p className="text-[13px] font-semibold text-risk-high">High risk</p>
-            <p className="text-[12px] text-text-muted">&gt; 70% probability</p>
+        </Section>
+      </Panel>
+
+      {/* 3. Base Components */}
+      <Panel>
+        <Section title="Buttons and tabs">
+          <div className="flex flex-col gap-4 pt-2">
+            <Tabs
+              tabs={[
+                { id: 'one', label: 'Clinician report' },
+                { id: 'two', label: 'Patient report' },
+              ]}
+              activeTab={activeTab}
+              onChange={setActiveTab}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="primary">Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="primary" disabled>Disabled</Button>
+              <Button variant="link">Link action</Button>
+            </div>
           </div>
-        </div>
-      </Section>
+        </Section>
+      </Panel>
 
-      {/* 4. Buttons */}
-      <Section title="Buttons and actions">
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          <Button variant="primary">Primary</Button>
-          <Button variant="primary" isLoading>Loading</Button>
-          <Button variant="primary" disabled>Disabled</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="secondary" disabled>Disabled</Button>
-          <Button variant="link">Link action</Button>
-        </div>
-      </Section>
+      <Panel>
+        <Section title="Form fields" count="3 of 3">
+          <div className="flex flex-col gap-3 pt-2">
+            <TextField
+              label="Patient identifier"
+              value="PT-2026-0881"
+              onChange={() => {}}
+            />
+            <NumberField
+              label="Systolic blood pressure (out of range)"
+              unit="mmHg"
+              value={sbp}
+              onChange={(e) => setSbp(e.target.value)}
+              referenceRange={{ min: 90, max: 120 }}
+            />
+            <NumberField
+              label="Total cholesterol (within range)"
+              unit="mg/dL"
+              value={chol}
+              onChange={(e) => setChol(e.target.value)}
+              referenceRange={{ min: 125, max: 200 }}
+            />
+            <Select
+              label="Clinical rhythm"
+              options={[
+                { label: 'Normal sinus rhythm', value: 'sinus' },
+                { label: 'Atrial fibrillation', value: 'afib' },
+              ]}
+              value="sinus"
+              onChange={() => {}}
+            />
+            <SegmentedChoice
+              label="Exertional angina"
+              options={[
+                { label: 'Yes', value: 'Yes' },
+                { label: 'No', value: 'No' },
+              ]}
+              value={choiceVal}
+              onChange={setChoiceVal}
+            />
+            <Checkbox
+              label="Clinical decision support verification"
+              checked={checkVal}
+              onChange={(e) => setCheckVal(e.target.checked)}
+            />
+          </div>
+        </Section>
+      </Panel>
 
-      {/* 5. Inputs */}
-      <Section title="Form inputs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <TextField
-            label="Patient identifier"
-            value="PT-2026-0881"
-            onChange={() => {}}
-          />
-          <NumberField
-            label="Systolic blood pressure"
-            unit="mmHg"
-            value={textVal}
-            onChange={(v) => setTextVal(String(v))}
-            referenceRange={{ min: 90, max: 120 }}
-          />
-          <NumberField
-            label="Total cholesterol"
-            unit="mg/dL"
-            value="240"
-            referenceRange={{ min: 125, max: 200 }}
-            onChange={() => {}}
-          />
-          <Select
-            label="Clinical rhythm"
-            options={[
-              { label: 'Normal sinus rhythm', value: 'sinus' },
-              { label: 'Atrial fibrillation', value: 'afib' },
-            ]}
-            value="sinus"
-            onChange={() => {}}
-          />
-        </div>
-      </Section>
+      <Panel>
+        <Section title="Risk indicators, bars and traces">
+          <div className="flex flex-col gap-4 pt-2">
+            <div className="flex items-center gap-4">
+              <RiskLabel band="Low" />
+              <RiskLabel band="Moderate" />
+              <RiskLabel band="High" />
+              <Chip label="Extracted" />
+            </div>
 
-      {/* 6. Choices & Checkbox */}
-      <Section title="Segmented choices and checkboxes">
-        <div className="flex flex-col gap-4 pt-2">
-          <SegmentedChoice
-            label="Typical exertional angina"
-            options={[
-              { label: 'Yes', value: 'Y' },
-              { label: 'No', value: 'N' },
-            ]}
-            value={choiceVal}
-            onChange={setChoiceVal}
-          />
-          <Checkbox
-            label="Decision-support verification confirmed"
-            checked={checkVal}
-            onChange={(e) => setCheckVal(e.target.checked)}
-          />
-        </div>
-      </Section>
+            <div>
+              <span className="type-caption">Probability bar (6px with markers and ticks)</span>
+              <Bar value={0.62} variant="probability" />
+            </div>
 
-      {/* 7. Risk Indicators & Chips */}
-      <Section title="Risk indicators and chips">
-        <div className="flex flex-wrap items-center gap-4 pt-2">
-          <RiskLabel band="Low" />
-          <RiskLabel band="Moderate" />
-          <RiskLabel band="High" />
-          <Chip label="Sample patient" />
-          <Chip label="Extracted" />
-        </div>
-      </Section>
+            <div>
+              <span className="type-caption">Thin factor bar (4px)</span>
+              <Bar value={0.8} variant="thin" fillColor="var(--high)" />
+            </div>
 
-      {/* 8. Data Table */}
-      <Section title="Data table with hairline rules">
-        <div className="pt-2">
+            <div>
+              <span className="type-caption">Static skeleton</span>
+              <Skeleton width="100%" height={24} />
+            </div>
+          </div>
+        </Section>
+      </Panel>
+
+      <Panel>
+        <Section title="Data table">
           <DataTable
             columns={tableColumns}
             data={sampleTableData}
             keyExtractor={(item) => item.target}
           />
-        </div>
-      </Section>
-
-      {/* 9. Skeletons and Spinners */}
-      <Section title="Loading states">
-        <div className="flex flex-col gap-3 pt-2">
-          <div className="flex items-center gap-2">
-            <span className="spinner" />
-            <span className="text-[13px] text-text-muted">Loading indicator (600ms)</span>
-          </div>
-          <Skeleton height={20} width="60%" />
-          <Skeleton height={20} width="100%" />
-        </div>
-      </Section>
+        </Section>
+      </Panel>
     </div>
   );
 };
 
 export const DesignSystemPage: React.FC = () => {
   return (
-    <div className="w-full max-w-[1200px] flex flex-col gap-8 pb-16">
-      {/* Header */}
-      <div>
-        <h1 className="text-page-title text-text">
-          Clinical paper design system
-        </h1>
-        <p className="text-body text-text-muted mt-1">
-          Side-by-side comparison of Light and Dark themes with identical DOM structures and tokens.
+    <div className="w-full max-w-[1200px] mx-auto flex flex-col gap-6 pb-16 pt-4">
+      <Panel>
+        <h1 className="type-page-title">ECG paper design system</h1>
+        <p className="type-caption mt-1">
+          Dual-theme side by side comparison: Paper (Light) and Monitor (Dark).
         </p>
-      </div>
+      </Panel>
 
-      {/* Side-by-Side Dual Theme Showcase (Task 3.10) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        <ShowcasePanel title="Light theme" themeScope="light" />
-        <ShowcasePanel title="Dark theme" themeScope="dark" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <ShowcasePanel title="Paper" themeScope="light" />
+        <ShowcasePanel title="Monitor" themeScope="dark" />
       </div>
     </div>
   );

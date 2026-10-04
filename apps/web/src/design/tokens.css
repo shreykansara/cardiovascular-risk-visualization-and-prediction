@@ -19,6 +19,15 @@
   --stagger: 110ms;
 }
 
+/* Panel base class (Task 2.1) */
+.pn {
+  background: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: 3px;
+  padding: 12px 14px;
+  box-shadow: none;
+}
+
 /* LIGHT ("Paper") */
 :root[data-theme="light"],
 :root:not([data-theme="dark"]),

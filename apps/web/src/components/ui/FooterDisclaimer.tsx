@@ -7,14 +7,27 @@ export const MANDATORY_DISCLAIMER =
 export const FooterDisclaimer: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
     <footer
-      className={`w-full bg-panel border-t border-border py-2 px-6 text-center text-[13px] leading-[20px] text-text-muted mt-auto ${className}`}
+      className={`w-full ${className}`}
+      style={{
+        backgroundColor: 'var(--panel)',
+        borderTop: '1px solid var(--bd)',
+        padding: '8px 16px',
+        fontFamily: 'var(--fs)',
+        fontSize: '11px',
+        color: 'var(--mut)',
+        lineHeight: '1.4',
+        textAlign: 'center',
+        marginTop: 'auto',
+      }}
     >
-      <div className="max-w-[1200px] mx-auto flex flex-wrap items-center justify-center gap-2">
-        <span>{MANDATORY_DISCLAIMER}</span>
-        <span className="text-border-strong">•</span>
+      <div className="max-w-[1200px] mx-auto">
+        <span>{MANDATORY_DISCLAIMER}</span>{' '}
         <Link
           to="/model-info"
-          className="text-accent hover:text-accent-hover underline font-medium"
+          style={{
+            color: 'var(--acc)',
+            textDecoration: 'underline',
+          }}
         >
           Model information
         </Link>
