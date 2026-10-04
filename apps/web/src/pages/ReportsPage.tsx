@@ -57,8 +57,15 @@ export const ReportsPage: React.FC = () => {
       });
   }, []);
 
-  const fetchReports = async () => {
+  const fetchActiveReport = async (force: boolean = false) => {
     if (!prediction) return;
+
+    // Only fetch if forced or if we don't have the report for the current tab
+    if (!force) {
+      if (activeTab === 'technical' && technicalReport) return;
+      if (activeTab === 'patient' && patientReport) return;
+    }
+
     setIsLoading(true);
     setErrorMessage(null);
 
@@ -69,51 +76,46 @@ export const ReportsPage: React.FC = () => {
     };
 
     try {
-      const [techRes, patRes] = await Promise.all([
-        fetch('/api/v1/reports/technical', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-        fetch('/api/v1/reports/patient', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }),
-      ]);
+      const endpoint = activeTab === 'technical' ? '/api/v1/reports/technical' : '/api/v1/reports/patient';
+      
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      if (!techRes.ok || !patRes.ok) {
+      if (!res.ok) {
         throw new Error('Report endpoint returned an error.');
       }
 
-      const techData: TechnicalReportData = await techRes.json();
-      const patData: PatientReportData = await patRes.json();
+      const data = await res.json();
 
-      setTechnicalReport(techData);
-      setPatientReport(patData);
+      if (activeTab === 'technical') {
+        setTechnicalReport(data as TechnicalReportData);
+      } else {
+        setPatientReport(data as PatientReportData);
+      }
 
       // Re-fetch diagnostic status to capture result of generation
       const statusRes = await fetch('/api/v1/reports/status');
       if (statusRes.ok) {
         const diag = await statusRes.json();
         setDiagnosticStatus(diag);
-        if (diag.last_error_code === 'ok' || (techData as any).source === 'groq' || (patData as any).source === 'groq') {
+        if (diag.last_error_code === 'ok' || data.source === 'groq') {
           setLlmOutputUsed(true);
         }
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed generating reports.');
+      setErrorMessage(err.message || 'Failed generating report.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Generate on first mount if not yet generated
+  // Generate when tab changes if not already fetched
   useEffect(() => {
-    if (!technicalReport || !patientReport) {
-      fetchReports();
-    }
-  }, []);
+    fetchActiveReport();
+  }, [activeTab]);
 
   const handlePrint = () => {
     window.print();
@@ -182,7 +184,7 @@ export const ReportsPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
-              onClick={fetchReports}
+              onClick={() => fetchActiveReport(true)}
               disabled={isLoading}
             >
               Regenerate
@@ -206,7 +208,7 @@ export const ReportsPage: React.FC = () => {
         {errorMessage && (
           <div className="no-print w-full text-[13px] text-risk-high flex items-center justify-between">
             <span>{errorMessage}</span>
-            <Button variant="link" onClick={fetchReports}>
+            <Button variant="link" onClick={() => fetchActiveReport(true)}>
               Try again
             </Button>
           </div>
