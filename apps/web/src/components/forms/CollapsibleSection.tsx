@@ -35,9 +35,17 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
       count={countString}
       collapsible
       defaultOpen={defaultOpen}
-      className="mb-8"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+      {/* Field grid: 3 columns at >=900px, 2 columns at 600 to 899px, 1 column below 600px; gap 10px */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gap: '10px',
+          paddingTop: '6px',
+        }}
+        className="field-grid"
+      >
         {features.map((feature) => (
           <FormField
             key={feature.key}

@@ -28,6 +28,25 @@
   box-shadow: none;
 }
 
+/* Field Grid responsive columns (Task 5.2d) */
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  gap: 10px;
+}
+
+@media (min-width: 600px) {
+  .field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .field-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
 /* LIGHT ("Paper") */
 :root[data-theme="light"],
 :root:not([data-theme="dark"]),
