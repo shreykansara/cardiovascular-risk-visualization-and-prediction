@@ -10,7 +10,17 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    min-height: 100%;
+  }
+
   body {
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     background-color: var(--color-bg-base);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
@@ -75,29 +85,30 @@
   }
 }
 
-/* Minimal Clean Scrollbar */
+/* Visible Clinical Scrollbars */
 ::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--color-bg-base);
+  background: #0b0f17;
 }
 ::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
-  border-radius: var(--radius-sm);
+  background: #334155;
+  border-radius: 5px;
+  border: 2px solid #0b0f17;
 }
 ::-webkit-scrollbar-thumb:hover,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: #475569;
 }
 
-.custom-scrollbar {
+html, body, * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border-strong) var(--color-bg-base);
+  scrollbar-color: #334155 #0b0f17;
 }
 
 /* Clinical Range Slider Track and 14px Thumb */

@@ -4,7 +4,7 @@ Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Pred
 """
 
 import time
-from typing import Literal
+from typing import Any, Dict, List, Literal, Optional
 from fastapi import APIRouter, Query, Response, status
 
 from apps.api.app.config import settings
