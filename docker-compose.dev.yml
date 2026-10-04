@@ -1,0 +1,24 @@
+# ==============================================================================
+# Docker Compose Development Override: Perfusion3D Hot Reload
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# ==============================================================================
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./models:/app/models
+    command: ["uvicorn", "apps.api.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      - RELOAD=true
+      - PYTHONUNBUFFERED=1
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    volumes:
+      - ./apps/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro

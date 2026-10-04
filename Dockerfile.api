@@ -1,0 +1,43 @@
+# ==============================================================================
+# Production Dockerfile for Perfusion3D FastAPI Backend (Task D3)
+# ==============================================================================
+
+FROM python:3.11-slim AS runner
+
+WORKDIR /app
+
+# Install system dependencies:
+# - libgomp1: required by LightGBM OpenMP runtime
+# - curl: for container healthcheck probe
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create non-root system user for security compliance
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+# Copy model artifacts, API source, and processed reference data
+COPY --chown=appuser:appuser models ./models
+COPY --chown=appuser:appuser apps/api ./apps/api
+COPY --chown=appuser:appuser data/processed ./data/processed
+
+USER appuser
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PORT=8000
+
+# Container health probe hitting API v1 health endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:8000/api/v1/health || exit 1
+
+EXPOSE 8000
+
+# Run Uvicorn server with production single worker to preserve TreeSHAP memory efficiency
+CMD ["uvicorn", "apps.api.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

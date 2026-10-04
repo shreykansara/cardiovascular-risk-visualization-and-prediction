@@ -2,157 +2,229 @@
 > **Real-Time Spatial Coronary Digital Twin & Multi-Vessel Ischemia Telemetry**  
 > *Track A: Cardiovascular Risk Visualization & Prediction — Multimodal AI Hackathon 2026*
 
+[![Docker Compose](https://img.shields.io/badge/Docker%20Compose-Ready%20(:8080)-2496ED?style=flat-square&logo=docker&logoColor=white)](#quickstart-docker-recommended)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React 19](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![React 18](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL-black?style=flat-square&logo=three.js&logoColor=white)](https://threejs.org)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Groq LLM](https://img.shields.io/badge/LLM-Groq%20Llama%203.3%2070B-orange?style=flat-square)](https://groq.com)
 [![SaMD Category](https://img.shields.io/badge/SaMD-Class%20IIa%20Prototype-blue?style=flat-square)](#clinical-safety--regulatory-boundary)
 
 ---
 
-## Executive Overview
+## Quickstart: Docker (Recommended)
 
-**Perfusion3D** is a state-of-the-art clinical decision-support platform uniting **high-throughput multi-target machine learning**, **sub-4ms TreeSHAP explainability**, and an **interactive 3D WebGL spatial coronary digital twin**.
+To run Perfusion3D with Docker Compose in 3 simple steps:
 
-Rather than presenting clinicians and patients with abstract, non-localized risk numbers, Perfusion3D projects calibrated stenosis probabilities $[0.0, 1.0]$ directly onto an anatomically continuous 3D myocardial mesh. Clinicians can interactively manipulate physiological parameters, inspect vessel-specific ischemic vulnerabilities across the **LAD**, **LCX**, and **RCA**, and understand exact local feature attributions in real time.
+1. **Configure Environment** (Optional: add your Groq key for LLM reports; deterministic fallback activates automatically if omitted):
+   ```bash
+   # Windows PowerShell
+   Copy-Item .env.example .env
 
-```
-                     ┌───────────────────────────────────────────────┐
-                     │          Patient Clinical Parameters          │
-                     │  (Demographics, Symptoms, ECG, Labs, Echo)    │
-                     └───────────────────────┬───────────────────────┘
-                                             │
-                                             ▼
-                     ┌───────────────────────────────────────────────┐
-                     │     Strict Leakage Guard (Cath Dropped)       │
-                     └───────────────────────┬───────────────────────┘
-                                             │
-                                             ▼
-                     ┌───────────────────────────────────────────────┐
-                     │    Perfusion3D Multi-Head Inference Engine    │
-                     │    • CAD Classifier   • LAD Stenosis Head     │
-                     │    • LCX Stenosis Head • RCA Stenosis Head    │
-                     │    • Sub-4ms TreeSHAP Attribution Engine      │
-                     └───────────────────────┬───────────────────────┘
-                                             │
-                                             ▼
-                     ┌───────────────────────────────────────────────┐
-                     │          Perfusion3D Clinical DLS             │
-                     │  • Continuous 3D WebGL Coronary Architecture  │
-                     │  • Dynamic Risk Shaders (Emerald/Amber/Red)   │
-                     │  • Real-Time TreeSHAP Waterfall Telemetry     │
-                     └───────────────────────────────────────────────┘
-```
+   # Linux / macOS
+   cp .env.example .env
+   ```
+2. **Build and Launch Containers**:
+   ```bash
+   docker compose up --build
+   ```
+3. **Open the Web Interface**:
+   ```
+   http://localhost:8080
+   ```
+
+*Direct FastAPI backend docs and health endpoints are accessible at `http://localhost:8000/docs` and `http://localhost:8000/api/v1/health`.*
 
 ---
 
-## Architectural Highlights
+## Quickstart: Local Development (Non-Docker)
 
-### 1. Multi-Target Gradient-Boosted Classification
-- **4 Dedicated Binary Heads**: Independent calibrated engines predicting **CAD** (Overall Coronary Artery Disease), **LAD** (Left Anterior Descending Stenosis), **LCX** (Left Circumflex Stenosis), and **RCA** (Right Coronary Artery Stenosis).
-- **Strict Target Leakage Prevention**: Ground-truth catheterization (`Cath`) and target vessel stenosis columns are strictly isolated and removed prior to feature processing.
-- **Sigmoid Probability Calibration**: Outputs are rigorously mapped to empirical probabilities $P \in [0.0, 1.0]$ to drive continuous GPU shader color uniforms.
+### Prerequisites
+- Node.js 20+ and npm
+- Python 3.11+
+- Git
 
-### 2. Sub-4ms TreeSHAP Explainability
-- Real-time local feature attribution vectors ($\phi_i$) for every patient prediction.
-- Identifies top-k physiological drivers with directional risk impact (`INCREASES_RISK` vs `DECREASES_RISK`).
+### 1. Backend Setup
+```bash
+# Create and activate Python virtual environment
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# Linux/macOS:
+source .venv/bin/activate
 
-### 3. Spatial Coronary Digital Twin (Three.js / WebGL)
-- High-fidelity myocardial surface and solid, continuous tubular coronary conduits generated via cubic Catmull-Rom splines conforming to the atrioventricular and interventricular sulci.
-- Dynamic color-mapped shader uniforms:
-  - **Low Risk** ($P \le 0.40$): Emerald Green (`#10B981`)
-  - **Borderline Risk** ($0.40 < P \le 0.70$): Amber (`#F59E0B`)
-  - **High Risk** ($P > 0.70$): Crimson Red (`#EF4444`)
-  - **Critical Stenosis** ($P > 0.75$): Dynamic pulsating emissive ischemia warning.
+# Install Python requirements
+pip install -r requirements.txt
 
-### 4. Perfusion3D Clinical Design Language System (DLS)
-- Responsive dark-mode glassmorphic interface with reactive parameter inputs, instant debounced re-scoring (250ms), and interactive focal camera targeting.
+# Start FastAPI inference backend on port 8000
+python -m uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 2. Frontend Setup
+```bash
+# In a separate terminal:
+npm install
+npm run dev:web
+```
+Open **`http://localhost:5173`** in your browser.
+
+---
+
+## System Architecture
+
+Perfusion3D integrates high-throughput machine learning with an interactive 3D WebGL anatomical twin and an automated clinical reporting engine:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Perfusion3D Architecture                        │
+└────────────────────────────────────────────────────────────────────────┘
+
+  [ Web Client / Nginx Container ] (:8080)
+     │
+     ├── /welcome         Clinical safety consent & preset selectors
+     ├── /enter-data      55-feature verified clinical input catalog
+     ├── /results         3D anatomical digital twin & TreeSHAP waterfalls
+     ├── /reports         Clinician technical report & patient plain-language report
+     └── /design-system   Clinical Design System showcase & token reference
+     │
+     ▼ (Reverse Proxy /api/ -> http://api:8000)
+  [ FastAPI Inference Engine ] (:8000)
+     │
+     ├── POST /api/v1/analyze
+     │    ├── Strict Leakage Guard (Cath, CAD, LAD, LCX, RCA isolated)
+     │    ├── 4 Calibrated Multi-Head Gradient Boosters (CAD, LAD, LCX, RCA)
+     │    └── Sub-4ms TreeSHAP Local Explainer Pool
+     │
+     └── POST /api/v1/reports/{technical,patient}
+          ├── Groq Llama 3.3 70B Versatile Adapter
+          ├── Strict Clinical Anti-Hallucination & Section Validator
+          └── Zero-Downtime Deterministic Fallback Engine
+```
+
+### Container Services Topology
+- **`web` (`Dockerfile.web`, port 8080)**: Production Nginx Alpine server hosting the optimized React 18 + Three.js build. Handles client-side SPA routing (`try_files $uri /index.html`) and reverse-proxies `/api/` traffic directly to the backend.
+- **`api` (`Dockerfile.api`, port 8000)**: Non-root Python 3.11-slim container running Uvicorn with OpenMP support (`libgomp1`) and pre-warmed TreeSHAP explainers. Includes active Docker healthchecks (`/api/v1/health`).
+- **`docker-compose.dev.yml`**: Hot-reloading development overlay with live directory volume mounts for real-time frontend and backend iteration.
 
 ---
 
 ## 4-Step Clinical Assessment Workflow
 
-The platform features a structured 4-step clinical workflow with state persistence and step locking:
+1. **Step 1: Clinical Consent & Baseline Selection (`/welcome`)**
+   - Overview of the spatial digital twin.
+   - Mandatory affirmative acknowledgment of clinical decision-support boundary.
+   - 4 pre-configured clinical phenotypes (Low-Risk, LAD Ischemia, RCA Ischemia, Multivessel CAD).
 
-1. **Step 1: Clinical Welcome & Consent (`/welcome`)**
-   - Overview of the Perfusion3D decision-support platform.
-   - Mandatory affirmative consent checkbox: *"I understand that predictions are for decision-support and educational purposes only..."*
-   - Persistent `<DisclaimerBanner />` displayed across all application steps.
+2. **Step 2: 55-Feature Clinical Data Entry (`/enter-data`)**
+   - 5 anatomical/diagnostic panels: Demographics, Clinical Examination, ECG, Laboratory, and Echocardiography.
+   - Real-time physiological range bounds, non-judgmental out-of-range indicators, and completion counters.
+   - Field provenance tags (`manual` | `extracted` | `unverified`).
 
-2. **Step 2: Manual Clinical Verification & Input (`/enter-data`)**
-   - Complete 55-feature clinical input catalog grouped into 5 collapsible anatomical/diagnostic categories: Demographics, Clinical Examination, ECG, Laboratory, and Echocardiography.
-   - Category completion counters (e.g. `5/5 filled`), validation ranges, neutral out-of-range indicators, and field-level provenance badges (`manual` | `extracted` | `unverified`).
-   - "Load Sample Patient" one-click action for rapid clinical profiling and testing.
-   - Disabled "Upload report (coming soon)" action in preparation for automated OCR extraction.
+3. **Step 3: 3D Spatial Digital Twin & TreeSHAP Drivers (`/results`)**
+   - **Continuous 3D Coronary Anatomy**: Left Anterior Descending (LAD), Left Circumflex (LCX), and Right Coronary (RCA) arteries rendered with calibrated hemodynamic risk shaders.
+   - **Standardized Risk Bands**:
+     - **Low Risk** ($\le 40\%$): Green (`#2F7D5B`)
+     - **Moderate Risk** ($41\% - 70\%$): Amber (`#C07D2B`)
+     - **High Risk** ($> 70\%$): Red (`#B83A3A`)
+   - **Interactive Vessel Isolation**: Clicking any vessel card or 3D pin focuses the camera rig on that arterial territory.
+   - **TreeSHAP Waterfalls & Physiological Table**: Real-time breakdown of patient factors driving or mitigating ischemic risk.
+   - **Model Performance Metrics**: Empirically validated cross-validation metrics (Accuracy, Precision, Recall, F1, ROC-AUC) across all 4 target heads.
 
-3. **Step 3: Interactive 3D Digital Twin & Explainability (`/results`)**
-   - **3D Spatial Digital Twin**: Interactive 3D WebGL myocardial and coronary arterial mesh (LAD, LCX, RCA) with continuous color risk mapping (Emerald $\le 40\%$, Amber $40-70\%$, Crimson $> 70\%$).
-   - Bidirectional vessel selection synchronization between 3D canvas and clinical dashboard cards.
-   - Multi-target TreeSHAP attribution waterfall chart showing top 8 physiological drivers with directional risk indicators.
-   - Physiological parameter breakdown table sortable by SHAP contribution percentage.
-   - Empirical model performance validation tab displaying ROC-AUC, PR-AUC, Recall, Specificity, and F1 metrics.
-
-4. **Step 4: Clinical & Patient AI Report Generation (`/reports`)**
-   - Dual-tab report interface: **Technical Report (Clinician)** and **Patient Report (Plain Language)**.
-   - LLM-powered report synthesis with strict medical boundary enforcement (SHARED RULES), anti-hallucination number verification, section order verification, and 2-attempt retry loop.
-   - Built-in zero-hallucination deterministic fallback template if the LLM provider is unconfigured or unreachable.
-   - One-click Print and Download PDF actions.
+4. **Step 4: Clinical & Patient AI Report Synthesis (`/reports`)**
+   - **Technical Report (Clinician)**: Formatted clinical summary with 8 standardized sections, diagnostic codes, hemodynamic findings, and evidence references.
+   - **Patient Report (Plain Language)**: Educational summary at Grade 6-8 reading level, avoiding alarmist terminology and explaining what the numbers mean.
+   - **Groq Llama 3.3 70B Integration**: Ultra-fast synthesis with automated number validation against model predictions.
+   - **Deterministic Fallback**: Automatically synthesizes verified clinical reports from model context if Groq API key is unconfigured or rate-limited.
+   - **Export Tools**: Instant Print and PDF generation.
 
 ---
 
-## Environment Variable Configuration
+## 5 Validated Clinical Test Cases
 
-Create a `.env` file in the project root based on [.env.example](file:///.env.example):
+Use these 5 clinical profiles to evaluate and demonstrate the platform's multi-vessel prediction accuracy:
+
+| # | Profile Name | Patient Key | Expected Risk Band | Key Clinical Findings & Drivers |
+| :- | :--- | :--- | :--- | :--- |
+| **1** | **Low-Risk Baseline** | `normal` | **Low ($\le 40\%$)** across all vessels | Age 38-45, BP 110/70, Preserved EF 60%, Normal ECG, Normal Troponin. All vessels render green. |
+| **2** | **Isolated LAD Ischemia** | `high_risk_lad` | **LAD High ($> 70\%$)**, RCA/LCX Low | Age 47-58, Typical Exertional Angina, Anterior ST Elevation (V2-V4), Anterior RWMA (1), EF 45-50%. LAD turns red. |
+| **3** | **Inferior RCA Ischemia** | `rca_ischemia` | **RCA Moderate/High ($41-70\%+$)** | Age 64, Atypical Angina, Inferior Wall RWMA (2), Dyslipidemia. RCA conduit displays elevated risk coloration. |
+| **4** | **Triple-Vessel Critical CAD** | `triple_vessel` | **High ($> 70\%$)** on CAD, LAD, LCX, RCA | Age 72, Severe Angina, Diabetes, HTN, Diffuse ST depression/elevation, EF 35%, Multi-wall RWMA (4). Diffuse high risk. |
+| **5** | **Intermediate Diagnostic Case** | Custom / Sliders | **CAD Moderate ($41-70\%$)** | Age 55-65, Dyslipidemia, borderline BP 138/88, non-anginal chest pain, normal ECG. Demonstrates calibrated threshold sensitivity. |
+
+---
+
+## Environment Variables & LLM Configuration
+
+Create `.env` in the project root:
 
 ```bash
-# LLM Provider Configuration (Backend Only - Keys never sent to browser)
-LLM_API_KEY=your_api_key_here
-LLM_PROVIDER=openai          # Supported: openai, anthropic, gemini, groq, together, openrouter
-LLM_MODEL=gpt-4o-mini        # Or claude-3-5-sonnet-20241022, gemini-1.5-pro, etc.
+# Copy the verified template
+Copy-Item .env.example .env   # PowerShell
+# or: cp .env.example .env    # Bash
 ```
 
-If `LLM_API_KEY` is omitted or left as the placeholder, Perfusion3D automatically activates its deterministic clinical report synthesis engine, ensuring zero downtime and fully compliant reports.
+Configure `.env`:
+```ini
+# Groq Cloud API Key (LLM Reports)
+# Obtain a key at: https://console.groq.com/keys
+GROQ_API_KEY=gsk_your_groq_api_key_here
+
+# Model identifier (Locked to Groq Llama 3.3 70B Versatile)
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Host and Port settings (defaults)
+PORT=8000
+PYTHONUNBUFFERED=1
+```
+
+> **Zero-Downtime Resilience**: If `GROQ_API_KEY` is omitted, left empty, or invalid, the backend automatically logs `"Groq API key not configured in environment. Using verified deterministic fallback template."` and serves complete, medically accurate reports without any crashes or degraded functionality.
 
 ---
 
-## Key Architectural File Locations
+## Troubleshooting
 
-| Component | File Path | Description |
-| :--- | :--- | :--- |
-| **Clinical Feature Schema** | [apps/web/src/config/featureSchema.ts](file:///apps/web/src/config/featureSchema.ts) | Definitive catalog of all 55 features with units, reference bounds, and clinical categories |
-| **Wizard Navigation State** | [apps/web/src/store/useWizardStore.ts](file:///apps/web/src/store/useWizardStore.ts) | Session-persisted Zustand store managing patient inputs, predictions, SHAP, and report cache |
-| **Clinical Disclaimer Banner** | [apps/web/src/components/common/DisclaimerBanner.tsx](file:///apps/web/src/components/common/DisclaimerBanner.tsx) | Mandatory persistent medical decision-support disclaimer banner |
-| **Technical Prompt Template** | [src/prompts/technical_report.md](file:///src/prompts/technical_report.md) | Clinician-facing report prompt containing SHARED RULES and 8 mandated sections |
-| **Patient Prompt Template** | [src/prompts/patient_report.md](file:///src/prompts/patient_report.md) | Plain-language patient report prompt (Grade 6-8 reading level) |
-| **LLM Service & Validator** | [apps/api/app/services/llm_service.py](file:///apps/api/app/services/llm_service.py) | Provider adapter, anti-hallucination validator, and deterministic fallback templates |
-| **Runtime Leakage Guard** | [apps/api/app/services/leakage_guard.py](file:///apps/api/app/services/leakage_guard.py) | Strict runtime guard blocking input injection of `Cath`, `CAD`, `LAD`, `LCX`, `RCA` |
+### 1. Port Conflicts (8080 or 8000 already in use)
+- If port 8080 is already allocated by another service, map to another port in `docker-compose.yml`:
+  ```yaml
+  ports:
+    - "3000:80"
+  ```
+- If port 8000 is occupied, stop existing processes:
+  ```powershell
+  Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object OwningProcess
+  Stop-Process -Id <PID>
+  ```
+
+### 2. Groq LLM Key Missing or Expired
+- Symptom: Banner appears on `/reports` saying *"Groq API key not configured in environment. Displaying verified deterministic clinical template derived directly from model context."*
+- Resolution: This is the intended graceful fallback behavior. The report displays all calibrated metrics and SHAP factors deterministically. To enable LLM prose, add a valid `GROQ_API_KEY` to `.env` and restart the backend.
+
+### 3. Docker Daemon Not Running on Windows
+- If running `docker compose up` outputs `failed to connect to the docker API at ...dockerDesktopLinuxEngine`:
+  - Open **Docker Desktop** from the Windows Start menu and wait for the engine to initialize.
+  - Alternatively, run locally using the quickstart instructions: `npm run dev:api` and `npm run dev:web`.
+
+### 4. 3D Model Rendering or Canvas Black Screen
+- Ensure WebGL is enabled in your browser (`chrome://gpu`).
+- The 3D heart asset is statically served at `/models/heart_coronary_optimized.glb` and cached in the client bundle.
 
 ---
 
-## Future: Document Upload & Automated Extraction
+## Automated Verification Suite
 
-Perfusion3D includes foundational architecture for automated multimodal document ingestion (EHR summaries, lab PDFs, echocardiogram printouts):
-
-- **Store Hook**: `applyExtractedValues(values: Partial<PatientData>, confidences?: Record<keyof PatientData, number>)` in [useWizardStore.ts](file:///apps/web/src/store/useWizardStore.ts).
-- **Field Provenance**: Each field in the form schema tracks a `source` state:
-  - `manual`: Direct clinician or user manual entry.
-  - `extracted`: Populated via automated OCR or NLP pipeline.
-  - `unverified`: Flagged for mandatory clinical review (e.g. OCR confidence $< 0.85$).
-- **UI Indicators**: Non-intrusive badges display the extraction source and confidence rating on `/enter-data`, allowing clinicians to review and verify before prediction.
-
----
-
-## Test Suite & Verification
-
-Run the full automated verification test suite:
+Run the full automated test suite locally:
 
 ```bash
-# Run backend API, leakage guard, schema coverage, and report validator tests (37/37 passing)
+# 1. Run all 41 backend API, leakage guard, and report tests:
 python -m pytest apps/api/tests/ -v
 
-# Run production web build verification
+# 2. Run TypeScript check and Vite production build:
 npm run build:web
+
+# 3. Validate Docker container configuration:
+python scripts/validate_docker_setup.py
+
+# 4. Run End-to-End Playwright flow:
+node e2e/full_flow.spec.cjs
 ```
 
 ---
@@ -160,7 +232,8 @@ npm run build:web
 ## Clinical Safety & Regulatory Boundary
 
 > **IMPORTANT CLINICAL NOTICE**  
-> "Predictions are for decision-support and educational purposes only and are not a substitute for formal diagnostic imaging or professional medical evaluation."
+> *"Predictions are for decision-support and educational purposes only and are not a substitute for formal diagnostic imaging or professional medical evaluation."*  
+> Perfusion3D does NOT diagnose, treat, or replace professional cardiovascular examination or invasive coronary angiography (Cath). All predictions represent statistical machine-learning estimates based on training cohorts.
 
 ---
 
