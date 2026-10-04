@@ -1,32 +1,29 @@
 import React from 'react';
 import type { TargetPrediction } from '../../types/clinical';
 import { RiskLabel } from '../ui/RiskLabel';
-import { riskLabel } from '../../config/riskBands';
+import { Bar } from '../ui/Bar';
+import { Trace } from '../ui/Trace';
 
 interface VesselCardProps {
   vesselKey: 'lad' | 'lcx' | 'rca';
-  fullName: string;
+  vesselCode: string; // "LAD", "LCX", "RCA"
+  fullName: string; // "Left anterior descending", etc.
   prediction?: TargetPrediction;
   isSelected: boolean;
   onSelect: () => void;
+  animationIndex?: number;
 }
 
 export const VesselCard: React.FC<VesselCardProps> = ({
+  vesselCode,
   fullName,
   prediction,
   isSelected,
   onSelect,
+  animationIndex = 2,
 }) => {
   const prob = prediction?.probability ?? 0;
-  const probPct = Math.round(prob * 100);
-  const band = riskLabel(prob);
-
-  let barColor = 'bg-risk-low';
-  if (band === 'Moderate') {
-    barColor = 'bg-risk-moderate';
-  } else if (band === 'High') {
-    barColor = 'bg-risk-high';
-  }
+  const probFormatted = `${(prob * 100).toFixed(1)}%`;
 
   return (
     <div
@@ -38,32 +35,80 @@ export const VesselCard: React.FC<VesselCardProps> = ({
           onSelect();
         }
       }}
-      className={`w-full py-2.5 px-3 rounded cursor-pointer select-none transition-colors border-l-2 ${
-        isSelected
-          ? 'border-l-accent bg-accent-subtle'
-          : 'border-l-transparent hover:bg-panel'
-      }`}
+      className={`row ${isSelected ? 'selected' : ''}`}
+      style={{
+        padding: '10px 12px',
+        borderLeft: isSelected ? '3px solid var(--acc)' : '3px solid transparent',
+        backgroundColor: isSelected ? 'var(--hov)' : 'transparent',
+        cursor: 'pointer',
+        transition: 'background-color 120ms, border-color 120ms',
+        userSelect: 'none',
+      }}
+      onMouseEnter={(e) => {
+        if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--hov)';
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+      }}
     >
-      <div className="flex items-center justify-between gap-4 mb-2">
-        <span className="text-[14px] leading-[22px] font-medium text-text">
-          {fullName}
-        </span>
-
-        <div className="flex items-center gap-4">
-          <span className="text-[24px] leading-[32px] font-semibold text-text tabular-nums">
-            {probPct}%
+      {/* Row top line */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Left: vessel key in 600 weight + full name in 12px --mut + Trace at 64x14 */}
+        <div className="flex items-center gap-2">
+          <span
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: 'var(--ink)',
+            }}
+          >
+            {vesselCode}
           </span>
-          <RiskLabel band={band} />
+          <span
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '12px',
+              fontWeight: 400,
+              color: 'var(--mut)',
+            }}
+          >
+            {fullName}
+          </span>
+          <Trace
+            width={64}
+            height={14}
+            style={{
+              opacity: isSelected ? 1 : 0,
+              transition: 'opacity 120ms',
+              marginLeft: '4px',
+            }}
+          />
+        </div>
+
+        {/* Right: probability in mono 20px with one decimal and "%" + RiskLabel */}
+        <div className="flex items-center gap-2">
+          <span
+            style={{
+              fontFamily: 'var(--fm)',
+              fontSize: '20px',
+              fontWeight: 500,
+              color: 'var(--ink)',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {probFormatted}
+          </span>
+          <RiskLabel probability={prob} />
         </div>
       </div>
 
-      {/* 4px flat bar beneath */}
-      <div className="w-full h-1 bg-border rounded overflow-hidden">
-        <div
-          className={`h-full ${barColor}`}
-          style={{ width: `${Math.min(Math.max(probPct, 2), 100)}%` }}
-        />
-      </div>
+      {/* Below: Bar with fill (animation --i 2, 3, 4) and two band markers */}
+      <Bar
+        value={prob}
+        variant="probability"
+        animationIndex={animationIndex}
+      />
     </div>
   );
 };

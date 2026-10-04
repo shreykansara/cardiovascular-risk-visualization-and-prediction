@@ -1,15 +1,14 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWizardStore } from '../store/useWizardStore';
+import { usePatientStore } from '../store/usePatientStore';
 import { HeartCanvas } from '../components/3d/HeartCanvas';
 import { ColorScaleLegend } from '../components/results/ColorScaleLegend';
 import { VesselCard } from '../components/results/VesselCard';
 import { FactorsList } from '../components/results/FactorsList';
-import { PhysiologicalBreakdownTable } from '../components/results/PhysiologicalBreakdownTable';
 import { RiskLabel } from '../components/ui/RiskLabel';
 import { Button } from '../components/ui/Button';
-import { Section } from '../components/ui/Section';
-import { riskLabel } from '../config/riskBands';
+import { Panel } from '../components/ui/Panel';
 
 export const ResultsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,29 +16,51 @@ export const ResultsPage: React.FC = () => {
     prediction,
     shapResult,
     inputs,
-    activeVesselFocus,
-    setVesselFocus,
     markStepCompleted,
   } = useWizardStore();
+
+  // Two-way synchronization with 3D model
+  const activeVesselFocus = usePatientStore((s) => s.activeVesselFocus);
+  const setVesselFocus = (focus: string) => {
+    useWizardStore.getState().setVesselFocus(focus);
+  };
 
   // If no prediction exists, provide a simple redirect
   if (!prediction) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-[480px] mx-auto">
-        <h2 className="text-[20px] font-semibold text-text mb-2">No results yet</h2>
-        <p className="text-[14px] text-text-muted mb-6">
-          Please enter patient clinical measurements to generate the risk assessment.
-        </p>
-        <Button variant="primary" onClick={() => navigate('/enter-data')}>
-          Enter clinical data
-        </Button>
+        <Panel className="flex flex-col items-center gap-4 p-6">
+          <h2
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '18px',
+              fontWeight: 600,
+              color: 'var(--ink)',
+              margin: 0,
+            }}
+          >
+            No results yet
+          </h2>
+          <p
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '13px',
+              color: 'var(--mut)',
+              margin: 0,
+            }}
+          >
+            Please enter patient clinical measurements to generate the risk assessment.
+          </p>
+          <Button variant="primary" onClick={() => navigate('/enter-data')}>
+            Enter clinical data
+          </Button>
+        </Panel>
       </div>
     );
   }
 
   const cadProb = prediction.overall_cad?.probability ?? 0;
-  const cadProbPct = Math.round(cadProb * 100);
-  const cadBand = riskLabel(cadProb);
+  const cadProbFormatted = `${Math.round(cadProb * 100)}%`;
 
   // Synchronize 3D selection
   const handleSelectVessel = (vesselId: 'vessel_LAD' | 'vessel_LCX' | 'vessel_RCA') => {
@@ -50,7 +71,7 @@ export const ResultsPage: React.FC = () => {
     }
   };
 
-  // Determine which features to show in Factors list
+  // Features list based on active vessel
   const currentFeatures = useMemo(() => {
     if (!shapResult) return [];
     if (activeVesselFocus === 'vessel_LAD') return shapResult.lad?.top_features || [];
@@ -65,75 +86,165 @@ export const ResultsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 w-full pb-12">
-      <div className="grid grid-cols-1 lg:grid-cols-[58fr_42fr] gap-8 items-start">
-        {/* Left Column (58%): 3D Heart Canvas + Legend */}
-        <div className="flex flex-col w-full">
-          <div className="w-full h-[520px] bg-panel border border-border rounded overflow-hidden relative">
+    <div className="w-full flex-1 pb-12">
+      {/* Two columns: grid-template-columns minmax(0,5fr) minmax(0,6fr), gap 14px, stacked under 768px */}
+      <div
+        className="grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-[14px] items-start"
+        style={{
+          display: 'grid',
+          gap: '14px',
+        }}
+      >
+        {/* LEFT, one Panel (class wipe, --i 0) with EXISTING 3D canvas mounted unchanged */}
+        <Panel
+          className="wipe flex flex-col w-full"
+          style={{
+            '--i': 0,
+            padding: '12px 14px',
+          } as React.CSSProperties}
+        >
+          <div
+            style={{
+              width: '100%',
+              height: '480px',
+              backgroundColor: 'var(--panel)',
+              borderRadius: '3px',
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
             <HeartCanvas />
           </div>
+
+          {/* 3-column legend: 3px bar in risk color above 11px --mut label */}
           <ColorScaleLegend />
-        </div>
+        </Panel>
 
-        {/* Right Column (42%): Clinical telemetry strictly per Task 2.5 */}
-        <div className="flex flex-col gap-6 w-full">
-          {/* Top: Coronary artery disease probability & RiskLabel */}
-          <div>
-            <div className="pb-2 border-b border-border">
-              <h2 className="text-[16px] leading-[24px] font-semibold text-text">
-                Coronary artery disease
-              </h2>
-            </div>
-            <div className="flex items-center gap-4 pt-3">
-              <span className="text-result-number">
-                {cadProbPct}%
+        {/* RIGHT column (flex column, gap 10px, min-width 0) */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            minWidth: 0,
+            width: '100%',
+          }}
+        >
+          {/* 1) Panel (wipe, --i 1): label "Coronary artery disease", CAD prob 40px/500 + RiskLabel, caption */}
+          <Panel
+            className="wipe flex flex-col"
+            style={{
+              '--i': 1,
+              padding: '12px 14px',
+            } as React.CSSProperties}
+          >
+            <span
+              style={{
+                fontFamily: 'var(--fs)',
+                fontSize: '12px',
+                color: 'var(--mut)',
+              }}
+            >
+              Coronary artery disease
+            </span>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                margin: '4px 0 2px',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--fm)',
+                  fontSize: '40px',
+                  lineHeight: '1.05',
+                  fontWeight: 500,
+                  color: 'var(--ink)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {cadProbFormatted}
               </span>
-              <RiskLabel band={cadBand} />
+              <RiskLabel
+                probability={cadProb}
+                afterNumber
+              />
             </div>
-          </div>
 
-          {/* Three vessel rows (LAD, LCX, RCA) */}
-          <div className="flex flex-col gap-2">
+            <span
+              style={{
+                fontFamily: 'var(--fs)',
+                fontSize: '11px',
+                color: 'var(--mut)',
+              }}
+            >
+              Predicted probability
+            </span>
+          </Panel>
+
+          {/* 2) Panel (wipe, --i 2, padding 4px 2px) containing three vessel rows (LAD, LCX, RCA) */}
+          <Panel
+            className="wipe flex flex-col"
+            style={{
+              '--i': 2,
+              padding: '4px 2px',
+            } as React.CSSProperties}
+          >
             <VesselCard
               vesselKey="lad"
-              fullName="Left anterior descending artery"
+              vesselCode="LAD"
+              fullName="Left anterior descending"
               prediction={prediction.vessels?.lad}
               isSelected={activeVesselFocus === 'vessel_LAD'}
               onSelect={() => handleSelectVessel('vessel_LAD')}
+              animationIndex={2}
             />
             <VesselCard
               vesselKey="lcx"
-              fullName="Left circumflex artery"
+              vesselCode="LCX"
+              fullName="Left circumflex"
               prediction={prediction.vessels?.lcx}
               isSelected={activeVesselFocus === 'vessel_LCX'}
               onSelect={() => handleSelectVessel('vessel_LCX')}
+              animationIndex={3}
             />
             <VesselCard
               vesselKey="rca"
-              fullName="Right coronary artery"
+              vesselCode="RCA"
+              fullName="Right coronary"
               prediction={prediction.vessels?.rca}
               isSelected={activeVesselFocus === 'vessel_RCA'}
               onSelect={() => handleSelectVessel('vessel_RCA')}
+              animationIndex={4}
             />
-          </div>
+          </Panel>
 
-          {/* Factors influencing this result */}
-          <FactorsList features={currentFeatures} inputs={inputs} />
+          {/* 3) Panel (wipe, --i 3): Factors influencing this result */}
+          <Panel
+            className="wipe"
+            style={{
+              '--i': 3,
+              padding: '12px 14px',
+            } as React.CSSProperties}
+          >
+            <FactorsList features={currentFeatures} inputs={inputs} />
+          </Panel>
 
-          {/* Collapsed section: All measurements */}
-          <Section title="All measurements" collapsible defaultOpen={false}>
-            <div className="pt-2">
-              <PhysiologicalBreakdownTable patientInputs={inputs} />
-            </div>
-          </Section>
-
-          {/* Button: Create reports */}
-          <div className="pt-2">
+          {/* 4) Primary Button "Create reports" (wipe, --i 4) aligned left */}
+          <div
+            className="wipe"
+            style={{
+              '--i': 4,
+              display: 'flex',
+              justifyContent: 'flex-start',
+            } as React.CSSProperties}
+          >
             <Button
               id="create-reports-button"
               variant="primary"
               onClick={handleCreateReports}
-              className="w-full sm:w-auto"
             >
               Create reports
             </Button>
