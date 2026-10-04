@@ -1,0 +1,73 @@
+/* ECG Paper Motion System
+ * One-shot keyframes: wipe, grow, draw
+ * Active strictly when an ancestor has class `play`
+ * No looping animations
+ */
+
+@keyframes wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Active only when an ancestor has class `play` */
+.play .wipe {
+  animation: wipe 600ms var(--ease-wipe) backwards;
+  animation-delay: calc(var(--i, 0) * var(--stagger));
+}
+
+.play .bar-fill {
+  animation: grow 900ms linear backwards;
+  animation-delay: calc(var(--i, 0) * var(--stagger) + 250ms);
+}
+
+.play .trace-header polyline {
+  animation: draw 800ms ease-out backwards;
+}
+
+/* Replays every time a row becomes selected */
+.row.selected .trace polyline {
+  animation: draw 600ms ease-out both;
+}
+
+/* Reduced motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+  .wipe {
+    clip-path: none !important;
+  }
+  .bar-fill {
+    transform: none !important;
+  }
+  polyline {
+    stroke-dashoffset: 0 !important;
+  }
+}

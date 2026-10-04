@@ -17,7 +17,8 @@
     "train:models": "python scripts/train.py --cv-folds 5 --calibrate isotonic"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/sora": "^5.3.0",
     "@react-three/drei": "^9.102.6",
     "@react-three/fiber": "^8.16.8",
     "@tanstack/react-query": "^5.28.4",

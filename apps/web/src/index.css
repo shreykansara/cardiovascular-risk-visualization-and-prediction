@@ -1,7 +1,10 @@
-@import '@fontsource/inter/400.css';
-@import '@fontsource/inter/500.css';
-@import '@fontsource/inter/600.css';
+@import '@fontsource/sora/400.css';
+@import '@fontsource/sora/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 @import './design/tokens.css';
+@import './design/grid.css';
+@import './design/motion.css';
 
 @tailwind base;
 @tailwind components;
@@ -11,101 +14,78 @@
   html {
     min-height: 100%;
     background-color: var(--page);
-    color: var(--text);
+    color: var(--ink);
   }
 
   body {
     min-height: 100vh;
     background-color: var(--page);
-    color: var(--text);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--ink);
+    font-family: var(--fs);
+    font-size: 13px;
+    line-height: 1.45;
+    text-transform: none;
   }
 
   :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline: var(--focus);
+    outline-offset: var(--focus-offset);
   }
 }
 
-/* Spinner is the only permitted animation */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 600ms linear infinite;
-}
-
-/* Accessible Minimal Scrollbars */
+/* Minimal scrollbars without shadows or glow */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--panel);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: var(--bds);
   border-radius: var(--radius);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--mut);
 }
 
 html, body, * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) var(--panel);
+  scrollbar-color: var(--bds) var(--panel);
 }
 
-/* Range input styled cleanly */
-input[type="range"].clinical-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  background: var(--border);
-  height: 4px;
-  border-radius: var(--radius);
-  outline: none;
-  cursor: pointer;
-}
-input[type="range"].clinical-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--page);
-  border: 2px solid var(--accent);
-  cursor: pointer;
-}
-input[type="range"].clinical-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--page);
-  border: 2px solid var(--accent);
-  cursor: pointer;
-}
-
-/* Print Stylesheet (Task 4.4) */
+/* Print and PDF forced light token overrides (Task 5.5e) */
 @media print {
-  body {
-    background-color: var(--page) !important;
-    color: var(--text) !important;
+  :root,
+  :root[data-theme="dark"],
+  [data-theme="dark"],
+  :root[data-theme="light"],
+  [data-theme="light"] {
+    color-scheme: light !important;
+    --page: #FFFFFF !important;
+    --panel: #FFFFFF !important;
+    --ink: #241618 !important;
+    --mut: #6A5558 !important;
+    --acc: #1D3F8A !important;
+    --onacc: #FFFFFF !important;
+    --bd: #E3CFCC !important;
+    --bds: #B99A96 !important;
+    --sheet: #FFFFFF !important;
+    --sheetink: #241618 !important;
+    --sheetmut: #6A5558 !important;
+    --sbd: #E3CFCC !important;
   }
+
+  body {
+    background-color: #FFFFFF !important;
+    background-image: none !important;
+    color: #241618 !important;
+  }
+
   .no-print {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
   }
