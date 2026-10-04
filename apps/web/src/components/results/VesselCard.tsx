@@ -1,39 +1,31 @@
-/**
- * Vessel Stenosis Status Card (Tasks 4.3, 4.4, 4.5, A2, Phase C)
- * Displays predicted stenosis probability, standardized category label ("Low" / "Moderate" / "High"),
- * mini progress bar, and handles bidirectional 3D twin vessel synchronization.
- */
-
 import React from 'react';
 import type { TargetPrediction } from '../../types/clinical';
-import { getRiskBand } from '../../config/riskBands';
-import { Eye, ShieldCheck, AlertTriangle, AlertOctagon } from 'lucide-react';
+import { RiskLabel } from '../ui/RiskLabel';
+import { riskLabel } from '../../config/riskBands';
 
 interface VesselCardProps {
-  vesselKey: 'cad' | 'lad' | 'lcx' | 'rca';
-  title: string;
-  subtitle: string;
+  vesselKey: 'lad' | 'lcx' | 'rca';
+  fullName: string;
   prediction?: TargetPrediction;
   isSelected: boolean;
   onSelect: () => void;
 }
 
 export const VesselCard: React.FC<VesselCardProps> = ({
-  title,
-  subtitle,
+  fullName,
   prediction,
   isSelected,
   onSelect,
 }) => {
   const prob = prediction?.probability ?? 0;
-  const probPct = Math.round(prob * 1000) / 10;
-  const band = getRiskBand(prob);
+  const probPct = Math.round(prob * 100);
+  const band = riskLabel(prob);
 
-  let TierIcon = ShieldCheck;
-  if (band.level === 'high') {
-    TierIcon = AlertOctagon;
-  } else if (band.level === 'moderate') {
-    TierIcon = AlertTriangle;
+  let barColor = 'bg-risk-low';
+  if (band === 'Moderate') {
+    barColor = 'bg-risk-moderate';
+  } else if (band === 'High') {
+    barColor = 'bg-risk-high';
   }
 
   return (
@@ -46,58 +38,30 @@ export const VesselCard: React.FC<VesselCardProps> = ({
           onSelect();
         }
       }}
-      className={`p-3.5 rounded-md transition-colors cursor-pointer select-none text-left border relative overflow-hidden ${
+      className={`w-full py-2.5 px-3 rounded cursor-pointer select-none transition-colors border-l-2 ${
         isSelected
-          ? 'bg-[#1c2637] border-blue-500 ring-1 ring-blue-500'
-          : 'bg-[#131a26] border-[#283548] hover:border-[#384961] hover:bg-[#182130]'
+          ? 'border-l-accent bg-accent-subtle'
+          : 'border-l-transparent hover:bg-panel'
       }`}
     >
-      {/* Active Focus Indicator Pip */}
-      {isSelected && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] font-mono-numbers text-blue-300 bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-800/60">
-          <Eye className="w-3 h-3" />
-          <span>Focused</span>
-        </div>
-      )}
+      <div className="flex items-center justify-between gap-4 mb-2">
+        <span className="text-[14px] leading-[22px] font-medium text-text">
+          {fullName}
+        </span>
 
-      {/* Header Info */}
-      <div className="flex items-start justify-between gap-2 pr-16">
-        <div>
-          <h3 className="text-sm font-semibold text-white flex items-center gap-1.5">
-            <span>{title}</span>
-          </h3>
-          <p className="text-[11px] text-slate-400 font-mono truncate">{subtitle}</p>
+        <div className="flex items-center gap-4">
+          <span className="text-[24px] leading-[32px] font-semibold text-text tabular-nums">
+            {probPct}%
+          </span>
+          <RiskLabel band={band} />
         </div>
       </div>
 
-      {/* Probability Display */}
-      <div className="mt-2.5 flex items-baseline justify-between">
-        <div>
-          <span className="text-[10px] uppercase font-mono text-slate-400 block tracking-wider">
-            Predicted Stenosis Probability
-          </span>
-          <span
-            className="text-2xl font-mono-numbers font-bold tracking-tight"
-            style={{ color: band.colorHex }}
-          >
-            {probPct.toFixed(1)}%
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: band.colorHex }}>
-          <TierIcon className="w-3.5 h-3.5" />
-          <span className="text-[11px] font-mono">{band.label}</span>
-        </div>
-      </div>
-
-      {/* Probability Progress Bar */}
-      <div className="w-full bg-[#0b0f17] h-2 rounded-full overflow-hidden mt-2.5 border border-[#283548]">
+      {/* 4px flat bar beneath */}
+      <div className="w-full h-1 bg-border rounded overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-300 ease-out"
-          style={{
-            width: `${Math.min(100, Math.max(4, probPct))}%`,
-            backgroundColor: band.colorHex,
-          }}
+          className={`h-full ${barColor}`}
+          style={{ width: `${Math.min(Math.max(probPct, 2), 100)}%` }}
         />
       </div>
     </div>

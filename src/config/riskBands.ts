@@ -4,6 +4,7 @@
  */
 
 export type RiskLevel = 'Low' | 'Moderate' | 'High';
+export type RiskBand = RiskLevel;
 
 export interface RiskBandConfig {
   label: RiskLevel;

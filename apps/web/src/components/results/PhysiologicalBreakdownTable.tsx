@@ -1,212 +1,67 @@
-/**
- * Physiological Feature Breakdown Table (Task 4.8, Phase C)
- * Shows feature name, patient value, unit, reference range, within/outside range marker,
- * and relative contribution (% of total absolute SHAP) for the selected target.
- * Sortable by relative contribution, feature name, or value.
- */
-
-import React, { useState, useMemo } from 'react';
-import type { VesselExplanation } from '../../types/clinical';
+import React from 'react';
 import { FEATURE_SCHEMA, isWithinReferenceRange } from '../../config/featureSchema';
-import { ArrowUpDown, Check, Info } from 'lucide-react';
-
-interface BreakdownRow {
-  key: string;
-  name: string;
-  value: any;
-  unit: string;
-  refDisplay: string;
-  withinRange: boolean | null;
-  shapValue: number;
-  absShap: number;
-  relativePct: number;
-  direction: 'INCREASES_RISK' | 'DECREASES_RISK';
-}
+import { DataTable } from '../ui/DataTable';
 
 interface PhysiologicalBreakdownTableProps {
-  explanation?: VesselExplanation;
   patientInputs: Record<string, any>;
-  targetName: string;
+}
+
+interface MeasurementRow {
+  key: string;
+  name: string;
+  valueDisplay: string;
+  referenceRange: string;
+  status: string;
+  isOutside: boolean;
 }
 
 export const PhysiologicalBreakdownTable: React.FC<PhysiologicalBreakdownTableProps> = ({
-  explanation,
   patientInputs,
-  targetName,
 }) => {
-  const [sortField, setSortField] = useState<'relativePct' | 'name' | 'value'>('relativePct');
-  const [sortAsc, setSortAsc] = useState<boolean>(false);
+  const rows: MeasurementRow[] = FEATURE_SCHEMA.map((feat) => {
+    const rawVal = patientInputs[feat.key];
+    const within = isWithinReferenceRange(feat, rawVal);
+    const isOutside = within === false;
 
-  // Build combined rows from FEATURE_SCHEMA + explanation SHAP features
-  const rows: BreakdownRow[] = useMemo(() => {
-    const topFeatures = explanation?.top_features || [];
-    const totalAbsShap = topFeatures.reduce((acc, f) => acc + Math.abs(f.shap_value), 0) || 1.0;
-
-    return FEATURE_SCHEMA.map((feat) => {
-      const pVal = patientInputs[feat.key];
-      const shapMatch = topFeatures.find((f) => f.feature_name === feat.key || f.clinical_label?.startsWith(feat.label));
-      const shapVal = shapMatch ? shapMatch.shap_value : 0;
-      const absShap = Math.abs(shapVal);
-      const relativePct = (absShap / totalAbsShap) * 100;
-      const within = isWithinReferenceRange(feat, pVal);
-
-      return {
-        key: feat.key,
-        name: feat.label,
-        value: pVal,
-        unit: feat.unit,
-        refDisplay: feat.refDisplay,
-        withinRange: within,
-        shapValue: shapVal,
-        absShap,
-        relativePct,
-        direction: shapMatch?.impact || (shapVal >= 0 ? 'INCREASES_RISK' : 'DECREASES_RISK'),
-      };
-    });
-  }, [explanation, patientInputs]);
-
-  // Sort rows
-  const sortedRows = useMemo(() => {
-    return [...rows].sort((a, b) => {
-      if (sortField === 'relativePct') {
-        return sortAsc ? a.relativePct - b.relativePct : b.relativePct - a.relativePct;
-      }
-      if (sortField === 'name') {
-        return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-      }
-      if (sortField === 'value') {
-        const nA = Number(a.value) || 0;
-        const nB = Number(b.value) || 0;
-        return sortAsc ? nA - nB : nB - nA;
-      }
-      return 0;
-    });
-  }, [rows, sortField, sortAsc]);
-
-  const handleToggleSort = (field: 'relativePct' | 'name' | 'value') => {
-    if (sortField === field) {
-      setSortAsc(!sortAsc);
-    } else {
-      setSortField(field);
-      setSortAsc(false);
+    let valueStr = rawVal !== undefined && rawVal !== null && rawVal !== '' ? String(rawVal) : '—';
+    if (feat.type === 'toggle') {
+      valueStr = String(rawVal) === '1' || String(rawVal) === 'Y' ? 'Present' : 'Absent';
+    } else if (feat.unit && valueStr !== '—') {
+      valueStr = `${valueStr} ${feat.unit}`;
     }
-  };
+
+    return {
+      key: feat.key,
+      name: feat.label,
+      valueDisplay: valueStr,
+      referenceRange: feat.refDisplay || '—',
+      status: isOutside ? 'Outside typical range' : 'Within range',
+      isOutside,
+    };
+  });
+
+  const columns = [
+    { header: 'Measurement', accessor: 'name' as const },
+    { header: 'Patient value', accessor: 'valueDisplay' as const, isNumeric: true },
+    { header: 'Typical range', accessor: 'referenceRange' as const },
+    {
+      header: 'Status',
+      accessor: (row: MeasurementRow) => (
+        <span className={row.isOutside ? 'text-text-muted font-medium' : 'text-text-faint'}>
+          {row.isOutside && <span className="inline-block w-1.5 h-1.5 rounded-full bg-risk-moderate mr-1.5" />}
+          {row.status}
+        </span>
+      ),
+    },
+  ];
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-md bg-[#131a26] border border-[#283548]">
-      <div className="flex items-center justify-between gap-3 border-b border-[#283548] pb-3">
-        <div>
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-            <span>Physiological Breakdown & Risk Attribution</span>
-            <span className="text-[11px] font-mono-numbers px-2 py-0.5 rounded bg-blue-950/60 text-blue-300 border border-blue-800/60">
-              {targetName}
-            </span>
-          </h3>
-          <p className="text-[11px] text-slate-400 font-mono-numbers mt-0.5">
-            Parameters mapped against reference ranges and relative SHAP model contribution.
-          </p>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto rounded-md border border-[#283548]">
-        <table className="w-full text-left text-xs font-sans">
-          <thead className="bg-[#1c2637] text-slate-400 font-mono-numbers text-[10px] uppercase tracking-wider border-b border-[#283548]">
-            <tr>
-              <th
-                className="p-2.5 cursor-pointer hover:text-white transition-colors"
-                onClick={() => handleToggleSort('name')}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span>Parameter</span>
-                  <ArrowUpDown className="w-3 h-3" />
-                </div>
-              </th>
-              <th
-                className="p-2.5 cursor-pointer hover:text-white transition-colors"
-                onClick={() => handleToggleSort('value')}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span>Patient Value</span>
-                  <ArrowUpDown className="w-3 h-3" />
-                </div>
-              </th>
-              <th className="p-2.5">Reference Range</th>
-              <th className="p-2.5">Status</th>
-              <th
-                className="p-2.5 cursor-pointer hover:text-white transition-colors text-right"
-                onClick={() => handleToggleSort('relativePct')}
-              >
-                <div className="flex items-center justify-end gap-1.5">
-                  <span>Relative SHAP %</span>
-                  <ArrowUpDown className="w-3 h-3" />
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#283548] bg-[#0b0f17] text-slate-200">
-            {sortedRows.map((r) => {
-              const hasShap = r.relativePct > 0;
-              const isIncrease = r.direction === 'INCREASES_RISK';
-
-              return (
-                <tr key={r.key} className="hover:bg-[#131a26]/60 transition-colors">
-                  {/* Parameter Name */}
-                  <td className="p-2.5 font-medium text-slate-200">
-                    <span>{r.name}</span>
-                    {r.unit && (
-                      <span className="text-[10px] text-slate-400 font-mono-numbers ml-1.5">
-                        ({r.unit})
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Patient Value */}
-                  <td className="p-2.5 font-mono-numbers text-white font-semibold">
-                    {String(r.value)}
-                  </td>
-
-                  {/* Reference Range */}
-                  <td className="p-2.5 font-mono-numbers text-slate-400 text-[11px]">
-                    {r.refDisplay}
-                  </td>
-
-                  {/* Within / Outside Range Marker */}
-                  <td className="p-2.5 text-[11px] font-mono-numbers">
-                    {r.withinRange === true ? (
-                      <span className="inline-flex items-center gap-1 text-green-300 bg-green-950/60 px-2 py-0.5 rounded border border-green-800/60">
-                        <Check className="w-3 h-3 text-green-400" />
-                        <span>Within range</span>
-                      </span>
-                    ) : r.withinRange === false ? (
-                      <span className="inline-flex items-center gap-1 text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/60">
-                        <Info className="w-3 h-3 text-amber-400" />
-                        <span>Outside typical</span>
-                      </span>
-                    ) : (
-                      <span className="text-slate-500">—</span>
-                    )}
-                  </td>
-
-                  {/* Relative Contribution (% of total absolute SHAP) */}
-                  <td className="p-2.5 text-right font-mono-numbers">
-                    {hasShap ? (
-                      <span
-                        className={`font-semibold ${
-                          isIncrease ? 'text-blue-400' : 'text-slate-400'
-                        }`}
-                      >
-                        {r.relativePct.toFixed(1)}%
-                      </span>
-                    ) : (
-                      <span className="text-slate-600">&lt; 0.1%</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+    <div className="w-full">
+      <DataTable
+        columns={columns}
+        data={rows}
+        keyExtractor={(item) => item.key}
+      />
     </div>
   );
 };

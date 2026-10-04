@@ -628,9 +628,9 @@ function generateLocalSimulation(p: PatientData): CompleteAnalysisResponse {
   );
 
   const getColor = (prob: number): [string, [number, number, number]] => {
-    if (prob <= 0.40) return ['#10B981', [0.063, 0.725, 0.506]];
-    if (prob <= 0.70) return ['#F59E0B', [0.961, 0.620, 0.043]];
-    return ['#EF4444', [0.937, 0.267, 0.267]];
+    if (prob <= 0.40) return ['rgb(46, 125, 79)', [0.18, 0.49, 0.31]];
+    if (prob <= 0.70) return ['rgb(178, 106, 0)', [0.70, 0.42, 0.0]];
+    return ['rgb(179, 38, 30)', [0.70, 0.15, 0.12]];
   };
 
   const getTier = (prob: number): RiskTier => {

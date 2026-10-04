@@ -1,8 +1,7 @@
 import React from 'react';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
-  size?: 'sm' | 'md';
+  variant?: 'primary' | 'secondary' | 'link';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -11,7 +10,6 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
-  size = 'md',
   isLoading = false,
   leftIcon,
   rightIcon,
@@ -19,33 +17,26 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
+  let variantClasses = '';
+  if (variant === 'primary') {
+    variantClasses = 'h-[36px] px-4 bg-accent hover:bg-accent-hover text-white rounded text-[14px] font-medium border-0';
+  } else if (variant === 'secondary') {
+    variantClasses = 'h-[36px] px-4 bg-page hover:bg-panel border border-border-strong text-text rounded text-[14px] font-medium';
+  } else if (variant === 'link') {
+    variantClasses = 'h-auto p-0 bg-transparent text-accent hover:text-accent-hover underline text-[14px] font-medium border-0';
+  }
+
   const baseClasses =
-    'inline-flex items-center justify-center font-medium rounded-md transition-colors duration-150 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b0f17] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
-
-  const sizeClasses = {
-    sm: 'text-xs px-2.5 py-1.5 gap-1.5',
-    md: 'text-sm px-4 py-2 gap-2',
-  }[size];
-
-  const variantClasses = {
-    primary:
-      'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white border border-blue-500/40 shadow-sm',
-    secondary:
-      'bg-[#1c2637] hover:bg-[#253248] active:bg-[#192231] text-slate-200 border border-[#283548]',
-    danger:
-      'bg-red-950/80 hover:bg-red-900 active:bg-red-950 text-red-200 border border-red-800/60',
-    ghost:
-      'bg-transparent hover:bg-[#1c2637] active:bg-[#131a26] text-slate-300 hover:text-white',
-  }[variant];
+    'inline-flex items-center justify-center gap-2 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   return (
     <button
-      className={`${baseClasses} ${sizeClasses} ${variantClasses} ${className}`}
+      className={`${baseClasses} ${variantClasses} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >
       {isLoading ? (
-        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <span className="spinner" />
       ) : (
         leftIcon
       )}

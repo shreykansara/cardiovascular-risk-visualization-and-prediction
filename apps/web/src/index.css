@@ -1,8 +1,6 @@
 @import '@fontsource/inter/400.css';
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
-@import '@fontsource/jetbrains-mono/400.css';
-@import '@fontsource/jetbrains-mono/500.css';
 @import './design/tokens.css';
 
 @tailwind base;
@@ -13,139 +11,106 @@
   html {
     overflow-y: auto;
     overflow-x: hidden;
-    scroll-behavior: smooth;
     min-height: 100%;
+    background-color: var(--page);
+    color: var(--text);
   }
 
   body {
     min-height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: var(--color-bg-base);
-    color: var(--color-text-primary);
-    font-family: var(--font-sans);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: var(--page);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
-  .font-mono-numbers {
-    font-family: var(--font-mono);
-    font-feature-settings: "tnum";
-    font-variant-numeric: tabular-nums;
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }
 
-@layer components {
-  /* Clean Clinical Surface Cards (Task C2 & C4) */
-  .clinical-card {
-    background-color: var(--color-surface-base);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+/* Spinner is the only permitted animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-
-  .clinical-card-raised {
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-  }
-
-  /* Transitional compatibility classes mapped to calm clinical styles without glows */
-  .glass-card,
-  .glass-panel,
-  .ultra-glass {
-    background-color: var(--color-surface-base);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .ultra-glass-pill {
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-sm);
-  }
-
-  .glass-btn {
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-primary);
-    font-weight: 500;
-    transition: background-color var(--transition-fast), border-color var(--transition-fast);
-  }
-  .glass-btn:hover {
-    background-color: #243044;
-    border-color: var(--color-border-strong);
-  }
-
-  /* Linear Risk Gradient Bar */
-  .risk-track {
-    background: linear-gradient(90deg, var(--color-risk-low) 0%, var(--color-risk-moderate) 50%, var(--color-risk-high) 100%);
+  to {
+    transform: rotate(360deg);
   }
 }
 
-/* Visible Clinical Scrollbars */
-::-webkit-scrollbar,
-.custom-scrollbar::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
 }
-::-webkit-scrollbar-track,
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #0b0f17;
+
+/* Accessible Minimal Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-::-webkit-scrollbar-thumb,
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 5px;
-  border: 2px solid #0b0f17;
+::-webkit-scrollbar-track {
+  background: var(--panel);
 }
-::-webkit-scrollbar-thumb:hover,
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 html, body, * {
   scrollbar-width: thin;
-  scrollbar-color: #334155 #0b0f17;
+  scrollbar-color: var(--border-strong) var(--panel);
 }
 
-/* Clinical Range Slider Track and 14px Thumb */
-input[type="range"].perfusion3d-slider {
+/* Range input styled cleanly */
+input[type="range"].clinical-slider {
   -webkit-appearance: none;
   appearance: none;
-  background: var(--color-border-subtle);
-  height: 6px;
-  border-radius: var(--radius-sm);
+  background: var(--border);
+  height: 4px;
+  border-radius: var(--radius);
   outline: none;
   cursor: pointer;
 }
-input[type="range"].perfusion3d-slider::-webkit-slider-thumb {
+input[type="range"].clinical-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--color-text-primary);
-  border: 2px solid var(--color-accent-blue);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  background: var(--page);
+  border: 2px solid var(--accent);
   cursor: pointer;
-  transition: border-color var(--transition-fast);
 }
-input[type="range"].perfusion3d-slider::-webkit-slider-thumb:hover {
-  border-color: var(--color-accent-blue-hover);
-}
-input[type="range"].perfusion3d-slider::-moz-range-thumb {
+input[type="range"].clinical-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--color-text-primary);
-  border: 2px solid var(--color-accent-blue);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  background: var(--page);
+  border: 2px solid var(--accent);
   cursor: pointer;
-  transition: border-color var(--transition-fast);
 }
-input[type="range"].perfusion3d-slider::-moz-range-thumb:hover {
-  border-color: var(--color-accent-blue-hover);
+
+/* Print Stylesheet (Task 4.4) */
+@media print {
+  body {
+    background-color: var(--page) !important;
+    color: var(--text) !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
 }

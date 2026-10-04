@@ -4,6 +4,7 @@
  */
 
 export type RiskLevel = 'Low' | 'Moderate' | 'High';
+export type RiskBand = RiskLevel;
 
 export interface RiskBandConfig {
   label: RiskLevel;
@@ -57,7 +58,7 @@ export const getRiskLabel = riskLabel;
 export const getRiskLevel = (prob: number) => riskLabel(prob).toLowerCase();
 export const getRiskColorHex = (prob: number) => {
   const l = riskLabel(prob);
-  if (l === 'Low') return '#2E7D4F';
-  if (l === 'Moderate') return '#B26A00';
-  return '#B3261E';
+  if (l === 'Low') return 'rgb(46, 125, 79)';
+  if (l === 'Moderate') return 'rgb(178, 106, 0)';
+  return 'rgb(179, 38, 30)';
 };

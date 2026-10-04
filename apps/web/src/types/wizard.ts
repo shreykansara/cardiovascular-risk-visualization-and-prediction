@@ -1,6 +1,6 @@
 /**
  * Wizard Navigation, State & Report Type Definitions
- * Perfusion3D: Clinical Digital Twin & Reporting System
+ * Perfusion3D: Clinical Risk Assessment & Reporting System
  */
 
 import type { CompleteAnalysisResponse, PatientData } from './clinical';
@@ -12,7 +12,6 @@ export interface StepDefinition {
   id: WizardStepId;
   path: string;
   label: string;
-  shortDescription: string;
 }
 
 export const WIZARD_STEPS: StepDefinition[] = [
@@ -20,29 +19,25 @@ export const WIZARD_STEPS: StepDefinition[] = [
     step: 1,
     id: 'welcome',
     path: '/welcome',
-    label: 'Welcome & Disclaimer',
-    shortDescription: 'Safety & System Overview',
+    label: 'Welcome',
   },
   {
     step: 2,
     id: 'enter-data',
     path: '/enter-data',
-    label: 'Clinical Data Entry',
-    shortDescription: 'Parameters & Verification',
+    label: 'Clinical data',
   },
   {
     step: 3,
     id: 'results',
     path: '/results',
-    label: 'Results & Visual Twin',
-    shortDescription: '3D Hemodynamics & SHAP',
+    label: 'Results',
   },
   {
     step: 4,
     id: 'reports',
     path: '/reports',
-    label: 'Clinical Reports',
-    shortDescription: 'Technical & Patient Reports',
+    label: 'Reports',
   },
 ];
 
@@ -53,14 +48,6 @@ export interface FieldMeta {
   confidence?: number | null;
   error?: string | null;
   touched?: boolean;
-}
-
-export interface GeneratedReportSection {
-  title: string;
-  content?: string;
-  table?: Record<string, any>[];
-  items?: string[];
-  raw?: any;
 }
 
 export interface TechnicalReportData {
@@ -75,9 +62,11 @@ export interface TechnicalReportData {
     targets: Array<{
       target: string;
       display_name: string;
-      predicted_status: string;
+      model_classification?: string;
+      risk_band?: 'Low' | 'Moderate' | 'High';
+      predicted_status?: string;
       probability_pct: number;
-      category: 'Low' | 'Moderate' | 'High';
+      category?: 'Low' | 'Moderate' | 'High';
     }>;
   };
   input_parameters: {
@@ -104,17 +93,6 @@ export interface TechnicalReportData {
         direction: 'INCREASES_RISK' | 'DECREASES_RISK';
       }>;
     }>;
-  };
-  model_performance: {
-    metrics: Array<{
-      target: string;
-      accuracy?: number;
-      precision?: number;
-      recall: number;
-      f1_score: number;
-      roc_auc: number;
-    }>;
-    split_notes: string;
   };
   methodological_notes: string[];
   disclaimer: string;

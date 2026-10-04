@@ -1,27 +1,13 @@
-/**
- * Step 2: Clinical Data Entry & Parameter Verification Page (Task C7b)
- * Dynamically rendered from featureSchema.ts with 5 collapsible sections,
- * completion counters, disabled OCR upload button, sample loader, and predictive analysis trigger.
- */
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Upload,
-  Sparkles,
-  ArrowRight,
-  CheckCircle2,
-  AlertTriangle,
-  ChevronDown,
-} from 'lucide-react';
 import { useWizardStore } from '../store/useWizardStore';
 import {
   FEATURE_SCHEMA,
   FEATURE_SECTIONS,
 } from '../config/featureSchema';
 import { CollapsibleSection } from '../components/forms/CollapsibleSection';
-import { PATIENT_PROFILES } from '../store/usePatientStore';
-import { Button, Card, Badge, Banner } from '../components/ui';
+import { Button } from '../components/ui/Button';
+import { Select } from '../components/ui/Select';
 
 export const DataEntryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,8 +22,7 @@ export const DataEntryPage: React.FC = () => {
     analysisError,
   } = useWizardStore();
 
-  const [selectedPreset, setSelectedPreset] = useState<string>('high_risk_lad');
-  const [showPresetDropdown, setShowPresetDropdown] = useState(false);
+  const [attentionNotice, setAttentionNotice] = useState<string | null>(null);
 
   // Guard: Redirect to welcome if disclaimer not accepted
   React.useEffect(() => {
@@ -48,12 +33,13 @@ export const DataEntryPage: React.FC = () => {
 
   // Overall form completeness calculation
   const totalFeatures = FEATURE_SCHEMA.length;
-  const filledFeatures = FEATURE_SCHEMA.filter((f) => {
+  const missingFeatures = FEATURE_SCHEMA.filter((f) => {
     const v = inputs[f.key];
-    return v !== undefined && v !== null && v !== '';
-  }).length;
-  const errorFeatures = Object.values(fieldMeta).filter((m) => !!m?.error).length;
-  const isFormReady = filledFeatures === totalFeatures && errorFeatures === 0;
+    return v === undefined || v === null || v === '';
+  });
+  const errorEntries = Object.entries(fieldMeta).filter(([_, m]) => !!m?.error);
+  const attentionCount = missingFeatures.length + errorEntries.length;
+  const isFormReady = attentionCount === 0;
 
   const handlePredict = async () => {
     const success = await predictPatient();
@@ -62,111 +48,68 @@ export const DataEntryPage: React.FC = () => {
     }
   };
 
-  const handleLoadPreset = (presetKey: string) => {
-    setSelectedPreset(presetKey);
-    loadSamplePatient(presetKey);
-    setShowPresetDropdown(false);
+  const handleAttentionClick = () => {
+    if (errorEntries.length > 0) {
+      const [key, meta] = errorEntries[0];
+      const feat = FEATURE_SCHEMA.find((f) => f.key === key);
+      setAttentionNotice(`${feat?.label || key}: ${meta.error}`);
+    } else if (missingFeatures.length > 0) {
+      const firstMissing = missingFeatures[0];
+      setAttentionNotice(`${firstMissing.label} is required`);
+    } else {
+      setAttentionNotice(null);
+    }
   };
 
+  const sampleOptions = [
+    { label: 'Load sample patient...', value: '' },
+    { label: 'Sample patient: Low risk', value: 'normal' },
+    { label: 'Sample patient: High risk (LAD)', value: 'high_risk_lad' },
+    { label: 'Sample patient: Moderate risk (RCA)', value: 'rca_ischemia' },
+    { label: 'Sample patient: High risk (Multivessel)', value: 'triple_vessel' },
+  ];
+
   return (
-    <div className="flex-1 flex flex-col p-3 sm:p-5 md:p-8 max-w-7xl mx-auto w-full gap-5">
-      {/* Top Action Header Bar */}
-      <Card variant="base" padding="md" className="w-full">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-mono-numbers text-slate-400">
-              <span>Clinical Verification Workflow</span>
-              <span>•</span>
-              <span className="text-blue-400 font-semibold">55 Target Parameters</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight mt-1">
-              Patient Clinical Data Entry
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-              Configure or verify physiological parameters across all 5 clinical groups prior to 3D twin inference.
-            </p>
-          </div>
-
-          {/* Action Buttons: Disabled Upload + Sample Loader */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled
-              title="Automated document extraction pipeline coming in upcoming release"
-              leftIcon={<Upload className="w-3.5 h-3.5" />}
-            >
-              Upload report (coming soon)
-            </Button>
-
-            {/* Load sample patient Button & Dropdown */}
-            <div className="relative">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowPresetDropdown(!showPresetDropdown)}
-                leftIcon={<Sparkles className="w-3.5 h-3.5 text-blue-400" />}
-                rightIcon={<ChevronDown className="w-3.5 h-3.5 ml-0.5" />}
-              >
-                Load sample patient
-              </Button>
-
-              {showPresetDropdown && (
-                <div className="absolute right-0 mt-2 w-72 rounded-md bg-[#1c2637] border border-[#283548] shadow-md p-1.5 z-50 animate-in fade-in duration-100">
-                  <div className="px-2.5 py-1.5 text-[10px] font-mono-numbers uppercase tracking-wider text-slate-400 border-b border-[#283548]">
-                    Select Clinical Phenotype
-                  </div>
-                  {Object.entries(PATIENT_PROFILES).map(([key, profile]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => handleLoadPreset(key)}
-                      className={`w-full text-left p-2.5 rounded text-xs transition-colors flex flex-col gap-0.5 cursor-pointer ${
-                        selectedPreset === key
-                          ? 'bg-[#131a26] text-blue-300 border border-[#384961]'
-                          : 'text-slate-300 hover:bg-[#131a26]'
-                      }`}
-                    >
-                      <span className="font-semibold text-white">{profile.name}</span>
-                      <span className="text-[11px] text-slate-400 line-clamp-1">
-                        {profile.description}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Global Completion Status Banner */}
-      <div className="w-full flex items-center justify-between p-3 rounded-md bg-[#131a26] border border-[#283548] text-xs font-mono-numbers">
-        <div className="flex items-center gap-3">
-          <span className="text-slate-400">Verification Progress:</span>
-          <span className="text-slate-100 font-semibold">
-            {filledFeatures} / {totalFeatures} Parameters Configured
-          </span>
+    <div className="flex-1 flex flex-col w-full pb-16">
+      {/* Title & Top Right Actions */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-page-title text-text">
+            Clinical measurements
+          </h1>
+          <p className="text-body text-text-muted mt-1">
+            Enter clinical and diagnostic measurements or load a sample patient to evaluate coronary risk.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {errorFeatures > 0 ? (
-            <span className="text-red-400 flex items-center gap-1 font-semibold">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {errorFeatures} invalid {errorFeatures === 1 ? 'field' : 'fields'}
-            </span>
-          ) : (
-            <span className="text-green-400 flex items-center gap-1 font-semibold">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              All parameters valid
-            </span>
-          )}
+        <div className="flex flex-wrap items-center gap-4 shrink-0">
+          <Button
+            variant="link"
+            disabled
+            className="text-text-muted cursor-not-allowed no-underline"
+          >
+            Upload report (coming soon)
+          </Button>
+
+          <div className="w-[260px]">
+            <Select
+              options={sampleOptions}
+              value=""
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val) {
+                  loadSamplePatient(val);
+                  setAttentionNotice(null);
+                }
+              }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* 5 Collapsible Sections in strict order */}
-      <div className="flex flex-col gap-3.5">
-        {FEATURE_SECTIONS.map((section) => {
+      {/* Sections list */}
+      <div className="flex flex-col gap-2">
+        {FEATURE_SECTIONS.map((section, idx) => {
           const sectionFeatures = FEATURE_SCHEMA.filter((f) => f.section === section);
           return (
             <CollapsibleSection
@@ -175,43 +118,54 @@ export const DataEntryPage: React.FC = () => {
               features={sectionFeatures}
               inputs={inputs}
               fieldMeta={fieldMeta}
-              onFieldChange={(key, val) => setFieldValue(key as any, val)}
-              defaultOpen={true}
+              onFieldChange={setFieldValue}
+              defaultOpen={idx === 0 || idx === 1}
             />
           );
         })}
       </div>
 
-      {/* Error message from inference if failed */}
-      {analysisError && (
-        <Banner variant="danger" title="Inference Error">
-          {analysisError}
-        </Banner>
-      )}
+      {/* Sticky Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-page border-t border-border py-3 px-4 md:px-8 z-40">
+        <div className="max-w-[1200px] mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {attentionCount > 0 ? (
+              <button
+                type="button"
+                onClick={handleAttentionClick}
+                className="text-[13px] leading-[20px] text-text-muted hover:text-text cursor-pointer underline border-0 bg-transparent p-0 text-left"
+              >
+                {attentionCount} {attentionCount === 1 ? 'field needs' : 'fields need'} attention
+              </button>
+            ) : (
+              <span className="text-[13px] leading-[20px] text-risk-low">
+                All measurements complete
+              </span>
+            )}
 
-      {/* Bottom Floating Execution Deck */}
-      <div className="sticky bottom-4 z-40 w-full p-4 rounded-md bg-[#131a26] border border-[#283548] shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
-        <div className="flex items-center gap-2.5 text-xs text-slate-300">
-          <span className={`w-2 h-2 rounded-full shrink-0 ${isFormReady ? 'bg-green-500' : 'bg-amber-500'}`} />
-          <span>
-            {isFormReady
-              ? 'All 55 parameters verified. Ready to compute spatial ischemia telemetry.'
-              : 'Please complete and verify all required parameters before proceeding.'}
-          </span>
+            {attentionNotice && (
+              <span className="text-[12px] leading-[16px] text-risk-high">
+                ({attentionNotice})
+              </span>
+            )}
+
+            {analysisError && (
+              <span className="text-[12px] leading-[16px] text-risk-high">
+                {analysisError}
+              </span>
+            )}
+          </div>
+
+          <Button
+            id="predict-button"
+            variant="primary"
+            onClick={handlePredict}
+            isLoading={isAnalyzing}
+            disabled={!isFormReady}
+          >
+            Predict
+          </Button>
         </div>
-
-        {/* Predict Button */}
-        <Button
-          id="predict-twin-btn"
-          variant="primary"
-          size="md"
-          onClick={handlePredict}
-          disabled={!isFormReady || isAnalyzing}
-          isLoading={isAnalyzing}
-          rightIcon={<ArrowRight className="w-4 h-4" />}
-        >
-          Predict & Visualize Twin
-        </Button>
       </div>
     </div>
   );

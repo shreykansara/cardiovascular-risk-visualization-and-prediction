@@ -1,31 +1,21 @@
-/**
- * Step 4: Clinical & Patient Report Generation Page (Task 5.6, Phase C)
- * Features:
- * - Two Tabs: 'Technical report (for clinician)' and 'Patient report'
- * - Loading, Regenerate, Download PDF, and Print actions
- * - Persistent disclaimer banner + Section 8 disclaimer in document
- * - Graceful fallback to verified deterministic clinical report template
- */
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  FileText,
-  User,
-  Printer,
-  Download,
-  RotateCw,
-  ArrowLeft,
-  Sparkles,
-  Info,
-} from 'lucide-react';
 import { useWizardStore } from '../store/useWizardStore';
 import { TechnicalReportView } from '../components/reports/TechnicalReportView';
 import { PatientReportView } from '../components/reports/PatientReportView';
 import type { PatientReportData, TechnicalReportData } from '../types/wizard';
-import { Button, Card, Badge, Banner, Spinner } from '../components/ui';
+import { Button } from '../components/ui/Button';
+import { Tabs } from '../components/ui/Tabs';
+import { Skeleton } from '../components/ui/Skeleton';
 
 type ReportTab = 'technical' | 'patient';
+
+interface DiagnosticStatus {
+  last_error_code?: string | null;
+  model?: string;
+  key_present?: boolean;
+  key_is_placeholder?: boolean;
+}
 
 export const ReportsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -43,7 +33,8 @@ export const ReportsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ReportTab>('technical');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [llmStatus, setLlmStatus] = useState<{ configured: boolean; model: string } | null>(null);
+  const [diagnosticStatus, setDiagnosticStatus] = useState<DiagnosticStatus | null>(null);
+  const [llmOutputUsed, setLlmOutputUsed] = useState<boolean>(false);
 
   // Guard: if no prediction exists yet, redirect to results
   useEffect(() => {
@@ -52,31 +43,25 @@ export const ReportsPage: React.FC = () => {
     }
   }, [isStepUnlocked, prediction, navigate]);
 
-  // Check LLM config status on mount
+  // Fetch Groq diagnostics on mount
   useEffect(() => {
     fetch('/api/v1/reports/status')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) {
-          setLlmStatus({ configured: data.configured, model: data.model });
+          setDiagnosticStatus(data);
         }
       })
       .catch(() => {
-        setLlmStatus(null);
+        setDiagnosticStatus({ last_error_code: 'network_error' });
       });
   }, []);
 
-  // Fetch or generate report for active tab
-  const fetchReport = async (tab: ReportTab, forceRefresh: boolean = false) => {
-    if (!forceRefresh) {
-      if (tab === 'technical' && technicalReport) return;
-      if (tab === 'patient' && patientReport) return;
-    }
-
+  const fetchReports = async () => {
+    if (!prediction) return;
     setIsLoading(true);
     setErrorMessage(null);
 
-    const endpoint = tab === 'technical' ? '/api/v1/reports/technical' : '/api/v1/reports/patient';
     const payload = {
       patient: inputs,
       predictions: prediction,
@@ -84,36 +69,51 @@ export const ReportsPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const [techRes, patRes] = await Promise.all([
+        fetch('/api/v1/reports/technical', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }),
+        fetch('/api/v1/reports/patient', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }),
+      ]);
 
-      if (!res.ok) {
-        throw new Error(`Report service returned ${res.status}: ${res.statusText}`);
+      if (!techRes.ok || !patRes.ok) {
+        throw new Error('Report endpoint returned an error.');
       }
 
-      const reportData = await res.json();
-      if (tab === 'technical') {
-        setTechnicalReport(reportData as TechnicalReportData);
-      } else {
-        setPatientReport(reportData as PatientReportData);
+      const techData: TechnicalReportData = await techRes.json();
+      const patData: PatientReportData = await patRes.json();
+
+      setTechnicalReport(techData);
+      setPatientReport(patData);
+
+      // Re-fetch diagnostic status to capture result of generation
+      const statusRes = await fetch('/api/v1/reports/status');
+      if (statusRes.ok) {
+        const diag = await statusRes.json();
+        setDiagnosticStatus(diag);
+        if (diag.last_error_code === 'ok') {
+          setLlmOutputUsed(true);
+        }
       }
     } catch (err: any) {
-      console.error('[ReportsPage] Fetch error:', err);
-      setErrorMessage(err.message || 'Failed to generate report.');
+      setErrorMessage(err.message || 'Failed generating reports.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Initial load when tab changes
+  // Generate on first mount if not yet generated
   useEffect(() => {
-    if (prediction) {
-      fetchReport(activeTab, false);
+    if (!technicalReport || !patientReport) {
+      fetchReports();
     }
-  }, [activeTab, prediction]);
+  }, []);
 
   const handlePrint = () => {
     window.print();
@@ -123,154 +123,116 @@ export const ReportsPage: React.FC = () => {
     window.print();
   };
 
-  const handleRegenerate = () => {
-    fetchReport(activeTab, true);
+  // Task 1.11: Single status line under the report tabs driven by status codes
+  const getStatusLine = () => {
+    const code = diagnosticStatus?.last_error_code;
+    const model = diagnosticStatus?.model || 'llama-3.3-70b-versatile';
+
+    if (code === 'ok' && llmOutputUsed) {
+      return `Generated with Groq (${model})`;
+    }
+    if (code === 'key_rejected') {
+      return 'Groq rejected the API key. Using standard template.';
+    }
+    if (code === 'model_unavailable') {
+      return 'Groq model not available. Using standard template.';
+    }
+    if (code === 'rate_limited') {
+      return 'Groq rate limit reached. Using standard template.';
+    }
+    if (code === 'validation_failed') {
+      return 'Generated text failed safety checks. Using standard template.';
+    }
+    if (code === 'network_error') {
+      return 'Could not reach Groq. Using standard template.';
+    }
+    // Default / no_key / placeholder
+    return 'Groq API key not found. Using standard template.';
   };
 
-  const currentReport = activeTab === 'technical' ? technicalReport : patientReport;
+  const tabs = [
+    { id: 'technical', label: 'Clinician report' },
+    { id: 'patient', label: 'Patient report' },
+  ];
 
   return (
-    <div className="flex-1 flex flex-col p-3 sm:p-5 md:p-8 max-w-7xl mx-auto w-full gap-5">
-      {/* Top Controls Island */}
-      <Card variant="base" padding="md" className="w-full print:hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Navigation & Tab Selection */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate('/results')}
-              leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
-            >
-              Back to 3D Twin
-            </Button>
-
-            {/* Two Tabs */}
-            <div className="flex items-center gap-1 bg-[#0b0f17] p-1 rounded-md border border-[#283548]">
-              <button
-                type="button"
-                id="tab-technical"
-                onClick={() => setActiveTab('technical')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer select-none ${
-                  activeTab === 'technical'
-                    ? 'bg-[#1c2637] text-white border border-[#384961] font-semibold'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Technical Report (Clinician)</span>
-              </button>
-
-              <button
-                type="button"
-                id="tab-patient"
-                onClick={() => setActiveTab('patient')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer select-none ${
-                  activeTab === 'patient'
-                    ? 'bg-[#1c2637] text-white border border-[#384961] font-semibold'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>Patient Report</span>
-              </button>
-            </div>
+    <div className="w-full bg-panel py-6 px-4 md:px-8 flex flex-col items-center min-h-[calc(100vh-120px)]">
+      <div className="w-full max-w-[800px] flex flex-col gap-6">
+        {/* Top Control Bar: Tabs left, Actions right (hidden during print) */}
+        <div className="no-print w-full flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-2">
+          <div>
+            <Tabs
+              tabs={tabs}
+              activeTab={activeTab}
+              onChange={(id) => setActiveTab(id as ReportTab)}
+              className="border-b-0"
+            />
+            {/* Task 1.11 single status line: plain 12px muted text */}
+            <p className="text-[12px] leading-[16px] text-text-muted mt-2">
+              {getStatusLine()}
+            </p>
           </div>
 
-          {/* Action Buttons: Regenerate, Download PDF, Print */}
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            {/* Groq / LLM Status Pill */}
-            <div
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono-numbers border ${
-                llmStatus?.configured
-                  ? 'bg-blue-950/60 text-blue-300 border-blue-800/60'
-                  : 'bg-[#1c2637] text-slate-400 border-[#283548]'
-              }`}
-              title={
-                llmStatus?.configured
-                  ? `Connected to Groq ${llmStatus.model}`
-                  : 'Deterministic verified clinical template active'
-              }
-            >
-              <Sparkles className="w-3 h-3 text-blue-400" />
-              <span>
-                {llmStatus?.configured ? `Groq (${llmStatus.model})` : 'Deterministic Template Mode'}
-              </span>
-            </div>
-
+          <div className="flex items-center gap-2">
             <Button
-              id="regenerate-report-btn"
               variant="secondary"
-              size="sm"
-              onClick={handleRegenerate}
+              onClick={fetchReports}
               disabled={isLoading}
-              leftIcon={<RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
             >
               Regenerate
             </Button>
-
             <Button
-              id="download-pdf-btn"
               variant="secondary"
-              size="sm"
               onClick={handleDownloadPdf}
-              leftIcon={<Download className="w-3.5 h-3.5" />}
             >
               Download PDF
             </Button>
-
             <Button
-              id="print-report-btn"
-              variant="primary"
-              size="sm"
+              variant="secondary"
               onClick={handlePrint}
-              leftIcon={<Printer className="w-3.5 h-3.5" />}
             >
               Print
             </Button>
           </div>
         </div>
-      </Card>
 
-      {/* Non-blocking notice if Groq not configured */}
-      {!llmStatus?.configured && (
-        <Banner variant="info" className="print:hidden">
-          Groq API key not configured in environment. Displaying verified deterministic clinical template derived directly from model context.
-        </Banner>
-      )}
+        {/* Error message if any */}
+        {errorMessage && (
+          <div className="no-print w-full text-[13px] text-risk-high flex items-center justify-between">
+            <span>{errorMessage}</span>
+            <Button variant="link" onClick={fetchReports}>
+              Try again
+            </Button>
+          </div>
+        )}
 
-      {/* Error state */}
-      {errorMessage && (
-        <Banner variant="danger">
-          {errorMessage}
-        </Banner>
-      )}
-
-      {/* Loading state */}
-      {isLoading && (
-        <Card variant="base" padding="lg" className="flex flex-col items-center justify-center gap-3 text-center py-16">
-          <Spinner size="lg" />
-          <span className="text-sm font-semibold text-white">
-            Synthesizing Structured Clinical Report...
-          </span>
-          <p className="text-xs text-slate-400 font-mono-numbers">
-            Validating 55 input vectors, TreeSHAP attributions, and regulatory disclosures.
-          </p>
-        </Card>
-      )}
-
-      {/* Rendered Document View */}
-      {!isLoading && currentReport && (
-        <div className="w-full">
-          {activeTab === 'technical' && (
-            <TechnicalReportView report={currentReport as TechnicalReportData} />
-          )}
-
-          {activeTab === 'patient' && (
-            <PatientReportView report={currentReport as PatientReportData} />
-          )}
-        </div>
-      )}
+        {/* Loading Skeleton */}
+        {isLoading ? (
+          <div className="w-full max-w-[800px] bg-page border border-border rounded p-12 flex flex-col gap-6 mx-auto">
+            <div className="flex items-center gap-3">
+              <span className="spinner" />
+              <span className="text-[14px] text-text-muted">Generating structured report...</span>
+            </div>
+            <Skeleton height={32} width="60%" />
+            <Skeleton height={20} width="40%" />
+            <div className="flex flex-col gap-2 pt-4">
+              <Skeleton height={24} width="100%" />
+              <Skeleton height={24} width="100%" />
+              <Skeleton height={24} width="100%" />
+            </div>
+          </div>
+        ) : (
+          /* Rendered Report Document Sheet */
+          <div>
+            {activeTab === 'technical' && technicalReport && (
+              <TechnicalReportView report={technicalReport} />
+            )}
+            {activeTab === 'patient' && patientReport && (
+              <PatientReportView report={patientReport} />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
