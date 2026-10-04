@@ -10,20 +10,20 @@ Generate a comprehensive, structured technical report for a cardiologist or atte
 - Do NOT make a diagnosis. Describe model outputs as "predicted stenosis probability", never as a confirmed condition.
 - Use only the numbers and facts in the provided context. Never invent, round differently, estimate, or infer any value. If a value is missing, state "not provided".
 - Be neutral and non-alarming. Do not use emotional or reassuring language, and do not use fear-inducing language.
-- Output must be valid JSON with the exact section keys given, in the exact order given.
+- Output must be valid JSON with the exact section keys given, in the exact order given (7 sections).
 - The only permitted cautionary statement is the final fixed disclaimer sentence, copied exactly as provided.
 
 ## CLINICAL AND TECHNICAL STYLE
-Language: clinical and precise. Use standard medical terminology and abbreviations (LAD, LCX, RCA, CAD, SHAP, ROC-AUC). Concise, information-dense, no explanations of basic terms.
-Format: Output MUST be a single valid JSON object containing the exact 8 keys listed below, in this exact order.
+Language: clinical and precise. Use standard medical terminology and abbreviations (LAD, LCX, RCA, CAD, SHAP). Concise, information-dense, no explanations of basic terms.
+Format: Output MUST be a single valid JSON object containing the exact 7 keys listed below, in this exact order.
 
-## REQUIRED JSON STRUCTURE AND SECTIONS (Exact Order)
+## REQUIRED JSON STRUCTURE AND SECTIONS (Exact Order - 7 Sections)
 ```json
 {
   "report_header": {
     "report_title": "Perfusion3D Hemodynamic & Coronary Ischemia Technical Evaluation",
     "generation_date_time": "<ISO timestamp or formatted date>",
-    "model_version": "Perfusion3D v1.0.0 (Ensemble Gradient-Boosted + TreeSHAP)",
+    "model_version": "Perfusion3D v1.0.0",
     "patient_age": <number>,
     "patient_sex": "<Male|Female>"
   },
@@ -32,30 +32,30 @@ Format: Output MUST be a single valid JSON object containing the exact 8 keys li
       {
         "target": "CAD",
         "display_name": "Overall Coronary Artery Disease",
-        "predicted_status": "<Ischemia Suspected|Non-Ischemic>",
+        "model_classification": "<Positive|Negative>",
         "probability_pct": <number with one decimal>,
-        "category": "<Low|Moderate|High>"
+        "risk_band": "<Low|Moderate|High>"
       },
       {
         "target": "LAD",
         "display_name": "Left Anterior Descending Artery",
-        "predicted_status": "<Stenosis Suspected|Patent>",
+        "model_classification": "<Positive|Negative>",
         "probability_pct": <number with one decimal>,
-        "category": "<Low|Moderate|High>"
+        "risk_band": "<Low|Moderate|High>"
       },
       {
         "target": "LCX",
         "display_name": "Left Circumflex Artery",
-        "predicted_status": "<Stenosis Suspected|Patent>",
+        "model_classification": "<Positive|Negative>",
         "probability_pct": <number with one decimal>,
-        "category": "<Low|Moderate|High>"
+        "risk_band": "<Low|Moderate|High>"
       },
       {
         "target": "RCA",
         "display_name": "Right Coronary Artery",
-        "predicted_status": "<Stenosis Suspected|Patent>",
+        "model_classification": "<Positive|Negative>",
         "probability_pct": <number with one decimal>,
-        "category": "<Low|Moderate|High>"
+        "risk_band": "<Low|Moderate|High>"
       }
     ]
   },
@@ -97,15 +97,6 @@ Format: Output MUST be a single valid JSON object containing the exact 8 keys li
         ]
       }
     ]
-  },
-  "model_performance": {
-    "metrics": [
-      { "target": "CAD", "accuracy": 0.885, "precision": 0.912, "recall": 0.944, "f1_score": 0.913, "roc_auc": 0.923 },
-      { "target": "LAD", "accuracy": 0.827, "precision": 0.840, "recall": 0.915, "f1_score": 0.844, "roc_auc": 0.853 },
-      { "target": "LCX", "accuracy": 0.714, "precision": 0.650, "recall": 0.916, "f1_score": 0.649, "roc_auc": 0.735 },
-      { "target": "RCA", "accuracy": 0.721, "precision": 0.640, "recall": 0.895, "f1_score": 0.639, "roc_auc": 0.738 }
-    ],
-    "split_notes": "Models were evaluated via repeated 5-fold stratified cross-validation on the Z-Alizadeh Sani cohort (303 records) with isotonic calibration."
   },
   "methodological_notes": [
     "Evaluated using 55 non-invasive physiological features across 5 clinical categories.",

@@ -3,21 +3,28 @@ Backend LLM Report Generation Service
 Multimodal AI Hackathon 2026 - Perfusion3D
 
 Provides:
-1. Environment-driven LLM provider adapter (OpenAI, Anthropic, Gemini, Groq, Ollama)
+1. Environment-driven Groq LLM provider adapter (llama-3.3-70b-versatile)
 2. Anonymized Report Context extraction
-3. Strict Output Validator (Banned advisory phrase scan, section ordering, number verification)
-4. Deterministic template fallback generator for offline or unconfigured environments
+3. Strict Output Validator (Banned advisory phrase scan, section ordering, format-tolerant number verification)
+4. Deterministic template fallback generator for offline, unconfigured, or safety-rejected environments
+5. Diagnostics and live connectivity checks with 60s caching
 """
 
 import os
 import re
 import json
 import time
+import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Set
 from pathlib import Path
 import urllib.request
 import urllib.error
+
+from dotenv import load_dotenv
+from apps.api.app.services.risk_bands import risk_label
+
+logger = logging.getLogger("cardio_api")
 
 # Banned advisory phrases per SHARED RULES
 BANNED_PHRASES = [
@@ -38,17 +45,18 @@ BANNED_PHRASES = [
     "consult",
 ]
 
+# Task 2.1(d): Exactly 7 sections for Technical report (model_performance moved to /model-info)
 TECHNICAL_SECTIONS_ORDER = [
     "report_header",
     "model_output_summary",
     "input_parameters",
     "parameters_outside_reference_range",
     "model_attribution",
-    "model_performance",
     "methodological_notes",
     "disclaimer",
 ]
 
+# Exactly 8 sections for Patient report
 PATIENT_SECTIONS_ORDER = [
     "title_and_date",
     "what_this_summary_is",
@@ -65,47 +73,294 @@ MANDATORY_DISCLAIMER = (
     "not a substitute for formal diagnostic imaging or professional medical evaluation."
 )
 
+REPO_ROOT: Path = Path(__file__).resolve().parents[4]
 
-import logging
-from dotenv import load_dotenv
+# Global diagnostic and check caches
+_last_live_check_time: float = 0.0
+_cached_live_status: Dict[str, Any] = {}
+_last_error_code: Optional[str] = None
+_last_error_message: Optional[str] = None
 
-load_dotenv(Path(__file__).resolve().parents[4] / ".env")
-logger = logging.getLogger("llm_service")
+
+def load_and_check_env() -> Tuple[bool, str]:
+    """
+    Task 1.2 & 1.5: Explicitly loads .env with override=True using path resolved from file location.
+    Handles:
+    - a) file named .env.txt or env
+    - b) spaces around '=' or hidden BOM
+    - c) old variable LLM_API_KEY present while GROQ_API_KEY missing
+    """
+    env_path = REPO_ROOT / ".env"
+    env_txt = REPO_ROOT / ".env.txt"
+    bare_env = REPO_ROOT / "env"
+
+    if not env_path.exists():
+        if env_txt.exists():
+            logger.warning(
+                f"[CONFIG WARNING] Found '{env_txt}' instead of '.env' in repository root. "
+                "Windows may have appended .txt. Please rename to '.env'."
+            )
+        elif bare_env.exists():
+            logger.warning(
+                f"[CONFIG WARNING] Found '{bare_env}' without leading dot in repository root. "
+                "Please rename to '.env'."
+            )
+
+    env_file_found = env_path.exists()
+
+    if env_file_found:
+        try:
+            # 1.2: Standard override load
+            load_dotenv(dotenv_path=env_path, override=True)
+
+            # 1.5b: Parse robustly for hidden BOM (utf-8-sig) and whitespace around '='
+            raw_text = env_path.read_text(encoding="utf-8-sig")
+            for line in raw_text.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    k = k.strip()
+                    v = v.strip()
+                    if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+                        v = v[1:-1].strip()
+                    if k:
+                        os.environ[k] = v
+        except Exception as e:
+            logger.error(f"[CONFIG ERROR] Failed reading .env file at {env_path}: {e}")
+
+    # 1.5c: Check for old variable LLM_API_KEY
+    if "LLM_API_KEY" in os.environ and not os.environ.get("GROQ_API_KEY"):
+        logger.warning(
+            "[CONFIG WARNING] Old variable LLM_API_KEY detected in environment but GROQ_API_KEY is missing. "
+            "rename LLM_API_KEY to GROQ_API_KEY"
+        )
+
+    return env_file_found, str(env_path)
+
+
+def clean_env_str(val: Optional[str]) -> str:
+    """Strips whitespace and surrounding quotes from an environment string."""
+    if not val:
+        return ""
+    s = val.strip()
+    if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
+        s = s[1:-1].strip()
+    return s
+
+
+def is_placeholder(key: Optional[str]) -> bool:
+    """
+    Task 1.4: Treat the key as 'not configured' only if it is empty, contains 'PASTE_',
+    or equals the exact placeholder from .env.example.
+    A real Groq key must never be classified as a placeholder.
+    """
+    if not key:
+        return True
+    cleaned = clean_env_str(key)
+    if not cleaned:
+        return True
+    if "PASTE_" in cleaned:
+        return True
+    if cleaned == "PASTE_YOUR_GROQ_API_KEY_HERE":
+        return True
+    return False
 
 
 def get_groq_config() -> Tuple[Optional[str], str]:
-    """Reads Groq configuration from environment variables (Task B1 & B2)."""
-    key = os.environ.get("GROQ_API_KEY", "").strip()
-    model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
+    """
+    Task 1.3: Reads GROQ_API_KEY and GROQ_MODEL from os.environ at request time.
+    Strips leading/trailing whitespace and surrounding quotes.
+    """
+    raw_key = os.environ.get("GROQ_API_KEY", "")
+    raw_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-    # Reject placeholders
-    if not key or key == "PASTE_YOUR_GROQ_API_KEY_HERE":
+    key = clean_env_str(raw_key)
+    model = clean_env_str(raw_model) or "llama-3.3-70b-versatile"
+
+    if is_placeholder(key):
         return None, model
     return key, model
 
 
+def perform_live_groq_check(
+    api_key: Optional[str],
+    model: str,
+    force: bool = False,
+) -> Tuple[Optional[bool], str, Optional[str]]:
+    """
+    Task 1.8: Calls GET https://api.groq.com/openai/v1/models with the key.
+    Cached for 60 seconds unless force=True.
+    Returns: (model_listed_by_groq, last_error_code, last_error_message)
+    Error codes: ok, no_key, key_rejected, model_unavailable, rate_limited, network_error, validation_failed
+    """
+    global _last_live_check_time, _cached_live_status, _last_error_code, _last_error_message
+    now = time.time()
+
+    if not api_key:
+        _last_error_code = "no_key"
+        _last_error_message = "Groq API key not found or is placeholder"
+        return None, "no_key", _last_error_message
+
+    if (
+        not force
+        and (now - _last_live_check_time < 60.0)
+        and _cached_live_status.get("key") == api_key
+        and _cached_live_status.get("model") == model
+    ):
+        return (
+            _cached_live_status.get("model_listed_by_groq"),
+            _cached_live_status.get("error_code", "ok"),
+            _cached_live_status.get("error_message"),
+        )
+
+    url = "https://api.groq.com/openai/v1/models"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    model_listed: Optional[bool] = None
+    err_code = "ok"
+    err_msg: Optional[str] = None
+
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            available_models = [m.get("id") for m in data.get("data", [])]
+            if model in available_models:
+                model_listed = True
+                err_code = "ok"
+                err_msg = None
+            else:
+                model_listed = False
+                err_code = "model_unavailable"
+                err_msg = f"Model '{model}' not found in Groq available models"
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            err_code = "key_rejected"
+            err_msg = f"Groq rejected API key (HTTP {e.code})"
+            model_listed = False
+        elif e.code == 429:
+            err_code = "rate_limited"
+            err_msg = "Groq rate limit exceeded (HTTP 429)"
+            model_listed = None
+        elif e.code in (400, 404):
+            err_code = "model_unavailable"
+            err_msg = f"Groq returned HTTP {e.code}"
+            model_listed = False
+        else:
+            err_code = "network_error"
+            err_msg = f"HTTP {e.code}: {e.reason}"
+            model_listed = None
+    except Exception as e:
+        err_code = "network_error"
+        err_msg = str(e)
+        model_listed = None
+
+    _last_live_check_time = now
+    _cached_live_status = {
+        "key": api_key,
+        "model": model,
+        "model_listed_by_groq": model_listed,
+        "error_code": err_code,
+        "error_message": err_msg,
+    }
+    _last_error_code = err_code
+    _last_error_message = err_msg
+    return model_listed, err_code, err_msg
+
+
+def verify_groq_startup() -> str:
+    """Startup verification of Groq model."""
+    load_and_check_env()
+    api_key, model = get_groq_config()
+    if not api_key:
+        logger.info("[cardio_api]: Groq API key loaded: no | Operating in deterministic fallback mode")
+        return "unconfigured"
+
+    listed, code, msg = perform_live_groq_check(api_key, model, force=True)
+    if code == "ok":
+        logger.info(f"[cardio_api]: Groq API key loaded: yes | Model: {model} verified")
+        return "ready"
+    else:
+        logger.warning(f"[cardio_api]: Groq API check status: {code} | Reason: {msg}")
+        return "unavailable"
+
+
+def get_reports_diagnostics() -> Dict[str, Any]:
+    """
+    Task 1.7: Upgraded diagnostics endpoint. Never prints or returns the key.
+    """
+    env_found, env_path = load_and_check_env()
+    raw_key = os.environ.get("GROQ_API_KEY", "")
+    key, model = get_groq_config()
+
+    key_present = bool(clean_env_str(raw_key))
+    key_is_placeholder = is_placeholder(raw_key)
+    key_prefix_ok = bool(key and key.startswith("gsk_"))
+
+    model_listed, err_code, err_msg = perform_live_groq_check(key, model, force=False)
+
+    if not key or key_is_placeholder:
+        err_code = "no_key"
+        err_msg = "Groq API key not found. Using standard template."
+        model_listed = None
+
+    # Sync global error code
+    global _last_error_code, _last_error_message
+    if _last_error_code is not None:
+        err_code = _last_error_code
+        err_msg = _last_error_message
+
+    return {
+        "env_file_found": env_found,
+        "env_file_path": env_path,
+        "key_present": key_present,
+        "key_is_placeholder": key_is_placeholder,
+        "key_prefix_ok": key_prefix_ok,
+        "model": model,
+        "model_listed_by_groq": model_listed,
+        "last_error_code": err_code,
+        "last_error_message": err_msg,
+        # Backward compatibility properties
+        "configured": (key is not None and not key_is_placeholder and err_code == "ok"),
+        "model_status": "ready" if (key and err_code == "ok") else ("unconfigured" if not key else "unavailable"),
+        "fallback_available": True,
+    }
+
+
+def get_groq_model_status() -> str:
+    """Returns current Groq model status: 'ready' | 'unavailable' | 'unconfigured'."""
+    diag = get_reports_diagnostics()
+    return diag["model_status"]
+
+
+# Reference metadata
 CLINICAL_REFERENCE_METADATA: Dict[str, Dict[str, Any]] = {
-    "Age": {"unit": "years", "ref_low": 18, "ref_high": 75, "ref_display": "18-75"},
-    "Weight": {"unit": "kg", "ref_low": 50, "ref_high": 90, "ref_display": "50-90"},
-    "Length": {"unit": "cm", "ref_low": 150, "ref_high": 190, "ref_display": "150-190"},
-    "BMI": {"unit": "kg/m²", "ref_low": 18.5, "ref_high": 24.9, "ref_display": "18.5-24.9"},
-    "BP": {"unit": "mmHg", "ref_low": 90, "ref_high": 120, "ref_display": "90-120"},
-    "PR": {"unit": "bpm", "ref_low": 60, "ref_high": 100, "ref_display": "60-100"},
-    "FBS": {"unit": "mg/dL", "ref_low": 70, "ref_high": 99, "ref_display": "70-99"},
-    "CR": {"unit": "mg/dL", "ref_low": 0.6, "ref_high": 1.2, "ref_display": "0.6-1.2"},
-    "TG": {"unit": "mg/dL", "ref_low": 50, "ref_high": 150, "ref_display": "50-150"},
-    "LDL": {"unit": "mg/dL", "ref_low": 50, "ref_high": 100, "ref_display": "50-100"},
-    "HDL": {"unit": "mg/dL", "ref_low": 40, "ref_high": 60, "ref_display": "40-60"},
-    "BUN": {"unit": "mg/dL", "ref_low": 7, "ref_high": 20, "ref_display": "7-20"},
-    "ESR": {"unit": "mm/hr", "ref_low": 0, "ref_high": 20, "ref_display": "0-20"},
-    "Hb": {"unit": "g/dL", "ref_low": 12.0, "ref_high": 17.5, "ref_display": "12.0-17.5"},
-    "K": {"unit": "mEq/L", "ref_low": 3.5, "ref_high": 5.0, "ref_display": "3.5-5.0"},
-    "Na": {"unit": "mEq/L", "ref_low": 135, "ref_high": 145, "ref_display": "135-145"},
-    "WBC": {"unit": "cells/mcL", "ref_low": 4000, "ref_high": 11000, "ref_display": "4000-11000"},
-    "Lymph": {"unit": "%", "ref_low": 20, "ref_high": 40, "ref_display": "20-40"},
-    "Neut": {"unit": "%", "ref_low": 40, "ref_high": 70, "ref_display": "40-70"},
-    "PLT": {"unit": "x10³/mcL", "ref_low": 150, "ref_high": 450, "ref_display": "150-450"},
-    "EF-TTE": {"unit": "%", "ref_low": 55, "ref_high": 70, "ref_display": "55-70"},
+    "Age": {"unit": "years", "ref_low": 18, "ref_high": 75, "ref_display": "18–75 years"},
+    "Weight": {"unit": "kg", "ref_low": 50, "ref_high": 90, "ref_display": "50–90 kg"},
+    "Length": {"unit": "cm", "ref_low": 150, "ref_high": 190, "ref_display": "150–190 cm"},
+    "BMI": {"unit": "kg/m²", "ref_low": 18.5, "ref_high": 24.9, "ref_display": "18.5–24.9 kg/m²"},
+    "BP": {"unit": "mmHg", "ref_low": 90, "ref_high": 120, "ref_display": "90–120 mmHg"},
+    "PR": {"unit": "bpm", "ref_low": 60, "ref_high": 100, "ref_display": "60–100 bpm"},
+    "FBS": {"unit": "mg/dL", "ref_low": 70, "ref_high": 99, "ref_display": "70–99 mg/dL"},
+    "CR": {"unit": "mg/dL", "ref_low": 0.6, "ref_high": 1.2, "ref_display": "0.6–1.2 mg/dL"},
+    "TG": {"unit": "mg/dL", "ref_low": 50, "ref_high": 150, "ref_display": "50–150 mg/dL"},
+    "LDL": {"unit": "mg/dL", "ref_low": 50, "ref_high": 100, "ref_display": "50–100 mg/dL"},
+    "HDL": {"unit": "mg/dL", "ref_low": 40, "ref_high": 60, "ref_display": "40–60 mg/dL"},
+    "BUN": {"unit": "mg/dL", "ref_low": 7, "ref_high": 20, "ref_display": "7–20 mg/dL"},
+    "ESR": {"unit": "mm/hr", "ref_low": 0, "ref_high": 20, "ref_display": "0–20 mm/hr"},
+    "HB": {"unit": "g/dL", "ref_low": 12.0, "ref_high": 17.5, "ref_display": "12.0–17.5 g/dL"},
+    "K": {"unit": "mEq/L", "ref_low": 3.5, "ref_high": 5.0, "ref_display": "3.5–5.0 mEq/L"},
+    "Na": {"unit": "mEq/L", "ref_low": 135, "ref_high": 145, "ref_display": "135–145 mEq/L"},
+    "WBC": {"unit": "cells/mcL", "ref_low": 4000, "ref_high": 11000, "ref_display": "4000–11000 cells/mcL"},
+    "Lymph": {"unit": "%", "ref_low": 20, "ref_high": 40, "ref_display": "20–40%"},
+    "Neut": {"unit": "%", "ref_low": 40, "ref_high": 70, "ref_display": "40–70%"},
+    "PLT": {"unit": "x10³/mcL", "ref_low": 150, "ref_high": 450, "ref_display": "150–450 x10³/mcL"},
+    "EF-TTE": {"unit": "%", "ref_low": 55, "ref_high": 70, "ref_display": "55–70%"},
 }
 
 
@@ -115,61 +370,49 @@ def build_report_context(
     explanations: Dict[str, Any],
     model_metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """
-    Builds an anonymized report context from verified patient inputs, predictions, and SHAP attributions.
-    Direct identifiers (name, patient_id) are strictly removed.
-    """
-    clean_inputs = {k: v for k, v in patient_data.items() if k not in ["patient_id", "id", "name"]}
+    """Extracts report context strictly avoiding target leakage columns."""
+    clean_inputs = {
+        k: v
+        for k, v in patient_data.items()
+        if k not in ["Cath", "CAD", "LAD", "LCX", "RCA", "target", "target_lad", "target_lcx", "target_rca"]
+    }
 
-    # Build input parameters with units, reference ranges, and within/outside flags (Task 5.2)
-    parameter_details: Dict[str, Dict[str, Any]] = {}
-    for k, v in clean_inputs.items():
-        meta = CLINICAL_REFERENCE_METADATA.get(k, {})
-        unit = meta.get("unit", "")
-        ref_display = meta.get("ref_display", "Normal")
-        ref_low = meta.get("ref_low")
-        ref_high = meta.get("ref_high")
-        within_range = True
-        try:
-            val_num = float(v)
-            if ref_low is not None and val_num < ref_low:
-                within_range = False
-            if ref_high is not None and val_num > ref_high:
-                within_range = False
-        except (ValueError, TypeError):
-            within_range = str(v) in ["0", "N", "Normal", "Male", "Female"]
-
-        parameter_details[k] = {
-            "parameter": k,
-            "value": v,
-            "unit": unit,
-            "reference_range": ref_display,
-            "within_range": within_range,
+    parameter_details = {}
+    for feat_name, raw_val in clean_inputs.items():
+        meta = CLINICAL_REFERENCE_METADATA.get(feat_name, {})
+        is_outside = False
+        if meta and isinstance(raw_val, (int, float)):
+            is_outside = raw_val < meta["ref_low"] or raw_val > meta["ref_high"]
+        parameter_details[feat_name] = {
+            "value": raw_val,
+            "unit": meta.get("unit", ""),
+            "reference_range": meta.get("ref_display", ""),
+            "outside_reference_range": is_outside,
         }
 
-    # Extract target probabilities and classifications
     overall_cad = predictions.get("overall_cad", {})
     cad_prob = float(overall_cad.get("probability", 0.0))
     cad_prob_pct = round(cad_prob * 100.0, 1)
-    cad_status = "Ischemia Suspected" if cad_prob > 0.48 else "Non-Ischemic"
-    cad_category = "High" if cad_prob > 0.70 else "Moderate" if cad_prob > 0.40 else "Low"
+    cad_decision = "Positive" if overall_cad.get("stenosis_suspected", False) else "Negative"
+    cad_band = risk_label(cad_prob)
 
-    vessels_dict = predictions.get("vessels", {})
+    vessels_pred = predictions.get("vessels", {})
     vessels_summary = {}
-    for v_key in ["lad", "lcx", "rca"]:
-        v_data = vessels_dict.get(v_key, {})
-        v_prob = float(v_data.get("probability", 0.0))
-        v_prob_pct = round(v_prob * 100.0, 1)
-        v_cat = "High" if v_prob > 0.70 else "Moderate" if v_prob > 0.40 else "Low"
+    for v_key, v_disp in [("lad", "Left Anterior Descending Artery"), ("lcx", "Left Circumflex Artery"), ("rca", "Right Coronary Artery")]:
+        v_data = vessels_pred.get(v_key, {})
+        prob = float(v_data.get("probability", 0.0))
+        pct = round(prob * 100.0, 1)
+        suspected = v_data.get("stenosis_suspected", False)
         vessels_summary[v_key] = {
-            "target": v_key.upper(),
-            "display_name": v_data.get("display_name", v_key.upper()),
-            "probability_pct": v_prob_pct,
-            "category": v_cat,
-            "stenosis_suspected": bool(v_data.get("stenosis_suspected", False)),
+            "display_name": v_disp,
+            "probability": prob,
+            "probability_pct": pct,
+            "stenosis_suspected": suspected,
+            "model_classification": "Positive" if suspected else "Negative",
+            "risk_band": risk_label(prob),
+            "category": risk_label(prob),
         }
 
-    # Extract top SHAP features per target
     shap_summary = {}
     for target in ["cad", "lad", "lcx", "rca"]:
         exp = explanations.get(target, {})
@@ -185,64 +428,30 @@ def build_report_context(
             for f in top_feats[:5]
         ]
 
-    # Model metrics (Task A1: Read from evaluation_metrics.json)
-    eval_metrics_path = Path(__file__).resolve().parents[4] / "models" / "evaluation_metrics.json"
-    metrics = []
-    if eval_metrics_path.exists():
-        try:
-            eval_data = json.loads(eval_metrics_path.read_text(encoding="utf-8"))
-            for t in ["CAD", "LAD", "LCX", "RCA"]:
-                m_info = eval_data.get("models", {}).get(t, {})
-                metrics.append({
-                    "target": t,
-                    "accuracy": m_info.get("accuracy", 0.0),
-                    "precision": m_info.get("precision", 0.0),
-                    "recall": m_info.get("recall", 0.0),
-                    "f1_score": m_info.get("f1_score", 0.0),
-                    "roc_auc": m_info.get("roc_auc", 0.0),
-                    "pr_auc": m_info.get("pr_auc", 0.0),
-                    "specificity": m_info.get("specificity", 0.0),
-                    "optimal_threshold": m_info.get("optimal_threshold", 0.5),
-                })
-        except Exception:
-            metrics = []
-
-    if not metrics and model_metadata and "models" in model_metadata:
-        for t in ["CAD", "LAD", "LCX", "RCA"]:
-            m_info = model_metadata["models"].get(t, {})
-            metrics.append({
-                "target": t,
-                "accuracy": 0.85,
-                "precision": round(float(m_info.get("optimal_f1", 0.0)), 3),
-                "recall": round(float(m_info.get("optimal_recall", 0.0)), 3),
-                "f1_score": round(float(m_info.get("optimal_f1", 0.0)), 3),
-                "roc_auc": round(float(m_info.get("roc_auc", 0.0)), 3),
-                "pr_auc": round(float(m_info.get("pr_auc", 0.0)), 3),
-                "specificity": round(float(m_info.get("optimal_specificity", 0.0)), 3),
-                "optimal_threshold": round(float(m_info.get("optimal_threshold", 0.5)), 2),
-            })
-
     return {
         "generation_timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
         "patient_inputs": clean_inputs,
         "parameter_details": parameter_details,
         "cad_summary": {
-            "predicted_status": cad_status,
+            "model_classification": cad_decision,
+            "predicted_status": "Ischemia Suspected" if cad_decision == "Positive" else "Non-Ischemic",
+            "probability": cad_prob,
             "probability_pct": cad_prob_pct,
-            "category": cad_category,
+            "risk_band": cad_band,
+            "category": cad_band,
         },
         "vessels_summary": vessels_summary,
         "shap_summary": shap_summary,
-        "model_metrics": metrics,
         "disclaimer": MANDATORY_DISCLAIMER,
     }
 
 
-def extract_numbers_from_obj(obj: Any) -> set[float]:
-    """Recursively extracts all numeric values (int and float representations) from an object."""
-    nums: set[float] = set()
+def extract_all_numbers(obj: Any) -> Set[float]:
+    """Recursively extracts all numbers from an object."""
+    nums: Set[float] = set()
     if isinstance(obj, (int, float)):
         val = float(obj)
+        nums.add(val)
         nums.add(round(val, 2))
         nums.add(round(val, 1))
         nums.add(float(int(round(val))))
@@ -250,6 +459,7 @@ def extract_numbers_from_obj(obj: Any) -> set[float]:
         for m in re.findall(r"(?<![a-zA-Z_])\b\d+(?:\.\d+)?\b(?![a-zA-Z_])", obj):
             try:
                 val = float(m)
+                nums.add(val)
                 nums.add(round(val, 2))
                 nums.add(round(val, 1))
                 nums.add(float(int(round(val))))
@@ -257,11 +467,66 @@ def extract_numbers_from_obj(obj: Any) -> set[float]:
                 pass
     elif isinstance(obj, dict):
         for v in obj.values():
-            nums.update(extract_numbers_from_obj(v))
+            nums.update(extract_all_numbers(v))
     elif isinstance(obj, (list, tuple)):
         for item in obj:
-            nums.update(extract_numbers_from_obj(item))
+            nums.update(extract_all_numbers(item))
     return nums
+
+
+def build_allowed_numbers(context: Dict[str, Any]) -> Set[float]:
+    """
+    Task 1.10a: Build format-tolerant allowed number set from context:
+    - Includes 36.0, 36, 0.36 (as 36%)
+    - Rounding to whole numbers and 1 decimal place
+    - Units stripped
+    - Structural and date numbers
+    """
+    base_nums = extract_all_numbers(context)
+    allowed: Set[float] = set()
+
+    for n in base_nums:
+        allowed.add(n)
+        allowed.add(round(n, 2))
+        allowed.add(round(n, 1))
+        allowed.add(float(int(round(n))))
+
+        # If probability [0.0, 1.0], add percentage variants (e.g. 0.36 -> 36.0, 36)
+        if 0.0 <= n <= 1.0:
+            pct = n * 100.0
+            allowed.add(pct)
+            allowed.add(round(pct, 2))
+            allowed.add(round(pct, 1))
+            allowed.add(float(int(round(pct))))
+
+        # If percentage [0, 100], add decimal variants (e.g. 36.0 -> 0.36)
+        if 0.0 <= n <= 100.0:
+            dec = n / 100.0
+            allowed.add(dec)
+            allowed.add(round(dec, 3))
+            allowed.add(round(dec, 2))
+            allowed.add(round(dec, 1))
+
+    now = datetime.now()
+    structural = {
+        0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
+        12.0, 14.0, 18.0, 20.0, 24.0, 30.0, 40.0, 41.0, 50.0, 55.0, 60.0, 70.0, 75.0, 90.0,
+        99.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 180.0, 190.0, 303.0,
+        float(now.year), float(now.month), float(now.day),
+        2024.0, 2025.0, 2026.0,
+    }
+    allowed.update(structural)
+    return allowed
+
+
+def is_number_allowed(num: float, allowed_set: Set[float]) -> bool:
+    """Tolerantly matches numbers to allowed set."""
+    for c in allowed_set:
+        if abs(num - c) < 0.2:
+            return True
+        if c > 10.0 and abs(num - c) / c < 0.015:
+            return True
+    return False
 
 
 def validate_report_json(
@@ -270,11 +535,11 @@ def validate_report_json(
     context: Dict[str, Any],
 ) -> Tuple[bool, Optional[str]]:
     """
-    Task 5.5 Output Validator:
+    Task 1.10 Validator:
     1. Checks for required section keys in exact order.
     2. Scans for banned advisory phrases.
     3. Verifies mandatory disclaimer.
-    4. Validates numbers against context to prevent hallucination.
+    4. Format-tolerant number validation against context.
     """
     # 1. Section presence and ordering
     actual_keys = list(report_dict.keys())
@@ -284,7 +549,7 @@ def validate_report_json(
         if i < len(actual_keys) and actual_keys[i] != exp_sec:
             return False, f"Sections out of order. Expected '{exp_sec}' at position {i+1}, found '{actual_keys[i]}'"
 
-    # 2. Banned advisory phrases check across all text fields
+    # 2. Banned advisory phrases check
     report_text = json.dumps(report_dict).lower()
     for phrase in BANNED_PHRASES:
         pattern = r"\b" + re.escape(phrase) + r"\b"
@@ -296,18 +561,13 @@ def validate_report_json(
     if disclaimer_val != MANDATORY_DISCLAIMER:
         return False, "Disclaimer section does not match the exact mandated text."
 
-    # 4. Number validation: verify that numbers in report text trace back to context
-    allowed_structural = {
-        0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 18.0,
-        20.0, 40.0, 50.0, 55.0, 60.0, 70.0, 75.0, 90.0, 100.0, 120.0, 150.0,
-        303.0, 2026.0,
-    }
-    context_numbers = extract_numbers_from_obj(context) | allowed_structural
+    # 4. Format-tolerant number validation
+    allowed_numbers = build_allowed_numbers(context)
+    report_numbers = extract_all_numbers(report_dict)
 
-    report_numbers = extract_numbers_from_obj(report_dict)
     hallucinated = []
     for num in report_numbers:
-        if not any(abs(num - c_num) < 0.1 for c_num in context_numbers):
+        if not is_number_allowed(num, allowed_numbers):
             hallucinated.append(num)
 
     if hallucinated:
@@ -316,71 +576,9 @@ def validate_report_json(
     return True, None
 
 
-_groq_model_status: str = "unconfigured"
-
-
-def check_groq_model_availability(api_key: str, model_name: str) -> Tuple[bool, Optional[str]]:
-    """
-    Task B4: Startup/runtime check verifying GROQ_MODEL against GET https://api.groq.com/openai/v1/models.
-    If GROQ_MODEL is not available, logs a clear warning and returns (False, error_reason).
-    """
-    url = "https://api.groq.com/openai/v1/models"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    try:
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            available_models = [m.get("id") for m in data.get("data", [])]
-            if model_name not in available_models:
-                logger.warning(
-                    f"Groq model [{model_name}] not found in available models. "
-                    f"Report generation will fall back to deterministic templates until corrected."
-                )
-                return False, "Groq model unavailable"
-            return True, None
-    except Exception as e:
-        logger.warning(
-            f"Groq model [{model_name}] check failed ({e}). "
-            f"Report generation will fall back to deterministic templates until corrected."
-        )
-        return False, "Groq model unavailable"
-
-
-def verify_groq_startup() -> str:
-    """Task B4: Startup verification of Groq model."""
-    global _groq_model_status
-    api_key, model = get_groq_config()
-    if not api_key:
-        _groq_model_status = "unconfigured"
-        return _groq_model_status
-
-    is_avail, _ = check_groq_model_availability(api_key, model)
-    if is_avail:
-        _groq_model_status = "ready"
-        logger.info(f"Groq model '{model}' verified and ready.")
-    else:
-        _groq_model_status = "unavailable"
-    return _groq_model_status
-
-
-def get_groq_model_status() -> str:
-    """Returns current cached or verified Groq model status: 'ready' | 'unavailable' | 'unconfigured'."""
-    global _groq_model_status
-    api_key, model = get_groq_config()
-    if not api_key:
-        _groq_model_status = "unconfigured"
-        return _groq_model_status
-    if _groq_model_status == "unconfigured":
-        return verify_groq_startup()
-    return _groq_model_status
-
-
 def call_groq(prompt: str, system_prompt: str) -> str:
     """
-    Task B1 & B2: Groq-only adapter using OpenAI-compatible endpoint with JSON object mode.
+    Executes Groq OpenAI-compatible chat completion with JSON object mode.
     """
     api_key, model = get_groq_config()
     if not api_key:
@@ -408,22 +606,20 @@ def call_groq(prompt: str, system_prompt: str) -> str:
 
 def generate_deterministic_technical_report(context: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Task 5.7: Fallback deterministic technical report filled directly from report context.
-    Guaranteed valid, zero hallucination, ordered sections, and zero banned words.
+    Fallback deterministic technical report: exactly 7 sections (Task 2.1d & 2.7).
+    Includes Model classification and Risk band.
     """
     inputs = context["patient_inputs"]
     cad = context["cad_summary"]
     vessels = context["vessels_summary"]
-    metrics = context.get("model_metrics", [])
     shap = context.get("shap_summary", {})
 
-    # Outside reference range parameters
     outside_list = []
-    if inputs.get("BP", 0) > 130:
+    if inputs.get("BP", 0) > 120:
         outside_list.append(f"BP: {inputs.get('BP')} mmHg (reference 90-120 mmHg)")
     if inputs.get("Age", 0) > 75:
         outside_list.append(f"Age: {inputs.get('Age')} years (reference 18-75 years)")
-    if inputs.get("FBS", 0) > 100:
+    if inputs.get("FBS", 0) > 99:
         outside_list.append(f"FBS: {inputs.get('FBS')} mg/dL (reference 70-99 mg/dL)")
     if inputs.get("TG", 0) > 150:
         outside_list.append(f"TG: {inputs.get('TG')} mg/dL (reference 50-150 mg/dL)")
@@ -437,7 +633,7 @@ def generate_deterministic_technical_report(context: Dict[str, Any]) -> Dict[str
         "report_header": {
             "report_title": "Perfusion3D Hemodynamic & Coronary Ischemia Technical Evaluation",
             "generation_date_time": context.get("generation_timestamp", datetime.now().isoformat()),
-            "model_version": "Perfusion3D v1.0.0 (Ensemble Gradient-Boosted + TreeSHAP)",
+            "model_version": "Perfusion3D v1.0.0",
             "patient_age": inputs.get("Age", 58),
             "patient_sex": inputs.get("Sex", "Male"),
         },
@@ -446,30 +642,30 @@ def generate_deterministic_technical_report(context: Dict[str, Any]) -> Dict[str
                 {
                     "target": "CAD",
                     "display_name": "Overall Coronary Artery Disease",
-                    "predicted_status": cad["predicted_status"],
+                    "model_classification": cad["model_classification"],
                     "probability_pct": cad["probability_pct"],
-                    "category": cad["category"],
+                    "risk_band": cad["risk_band"],
                 },
                 {
                     "target": "LAD",
                     "display_name": vessels["lad"]["display_name"],
-                    "predicted_status": "Stenosis Suspected" if vessels["lad"]["stenosis_suspected"] else "Patent",
+                    "model_classification": vessels["lad"]["model_classification"],
                     "probability_pct": vessels["lad"]["probability_pct"],
-                    "category": vessels["lad"]["category"],
+                    "risk_band": vessels["lad"]["risk_band"],
                 },
                 {
                     "target": "LCX",
                     "display_name": vessels["lcx"]["display_name"],
-                    "predicted_status": "Stenosis Suspected" if vessels["lcx"]["stenosis_suspected"] else "Patent",
+                    "model_classification": vessels["lcx"]["model_classification"],
                     "probability_pct": vessels["lcx"]["probability_pct"],
-                    "category": vessels["lcx"]["category"],
+                    "risk_band": vessels["lcx"]["risk_band"],
                 },
                 {
                     "target": "RCA",
                     "display_name": vessels["rca"]["display_name"],
-                    "predicted_status": "Stenosis Suspected" if vessels["rca"]["stenosis_suspected"] else "Patent",
+                    "model_classification": vessels["rca"]["model_classification"],
                     "probability_pct": vessels["rca"]["probability_pct"],
-                    "category": vessels["rca"]["category"],
+                    "risk_band": vessels["rca"]["risk_band"],
                 },
             ]
         },
@@ -527,32 +723,11 @@ def generate_deterministic_technical_report(context: Dict[str, Any]) -> Dict[str
         "parameters_outside_reference_range": outside_list,
         "model_attribution": {
             "targets": [
-                {
-                    "target": "CAD",
-                    "top_features": shap.get("cad", []),
-                },
-                {
-                    "target": "LAD",
-                    "top_features": shap.get("lad", []),
-                },
-                {
-                    "target": "LCX",
-                    "top_features": shap.get("lcx", []),
-                },
-                {
-                    "target": "RCA",
-                    "top_features": shap.get("rca", []),
-                },
+                {"target": "CAD", "top_features": shap.get("cad", [])},
+                {"target": "LAD", "top_features": shap.get("lad", [])},
+                {"target": "LCX", "top_features": shap.get("lcx", [])},
+                {"target": "RCA", "top_features": shap.get("rca", [])},
             ]
-        },
-        "model_performance": {
-            "metrics": metrics if metrics else [
-                {"target": "CAD", "accuracy": 0.871, "precision": 0.883, "recall": 0.944, "f1_score": 0.913, "roc_auc": 0.923, "pr_auc": 0.966, "specificity": 0.690},
-                {"target": "LAD", "accuracy": 0.802, "precision": 0.783, "recall": 0.915, "f1_score": 0.844, "roc_auc": 0.853, "pr_auc": 0.883, "specificity": 0.643},
-                {"target": "LCX", "accuracy": 0.611, "precision": 0.502, "recall": 0.916, "f1_score": 0.649, "roc_auc": 0.735, "pr_auc": 0.615, "specificity": 0.413},
-                {"target": "RCA", "accuracy": 0.620, "precision": 0.498, "recall": 0.895, "f1_score": 0.639, "roc_auc": 0.738, "pr_auc": 0.627, "specificity": 0.455},
-            ],
-            "split_notes": "Models were evaluated via repeated 5-fold stratified cross-validation on the Z-Alizadeh Sani cohort (303 records) with isotonic calibration.",
         },
         "methodological_notes": [
             "Evaluated using 55 non-invasive physiological features across 5 clinical categories.",
@@ -565,56 +740,64 @@ def generate_deterministic_technical_report(context: Dict[str, Any]) -> Dict[str
 
 def generate_deterministic_patient_report(context: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Task 5.7: Fallback deterministic plain-language patient report.
-    Grade 6-8 reading level, plain language, percentages as whole numbers, zero banned words.
+    Fallback deterministic plain-language patient report (8 sections).
+    Percentages as whole numbers, grade 6-8 reading level, zero advisory words.
     """
     inputs = context["patient_inputs"]
     cad = context["cad_summary"]
     vessels = context["vessels_summary"]
     shap = context.get("shap_summary", {})
 
-    cad_pct = int(round(cad["probability_pct"]))
-    lad_pct = int(round(vessels["lad"]["probability_pct"]))
-    lcx_pct = int(round(vessels["lcx"]["probability_pct"]))
-    rca_pct = int(round(vessels["rca"]["probability_pct"]))
-
-    # Extract top factors across model
-    top_factors = []
-    cad_feats = shap.get("cad", [])
-    for f in cad_feats[:4]:
-        direction_word = "up" if f["direction"] == "INCREASES_RISK" else "down"
-        lbl = f["clinical_label"]
-        val = f["patient_value"]
-        top_factors.append(f"{lbl} (value: {val}) pushed the predicted risk {direction_word}.")
-
-    if not top_factors:
-        top_factors = ["Clinical vitals and blood measurements formed the baseline for this statistical estimate."]
+    cad_prob_int = int(round(cad["probability_pct"]))
+    lad_prob_int = int(round(vessels["lad"]["probability_pct"]))
+    lcx_prob_int = int(round(vessels["lcx"]["probability_pct"]))
+    rca_prob_int = int(round(vessels["rca"]["probability_pct"]))
 
     return {
         "title_and_date": {
             "title": "Your Heart Health Summary",
-            "generation_date": context.get("generation_timestamp", datetime.now().strftime("%B %d, %Y")),
+            "generation_date": context.get("generation_timestamp", datetime.now().strftime("%Y-%m-%d")),
         },
-        "what_this_summary_is": "This summary describes the numbers you entered and what a computer model predicted from them. It shows the calculated risk numbers for your heart arteries based on those measurements.",
-        "overall_picture": f"The computer model evaluated your overall probability for coronary artery disease (CAD), which is narrowing in the blood vessels that supply blood to your heart muscle. The model estimated an overall predicted probability of {cad_pct}%, placing this estimate in the {cad['category'].lower()} range.",
+        "what_this_summary_is": (
+            "This summary describes the numbers you entered and what a computer model predicted from them. "
+            "It shows the calculated risk numbers for your heart arteries based on those measurements."
+        ),
+        "overall_picture": (
+            f"The computer model evaluated your overall probability for coronary artery disease (CAD), "
+            f"which is narrowing in the blood vessels that supply blood to your heart muscle. "
+            f"The model estimated an overall predicted probability of {cad_prob_int}%, "
+            f"placing this estimate in the {cad['risk_band'].lower()} range."
+        ),
         "your_three_main_heart_arteries": {
             "lad": {
                 "name": "Left Anterior Descending (LAD) Artery",
-                "description": f"The LAD artery runs down the front of the heart and supplies blood to the front wall. The model calculated a predicted narrowing probability of {lad_pct}%, which is in the {vessels['lad']['category'].lower()} category.",
-                "probability_pct": lad_pct,
-                "category": vessels["lad"]["category"],
+                "description": (
+                    f"The LAD artery runs down the front of the heart and supplies blood to the front wall. "
+                    f"The model calculated a predicted narrowing probability of {lad_prob_int}%, "
+                    f"which is in the {vessels['lad']['risk_band'].lower()} category."
+                ),
+                "probability_pct": lad_prob_int,
+                "category": vessels["lad"]["risk_band"],
             },
             "lcx": {
                 "name": "Left Circumflex (LCX) Artery",
-                "description": f"The LCX artery curves around the left side of the heart to nourish the side and back walls. The model calculated a predicted narrowing probability of {lcx_pct}%, which is in the {vessels['lcx']['category'].lower()} category.",
-                "probability_pct": lcx_pct,
-                "category": vessels["lcx"]["category"],
+                "description": (
+                    f"The LCX artery curves around the left side of the heart to nourish the side and back walls. "
+                    f"The model calculated a predicted narrowing probability of {lcx_prob_int}%, "
+                    f"which is in the {vessels['lcx']['risk_band'].lower()} category."
+                ),
+                "probability_pct": lcx_prob_int,
+                "category": vessels["lcx"]["risk_band"],
             },
             "rca": {
                 "name": "Right Coronary (RCA) Artery",
-                "description": f"The RCA artery travels down the right side of the heart to bring blood to the right chambers and underside. The model calculated a predicted narrowing probability of {rca_pct}%, which is in the {vessels['rca']['category'].lower()} category.",
-                "probability_pct": rca_pct,
-                "category": vessels["rca"]["category"],
+                "description": (
+                    f"The RCA artery travels down the right side of the heart to bring blood to the right chambers and underside. "
+                    f"The model calculated a predicted narrowing probability of {rca_prob_int}%, "
+                    f"which is in the {vessels['rca']['risk_band'].lower()} category."
+                ),
+                "probability_pct": rca_prob_int,
+                "category": vessels["rca"]["risk_band"],
             },
         },
         "your_measurements": {
@@ -622,36 +805,43 @@ def generate_deterministic_patient_report(context: Dict[str, Any]) -> Dict[str, 
                 {
                     "category_name": "Body and Clinical Examination",
                     "items": [
-                        {"plain_name": "Age", "your_value": f"{inputs.get('Age', 58)} years", "typical_range": "18 – 75 years", "status": "Within range" if inputs.get('Age', 58) <= 75 else "Above typical range"},
-                        {"plain_name": "Blood Pressure (systolic)", "your_value": f"{inputs.get('BP', 130)} mmHg", "typical_range": "90 – 120 mmHg", "status": "Within range" if inputs.get('BP', 130) <= 120 else "Above typical range"},
-                        {"plain_name": "Resting Heart Rate", "your_value": f"{inputs.get('PR', 72)} beats/min", "typical_range": "60 – 100 beats/min", "status": "Within range"},
+                        {"plain_name": "Age", "your_value": f"{inputs.get('Age', 58)} years", "typical_range": "18–75 years", "status": "Within range" if inputs.get('Age', 58) <= 75 else "Above typical range"},
+                        {"plain_name": "Blood Pressure (systolic)", "your_value": f"{inputs.get('BP', 130)} mmHg", "typical_range": "90–120 mmHg", "status": "Above typical range" if inputs.get('BP', 130) > 120 else "Within range"},
+                        {"plain_name": "Resting Heart Rate", "your_value": f"{inputs.get('PR', 72)} beats/min", "typical_range": "60–100 beats/min", "status": "Within range"},
                     ],
                 },
                 {
                     "category_name": "Heart Tracing (ECG)",
                     "items": [
-                        {"plain_name": "ST Segment Elevation", "your_value": "Present" if str(inputs.get("St Elevation", "0")) == "1" else "Absent", "typical_range": "Absent", "status": "Within range" if str(inputs.get("St Elevation", "0")) == "0" else "Above typical range"},
-                        {"plain_name": "ST Segment Depression", "your_value": "Present" if str(inputs.get("St Depression", "0")) == "1" else "Absent", "typical_range": "Absent", "status": "Within range" if str(inputs.get("St Depression", "0")) == "0" else "Above typical range"},
+                        {"plain_name": "ST-Segment Elevation", "your_value": "Present" if str(inputs.get('St Elevation', '0')) == '1' else "Absent", "typical_range": "Absent", "status": "Within range" if str(inputs.get('St Elevation', '0')) == '0' else "Outside typical range"},
+                        {"plain_name": "ST-Segment Depression", "your_value": "Present" if str(inputs.get('St Depression', '0')) == '1' else "Absent", "typical_range": "Absent", "status": "Within range" if str(inputs.get('St Depression', '0')) == '0' else "Outside typical range"},
                     ],
                 },
                 {
                     "category_name": "Blood Tests",
                     "items": [
-                        {"plain_name": "Fasting Blood Sugar", "your_value": f"{inputs.get('FBS', 98)} mg/dL", "typical_range": "70 – 99 mg/dL", "status": "Within range" if inputs.get('FBS', 98) <= 99 else "Above typical range"},
-                        {"plain_name": "Triglycerides", "your_value": f"{inputs.get('TG', 122)} mg/dL", "typical_range": "50 – 150 mg/dL", "status": "Within range" if inputs.get('TG', 122) <= 150 else "Above typical range"},
-                        {"plain_name": "Kidney Marker (Creatinine)", "your_value": f"{inputs.get('CR', 1.0)} mg/dL", "typical_range": "0.6 – 1.2 mg/dL", "status": "Within range"},
+                        {"plain_name": "Fasting Blood Sugar", "your_value": f"{inputs.get('FBS', 98)} mg/dL", "typical_range": "70–99 mg/dL", "status": "Within range" if inputs.get('FBS', 98) <= 99 else "Above typical range"},
+                        {"plain_name": "Triglycerides", "your_value": f"{inputs.get('TG', 122)} mg/dL", "typical_range": "50–150 mg/dL", "status": "Within range"},
+                        {"plain_name": "Kidney Marker (Creatinine)", "your_value": f"{inputs.get('CR', 1.0)} mg/dL", "typical_range": "0.6–1.2 mg/dL", "status": "Within range"},
                     ],
                 },
                 {
                     "category_name": "Heart Ultrasound (Echocardiogram)",
                     "items": [
-                        {"plain_name": "Heart Pumping Fraction (EF)", "your_value": f"{inputs.get('EF-TTE', 50)}%", "typical_range": "55 – 70%", "status": "Within range" if inputs.get('EF-TTE', 50) >= 55 else "Below typical range"},
+                        {"plain_name": "Heart Pumping Fraction (EF)", "your_value": f"{inputs.get('EF-TTE', 50)}%", "typical_range": "55–70%", "status": "Below typical range" if inputs.get('EF-TTE', 50) < 55 else "Within range"},
                     ],
                 },
             ]
         },
-        "what_influenced_the_prediction_most": top_factors,
-        "about_this_estimate": "This estimate was calculated by a computer program trained on past health data from hospital patients. It produces statistical probability numbers based on patterns in your measurements. The computer program does not take pictures of your heart or directly measure blood flow.",
+        "what_influenced_the_prediction_most": [
+            f"{f.get('clinical_label', f.get('feature', ''))}: {f.get('patient_value', '')} pushed the predicted risk {'up' if f.get('direction') == 'INCREASES_RISK' else 'down'}."
+            for f in shap.get("cad", [])[:4]
+        ] or ["Measurements entered were evaluated by the model."],
+        "about_this_estimate": (
+            "This estimate was calculated by a computer program trained on past health data from hospital patients. "
+            "It produces statistical probability numbers based on patterns in your measurements. "
+            "The computer program does not take pictures of your heart or directly measure blood flow."
+        ),
         "disclaimer": MANDATORY_DISCLAIMER,
     }
 
@@ -661,18 +851,19 @@ def generate_report(
     context: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Main orchestration function for report generation (Task B5 & B6):
-    1. Checks if Groq API key is configured. If not or if model is unavailable, returns fallback template.
-    2. Reads prompt template.
-    3. Executes Groq provider with structured JSON request.
-    4. Validates response with up to 2 retries.
-    5. If all retries fail, falls back to deterministic template.
+    Main orchestration function for report generation (Tasks 1.8, 1.10):
+    1. Reads Groq configuration at request time.
+    2. Runs up to 2 retries (3 attempts) on failure.
+    3. Feeds validation error back into prompt on retry.
+    4. Records exact outcome code for Task 1.11 UI status.
+    5. Falls back to verified deterministic templates if Groq unconfigured or retries fail.
     """
+    global _last_error_code, _last_error_message
     api_key, model = get_groq_config()
-    model_status = get_groq_model_status()
 
-    if not api_key or model_status == "unavailable":
-        # Groq not configured or unavailable - use deterministic template fallback immediately
+    if not api_key:
+        _last_error_code = "no_key"
+        _last_error_message = "Groq API key not found. Using standard template."
         if report_type == "patient":
             return generate_deterministic_patient_report(context)
         return generate_deterministic_technical_report(context)
@@ -681,7 +872,7 @@ def generate_report(
     prompt_file = "patient_report.md" if report_type == "patient" else "technical_report.md"
     expected_sections = PATIENT_SECTIONS_ORDER if report_type == "patient" else TECHNICAL_SECTIONS_ORDER
 
-    prompt_path = Path(__file__).resolve().parents[4] / "src" / "prompts" / prompt_file
+    prompt_path = REPO_ROOT / "src" / "prompts" / prompt_file
     system_prompt = ""
     if prompt_path.exists():
         system_prompt = prompt_path.read_text(encoding="utf-8")
@@ -690,26 +881,47 @@ def generate_report(
 
     user_prompt = f"REPORT CONTEXT DATA:\n{json.dumps(context, indent=2)}\n\nGenerate the complete report JSON conforming strictly to SHARED RULES and required section keys in exact order."
 
-    # Max 2 retries (3 attempts total)
+    current_prompt = user_prompt
     for attempt in range(3):
         try:
-            raw_response = call_groq(user_prompt, system_prompt)
-            # Clean markdown code blocks if present
+            raw_response = call_groq(current_prompt, system_prompt)
             cleaned = re.sub(r"^```json\s*", "", raw_response.strip(), flags=re.MULTILINE)
             cleaned = re.sub(r"^```\s*", "", cleaned.strip(), flags=re.MULTILINE)
             parsed_json = json.loads(cleaned)
 
             is_valid, error_msg = validate_report_json(parsed_json, expected_sections, context)
             if is_valid:
+                _last_error_code = "ok"
+                _last_error_message = None
                 return parsed_json
-            
-            # Feed validation error back into retry prompt
-            user_prompt += f"\n\nPREVIOUS OUTPUT REJECTED: {error_msg}. Regenerate valid JSON strictly following all rules."
+
+            logger.warning(f"Groq report validation failed (attempt {attempt+1}/3): {error_msg}")
+            _last_error_code = "validation_failed"
+            _last_error_message = error_msg
+            current_prompt = f"{user_prompt}\n\nPREVIOUS ATTEMPT REJECTED BY CLINICAL SAFETY VALIDATOR: {error_msg}\nRegenerate valid JSON strictly fixing this error and conforming to all rules."
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403):
+                _last_error_code = "key_rejected"
+                _last_error_message = f"Groq rejected API key (HTTP {e.code})"
+                break
+            elif e.code == 429:
+                _last_error_code = "rate_limited"
+                _last_error_message = "Groq rate limit exceeded (HTTP 429)"
+            elif e.code in (400, 404):
+                _last_error_code = "model_unavailable"
+                _last_error_message = f"Groq endpoint returned HTTP {e.code}"
+            else:
+                _last_error_code = "network_error"
+                _last_error_message = f"HTTP {e.code}: {e.reason}"
+            logger.warning(f"Groq HTTP error (attempt {attempt+1}/3): {e}")
+            time.sleep(1.0)
         except Exception as e:
-            logger.warning(f"Groq report generation attempt {attempt + 1} failed: {e}")
+            _last_error_code = "network_error"
+            _last_error_message = str(e)
+            logger.warning(f"Groq error (attempt {attempt+1}/3): {e}")
             time.sleep(0.5)
 
-    # Fallback to deterministic template if Groq retries exhausted
+    # Fallback to deterministic template if Groq retries fail
     if report_type == "patient":
         return generate_deterministic_patient_report(context)
     return generate_deterministic_technical_report(context)

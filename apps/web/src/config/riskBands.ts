@@ -1,89 +1,63 @@
 /**
- * Clinical Risk Bands & Thresholds Configuration (Task A2)
- *
- * Grounded in existing engine thresholds:
- * - Low: <= 40% (0.0 to 0.40)
- * - Moderate: 41% - 70% (0.401 to 0.70)
- * - High: > 70% (0.701 to 1.0)
- *
- * Words strictly standardized to: "low" | "moderate" | "high"
+ * Single source of truth for clinical risk bands (Task 2.7)
+ * Strictly standardized to: "Low" | "Moderate" | "High"
  */
 
-export type RiskLevel = 'low' | 'moderate' | 'high';
+export type RiskLevel = 'Low' | 'Moderate' | 'High';
 
-export interface RiskBand {
-  level: RiskLevel;
-  label: string; // 'Low' | 'Moderate' | 'High'
+export interface RiskBandConfig {
+  label: RiskLevel;
   minProb: number;
   maxProb: number;
   rangeDisplay: string;
-  colorHex: string;
-  colorRgb: [number, number, number];
-  badgeBg: string;
-  badgeBorder: string;
-  badgeText: string;
-  description: string;
+  tokenColor: string;
+  tokenBg: string;
 }
 
-export const RISK_BANDS: Record<RiskLevel, RiskBand> = {
-  low: {
-    level: 'low',
+export const RISK_BANDS: Record<RiskLevel, RiskBandConfig> = {
+  Low: {
     label: 'Low',
     minProb: 0.0,
     maxProb: 0.40,
     rangeDisplay: '≤ 40%',
-    colorHex: '#2F7D5B',
-    colorRgb: [0.184, 0.490, 0.357],
-    badgeBg: 'rgba(47, 125, 91, 0.1)',
-    badgeBorder: 'rgba(47, 125, 91, 0.3)',
-    badgeText: '#2F7D5B',
-    description: 'Low probability of hemodynamically significant stenosis',
+    tokenColor: 'var(--risk-low)',
+    tokenBg: 'var(--risk-low-bg)',
   },
-  moderate: {
-    level: 'moderate',
+  Moderate: {
     label: 'Moderate',
     minProb: 0.40,
     maxProb: 0.70,
     rangeDisplay: '41% – 70%',
-    colorHex: '#B7791F',
-    colorRgb: [0.718, 0.475, 0.122],
-    badgeBg: 'rgba(183, 121, 31, 0.1)',
-    badgeBorder: 'rgba(183, 121, 31, 0.3)',
-    badgeText: '#B7791F',
-    description: 'Moderate probability of stenosis; clinical review suggested',
+    tokenColor: 'var(--risk-moderate)',
+    tokenBg: 'var(--risk-moderate-bg)',
   },
-  high: {
-    level: 'high',
+  High: {
     label: 'High',
     minProb: 0.70,
     maxProb: 1.0,
     rangeDisplay: '> 70%',
-    colorHex: '#B83232',
-    colorRgb: [0.722, 0.196, 0.196],
-    badgeBg: 'rgba(184, 50, 50, 0.1)',
-    badgeBorder: 'rgba(184, 50, 50, 0.3)',
-    badgeText: '#B83232',
-    description: 'High probability of significant stenosis',
+    tokenColor: 'var(--risk-high)',
+    tokenBg: 'var(--risk-high-bg)',
   },
 };
 
-export const RISK_LEVELS: RiskLevel[] = ['low', 'moderate', 'high'];
-
-export function getRiskLevel(prob: number): RiskLevel {
-  const p = Math.max(0.0, Math.min(1.0, prob));
-  if (p <= 0.40) return 'low';
-  if (p <= 0.70) return 'moderate';
-  return 'high';
+export function riskLabel(probability: number): RiskLevel {
+  const p = Math.max(0.0, Math.min(1.0, probability));
+  if (p <= 0.40) return 'Low';
+  if (p <= 0.70) return 'Moderate';
+  return 'High';
 }
 
-export function getRiskBand(prob: number): RiskBand {
-  return RISK_BANDS[getRiskLevel(prob)];
+export function getRiskBand(probability: number): RiskBandConfig {
+  return RISK_BANDS[riskLabel(probability)];
 }
 
-export function getRiskLabel(prob: number): string {
-  return getRiskBand(prob).label;
-}
-
-export function getRiskColorHex(prob: number): string {
-  return getRiskBand(prob).colorHex;
-}
+// Backward-compatibility aliases during refactor
+export const getRiskLabel = riskLabel;
+export const getRiskLevel = (prob: number) => riskLabel(prob).toLowerCase();
+export const getRiskColorHex = (prob: number) => {
+  const l = riskLabel(prob);
+  if (l === 'Low') return '#2E7D4F';
+  if (l === 'Moderate') return '#B26A00';
+  return '#B3261E';
+};

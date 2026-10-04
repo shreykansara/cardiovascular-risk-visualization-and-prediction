@@ -295,6 +295,7 @@ from apps.api.app.schemas.report import ReportRequestSchema, LLMConfigStatusResp
 from apps.api.app.services.llm_service import (
     get_groq_config,
     get_groq_model_status,
+    get_reports_diagnostics,
     build_report_context,
     generate_report,
 )
@@ -307,14 +308,8 @@ from apps.api.app.services.llm_service import (
     tags=["Reporting"],
 )
 def get_reports_status() -> LLMConfigStatusResponse:
-    key, model = get_groq_config()
-    model_status = get_groq_model_status()
-    return LLMConfigStatusResponse(
-        configured=key is not None,
-        model=model,
-        model_status=model_status,
-        fallback_available=True,
-    )
+    diagnostics = get_reports_diagnostics()
+    return LLMConfigStatusResponse(**diagnostics)
 
 
 @api_router.post(

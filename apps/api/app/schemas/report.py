@@ -1,5 +1,5 @@
 """
-Pydantic Schemas for Structured Clinical & Patient Reports (Task B1 & B4)
+Pydantic Schemas for Structured Clinical & Patient Reports (Task 1.7)
 Multimodal AI Hackathon 2026 - Perfusion3D
 """
 
@@ -16,8 +16,18 @@ class ReportRequestSchema(BaseModel):
 
 
 class LLMConfigStatusResponse(BaseModel):
-    """Diagnostics on Groq API configuration status."""
-    configured: bool
+    """Diagnostics on Groq API configuration status (Task 1.7). Never contains keys."""
+    env_file_found: bool
+    env_file_path: str
+    key_present: bool
+    key_is_placeholder: bool
+    key_prefix_ok: bool
     model: str
-    model_status: str = Field(default="ready", description="Status of Groq model ('ready' | 'unavailable' | 'unconfigured')")
+    model_listed_by_groq: Optional[bool] = None
+    last_error_code: Optional[str] = None
+    last_error_message: Optional[str] = None
+    
+    # Backward compatibility attributes for existing tests and components
+    configured: bool = False
+    model_status: str = "unconfigured"
     fallback_available: bool = True
