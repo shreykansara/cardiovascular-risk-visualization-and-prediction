@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Automated Style Gate (Task 5.2)
+Automated Style Gate (Task 5.2 / Task 3.11)
 Verifies that apps/web/src strictly adheres to the Clinical Paper design language.
 Enforces zero occurrences of:
 1. gradient(
@@ -12,8 +12,10 @@ Enforces zero occurrences of:
 7. uppercase
 8. letter-spacing / tracking-
 9. Hex color outside tokens.css
-10. dark: classes or prefers-color-scheme: dark
-11. Any emoji
+10. Tailwind dark: classes (strictly prohibited)
+11. prefers-color-scheme outside tokens.css, useTheme.ts, or index.html
+12. [data-theme outside tokens.css, useTheme.ts, index.html, or DesignSystemPage.tsx
+13. Any emoji
 
 Exemptions:
 - apps/web/src/components/3d/HeartModel.tsx (3D anatomical mesh rendering)
@@ -32,6 +34,10 @@ EXEMPT_FILES = {
     "CameraRig.tsx",
 }
 
+# Allowed files for theme mechanics
+THEME_PREFERS_ALLOWED = {"tokens.css", "useTheme.ts", "index.html"}
+THEME_DATA_ATTR_ALLOWED = {"tokens.css", "useTheme.ts", "index.html", "DesignSystemPage.tsx"}
+
 # Regex patterns for forbidden tokens
 FORBIDDEN_RULES = [
     ("gradient(", re.compile(r"gradient\(", re.IGNORECASE)),
@@ -42,8 +48,11 @@ FORBIDDEN_RULES = [
     ("monospace / JetBrains / font-mono", re.compile(r"(?:font-mono|monospace|JetBrains)", re.IGNORECASE)),
     ("uppercase", re.compile(r"\buppercase\b", re.IGNORECASE)),
     ("letter-spacing / tracking-", re.compile(r"(?:letter-spacing|tracking-)", re.IGNORECASE)),
-    ("dark mode classes / media queries", re.compile(r"(?:\bdark:|prefers-color-scheme:\s*dark)")),
+    ("Tailwind dark: classes", re.compile(r"\bdark:")),
 ]
+
+PREFERS_COLOR_SCHEME_PATTERN = re.compile(r"prefers-color-scheme")
+DATA_THEME_PATTERN = re.compile(r"\[data-theme")
 
 # Unicode emoji range regex
 EMOJI_PATTERN = re.compile(
@@ -64,7 +73,7 @@ HEX_PATTERN = re.compile(r"#[0-9a-fA-F]{3,8}\b")
 
 
 def check_style():
-    print(f"=== Running Clinical Paper Style Gate (Task 5.2) ===")
+    print(f"=== Running Clinical Paper Style Gate (Task 3.11) ===")
     print(f"Target Directory: {TARGET_DIR}")
     print(f"Exempted 3D Files: {sorted(list(EXEMPT_FILES))}\n")
 
@@ -95,21 +104,36 @@ def check_style():
         for line_num, line in enumerate(lines, 1):
             # 1. Check general forbidden rules
             for rule_name, pattern in FORBIDDEN_RULES:
-                # Allow spinner keyframes & animation in index.css
                 match = pattern.search(line)
                 if match:
                     violations.append(
                         f"[{rule_name}] at {rel_path}:{line_num}\n  Line: {line.strip()}"
                     )
 
-            # 2. Check emojis
+            # 2. Check prefers-color-scheme allowance
+            if file_name not in THEME_PREFERS_ALLOWED:
+                match = PREFERS_COLOR_SCHEME_PATTERN.search(line)
+                if match:
+                    violations.append(
+                        f"[unauthorized prefers-color-scheme outside theme hooks/tokens] at {rel_path}:{line_num}\n  Line: {line.strip()}"
+                    )
+
+            # 3. Check [data-theme allowance
+            if file_name not in THEME_DATA_ATTR_ALLOWED:
+                match = DATA_THEME_PATTERN.search(line)
+                if match:
+                    violations.append(
+                        f"[unauthorized [data-theme outside tokens/theme/showcase] at {rel_path}:{line_num}\n  Line: {line.strip()}"
+                    )
+
+            # 4. Check emojis
             emoji_match = EMOJI_PATTERN.search(line)
             if emoji_match:
                 violations.append(
                     f"[emoji detected] at {rel_path}:{line_num}\n  Line: {line.strip()}"
                 )
 
-            # 3. Check hex color outside tokens.css
+            # 5. Check hex color outside tokens.css
             if file_name != "tokens.css":
                 hex_match = HEX_PATTERN.search(line)
                 if hex_match:

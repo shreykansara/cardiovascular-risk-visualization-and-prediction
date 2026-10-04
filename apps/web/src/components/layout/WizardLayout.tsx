@@ -3,11 +3,14 @@ import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { WIZARD_STEPS } from '../../types/wizard';
 import { useWizardStore } from '../../store/useWizardStore';
 import { FooterDisclaimer } from '../ui/FooterDisclaimer';
+import { Select } from '../ui/Select';
+import { useTheme } from '../../hooks/useTheme';
 
 export const WizardLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { completedSteps } = useWizardStore();
+  const { theme, setTheme } = useTheme();
 
   const currentStepDef =
     WIZARD_STEPS.find((s) => s.path === location.pathname) || WIZARD_STEPS[0];
@@ -27,7 +30,7 @@ export const WizardLayout: React.FC = () => {
             Perfusion3D
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {canGoBack && (
               <button
                 type="button"
@@ -37,6 +40,19 @@ export const WizardLayout: React.FC = () => {
                 Back
               </button>
             )}
+
+            {/* Task 3.5: Compact Theme Select */}
+            <Select
+              label="Theme"
+              inline
+              options={[
+                { label: 'System', value: 'system' },
+                { label: 'Light', value: 'light' },
+                { label: 'Dark', value: 'dark' },
+              ]}
+              value={theme}
+              onChange={(e) => setTheme(e.target.value as any)}
+            />
 
             {isWizardStep ? (
               <span className="text-[13px] leading-[20px] text-text-muted">

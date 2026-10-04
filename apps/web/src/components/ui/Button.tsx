@@ -19,7 +19,7 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   let variantClasses = '';
   if (variant === 'primary') {
-    variantClasses = 'h-[36px] px-4 bg-accent hover:bg-accent-hover text-white rounded text-[14px] font-medium border-0';
+    variantClasses = 'h-[36px] px-4 bg-accent hover:bg-accent-hover text-on-accent rounded text-[14px] font-medium border-0';
   } else if (variant === 'secondary') {
     variantClasses = 'h-[36px] px-4 bg-page hover:bg-panel border border-border-strong text-text rounded text-[14px] font-medium';
   } else if (variant === 'link') {

@@ -58,7 +58,7 @@ export const getRiskLabel = riskLabel;
 export const getRiskLevel = (prob: number) => riskLabel(prob).toLowerCase();
 export const getRiskColorHex = (prob: number) => {
   const l = riskLabel(prob);
-  if (l === 'Low') return 'rgb(46, 125, 79)';
-  if (l === 'Moderate') return 'rgb(178, 106, 0)';
-  return 'rgb(179, 38, 30)';
+  if (l === 'Low') return 'var(--risk-low)';
+  if (l === 'Moderate') return 'var(--risk-moderate)';
+  return 'var(--risk-high)';
 };

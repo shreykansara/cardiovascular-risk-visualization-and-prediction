@@ -1,8 +1,35 @@
 /* Clinical Paper Design Tokens
  * Surfaces, Text, Accent, Risk, Radius, Spacing, Focus, Motion
+ * Supports both Light and Dark themes via data-theme attribute
  */
 
 :root {
+  /* Theme-independent layout & motion tokens */
+  --radius: 4px;
+
+  /* Spacing (8px grid) */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+
+  /* Focus outline dimensions */
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --focus: 2px solid var(--accent);
+
+  /* Motion: opacity/color transitions of 120ms only */
+  --motion-duration: 120ms;
+}
+
+/* Light Theme (Default) */
+:root,
+:root[data-theme="light"],
+[data-theme="light"] {
+  color-scheme: light;
+
   /* Surfaces */
   --page: #FFFFFF;
   --panel: #F6F7F9;
@@ -18,35 +45,81 @@
   --accent: #0B5CAD;
   --accent-hover: #094A8C;
   --accent-subtle: #E8F0F9;
+  --on-accent: #FFFFFF;
 
   /* Risk */
-  --risk-low: #2E7D4F;
-  --risk-moderate: #B26A00;
+  --risk-low: #2A7348;
+  --risk-moderate: #8F5300;
   --risk-high: #B3261E;
   --risk-low-bg: #EAF4EE;
   --risk-moderate-bg: #FBF0DF;
   --risk-high-bg: #FBE9E7;
 
-  /* Radius: 4px for everything */
-  --radius: 4px;
-
-  /* Spacing (8px grid) */
-  --space-4: 4px;
-  --space-8: 8px;
-  --space-16: 16px;
-  --space-24: 24px;
-  --space-32: 32px;
-  --space-48: 48px;
-
-  /* Focus */
-  --focus: 2px solid var(--accent);
-  --focus-offset: 2px;
-
   /* Overlay Shadow (allowed for dropdown menus only) */
   --shadow-overlay: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
 
-  /* Motion: opacity/color transitions of 120ms only */
-  --motion-duration: 120ms;
+/* Dark Theme */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --page: #12151A;
+  --panel: #1A1E25;
+  --border: #656971;
+  --border-strong: #787D87;
+
+  /* Text */
+  --text: #E6E9EE;
+  --text-muted: #A3ACB9;
+  --text-faint: #8791A0;
+
+  /* Accent */
+  --accent: #5AA2E8;
+  --accent-hover: #7AB5EE;
+  --accent-subtle: #17283B;
+  --on-accent: #0B1220;
+
+  /* Risk */
+  --risk-low: #5CB884;
+  --risk-moderate: #E0A040;
+  --risk-high: #F07D73;
+  --risk-low-bg: #14281D;
+  --risk-moderate-bg: #2E2411;
+  --risk-high-bg: #33191A;
+
+  /* Overlay Shadow (allowed for dropdown menus only) */
+  --shadow-overlay: 0 4px 12px rgba(0, 0, 0, 0.40);
+}
+
+/* Print and PDF export: force light tokens regardless of active theme (Task 3.9) */
+@media print {
+  :root,
+  :root[data-theme="dark"],
+  [data-theme="dark"],
+  :root[data-theme="light"],
+  [data-theme="light"] {
+    color-scheme: light !important;
+    --page: #FFFFFF !important;
+    --panel: #F6F7F9 !important;
+    --border: #DDE1E7 !important;
+    --border-strong: #B8BFCA !important;
+    --text: #1A1F29 !important;
+    --text-muted: #596273 !important;
+    --text-faint: #7A8494 !important;
+    --accent: #0B5CAD !important;
+    --accent-hover: #094A8C !important;
+    --accent-subtle: #E8F0F9 !important;
+    --on-accent: #FFFFFF !important;
+    --risk-low: #2A7348 !important;
+    --risk-moderate: #8F5300 !important;
+    --risk-high: #B3261E !important;
+    --risk-low-bg: #EAF4EE !important;
+    --risk-moderate-bg: #FBF0DF !important;
+    --risk-high-bg: #FBE9E7 !important;
+    --shadow-overlay: none !important;
+  }
 }
 
 /* Typography styles according to Clinical Paper spec */

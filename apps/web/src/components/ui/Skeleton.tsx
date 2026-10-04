@@ -13,7 +13,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 }) => {
   return (
     <div
-      className={`bg-border rounded ${className}`}
+      className={`bg-panel border border-border rounded ${className}`}
       style={{
         width: width !== undefined ? width : undefined,
         height: height !== undefined ? height : undefined,

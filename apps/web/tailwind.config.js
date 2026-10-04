@@ -25,6 +25,7 @@ export default {
         accent: 'var(--accent)',
         'accent-hover': 'var(--accent-hover)',
         'accent-subtle': 'var(--accent-subtle)',
+        'on-accent': 'var(--on-accent)',
         'risk-low': 'var(--risk-low)',
         'risk-moderate': 'var(--risk-moderate)',
         'risk-high': 'var(--risk-high)',

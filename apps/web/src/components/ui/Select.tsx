@@ -10,6 +10,8 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   options: SelectOption[];
   source?: 'manual' | 'extracted' | 'unverified';
   error?: string;
+  inline?: boolean;
+  selectClassName?: string;
 }
 
 export const Select: React.FC<SelectProps> = ({
@@ -17,12 +19,42 @@ export const Select: React.FC<SelectProps> = ({
   options,
   source,
   error,
+  inline = false,
+  selectClassName = '',
   value,
   onChange,
   disabled,
   className = '',
   ...props
 }) => {
+  if (inline) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        {label && (
+          <label className="text-[13px] leading-[20px] font-medium text-text-muted whitespace-nowrap">
+            {label}
+          </label>
+        )}
+        <select
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          className={`h-[30px] bg-page text-text border ${
+            error ? 'border-risk-high' : 'border-border'
+          } rounded px-2 text-[13px] leading-[20px] focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 cursor-pointer ${selectClassName}`}
+          {...props}
+        >
+          {options.map((opt) => (
+            <option key={String(opt.value)} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        {error && <span className="text-[12px] leading-[16px] text-risk-high ml-2">{error}</span>}
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col ${className}`}>
       {label && (
@@ -44,7 +76,7 @@ export const Select: React.FC<SelectProps> = ({
         disabled={disabled}
         className={`w-full h-[36px] bg-page text-text border ${
           error ? 'border-risk-high' : 'border-border'
-        } rounded px-3 text-[14px] leading-[22px] focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 cursor-pointer`}
+        } rounded px-3 text-[14px] leading-[22px] focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 cursor-pointer ${selectClassName}`}
         {...props}
       >
         {options.map((opt) => (
