@@ -172,6 +172,7 @@ export const WizardLayout: React.FC = () => {
               return (
                 <div
                   key={step}
+                  className="ecg-progress-segment"
                   style={{
                     height: '3px',
                     backgroundColor: segmentColor,

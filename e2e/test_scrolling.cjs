@@ -38,7 +38,12 @@ async function testAllScroll() {
     if (enterDataY <= 0) throw new Error('/enter-data wheel scroll failed');
 
     // Populate sample patient and predict -> /results
-    await page.getByRole('button', { name: /Load sample patient/i }).click();
+    const sampleSelect = page.locator('select').filter({ hasText: /sample patient/i });
+    if (await sampleSelect.count() > 0) {
+      await sampleSelect.first().selectOption('normal');
+    } else {
+      await page.getByRole('button', { name: /Load sample patient/i }).click();
+    }
     await page.waitForTimeout(500);
     await page.getByRole('button', { name: /Run CAD Risk Prediction|Predict/i }).click();
     await page.waitForURL('**/results');
@@ -54,10 +59,11 @@ async function testAllScroll() {
     console.log(`  -> /results scrolled to ${resultsY}px`);
 
     // Navigate to /reports
-    const reportsBtn = page.locator('#generate-reports-btn, button:has-text("Generate Reports")').first();
+    const reportsBtn = page.locator('#generate-reports-btn, button:has-text("Create reports"), button:has-text("Generate Reports")').first();
     await reportsBtn.click();
     await page.waitForURL('**/reports');
-    await page.waitForTimeout(1500);
+    await page.waitForSelector('#printable-report-sheet, article', { timeout: 10000 });
+    await page.waitForTimeout(1000);
 
     // 3. Verify /reports scroll
     console.log('[3/3] Testing /reports...');

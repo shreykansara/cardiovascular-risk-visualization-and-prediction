@@ -12,6 +12,9 @@
     "preview": "vite preview --config apps/web/vite.config.ts",
     "test:api": "python -m pytest apps/api/tests -v",
     "test:leakage": "python -m pytest apps/api/tests/test_leakage.py -v",
+    "test:style": "python scripts/check_style.py",
+    "test:e2e": "node e2e/full_flow.spec.cjs",
+    "test:conformance": "node e2e/design_conformance.spec.cjs",
     "optimize:mesh": "node scripts/optimize_mesh.mjs",
     "preprocess:data": "python scripts/preprocess.py --strict-leakage-check",
     "train:models": "python scripts/train.py --cv-folds 5 --calibrate isotonic"

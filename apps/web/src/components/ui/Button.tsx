@@ -70,7 +70,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={`inline-flex items-center justify-center gap-2 select-none focus-visible:outline-[var(--focus)] focus-visible:outline-offset-[var(--focus-offset)] ${
-        isPrimary ? 'hover:opacity-88' : ''
+        isPrimary ? 'btn-primary hover:opacity-88' : isSecondary ? 'btn-secondary' : ''
       } ${className}`}
       disabled={disabled || isLoading}
       style={{
