@@ -13,7 +13,7 @@ export const WizardLayout: React.FC = () => {
   const isWelcome = location.pathname === '/welcome';
 
   return (
-    <div className="min-h-screen w-screen bg-[#05070B] text-slate-100 flex flex-col overflow-x-hidden font-sans">
+    <div className="min-h-screen w-screen bg-[#0b0f17] text-slate-100 flex flex-col overflow-x-hidden font-sans">
       {/* Top Floating Wizard Stepper Navigation */}
       <header className="sticky top-0 z-50 w-full shrink-0">
         <Stepper />

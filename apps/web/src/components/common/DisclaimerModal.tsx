@@ -15,11 +15,11 @@ export const DisclaimerModal: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 left-6 z-40 max-w-sm pointer-events-auto select-none animate-cinema-bottom">
-      <div className="ultra-glass rounded-2xl border border-white/10 p-3 shadow-2xl backdrop-blur-2xl transition-all">
+      <div className="ultra-glass rounded-2xl border border-white/10 p-3 shadow-2xl  transition-all">
         {/* Compact Pill State */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#f59e0b]" />
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse " />
             <span className="text-[11px] font-mono tracking-wide text-slate-300 font-medium">
               RESEARCH PROTOTYPE
             </span>

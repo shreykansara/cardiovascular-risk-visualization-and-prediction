@@ -1,6 +1,6 @@
 /**
  * Shared Color Scale Legend for 3D Vessel Probability Shading
- * Task 4.2 / Task A2: Standardized risk bands: Low (<= 40%), Moderate (41-70%), High (> 70%)
+ * Task 4.2 / Task A2 / Phase C: Standardized clinical risk bands with design tokens
  */
 
 import React from 'react';
@@ -8,8 +8,8 @@ import { RISK_BANDS, RISK_LEVELS } from '../../config/riskBands';
 
 export const ColorScaleLegend: React.FC = () => {
   return (
-    <div className="p-3 rounded-lg border border-[var(--border,#E3E6EB)] bg-[var(--surface,#F7F8FA)] flex flex-wrap items-center justify-between gap-3 text-xs font-mono select-none">
-      <span className="text-[var(--text-muted,#5B6472)] font-medium text-[11px] uppercase tracking-wider">
+    <div className="p-2.5 px-3 rounded-md border border-[#283548] bg-[#131a26]/95 flex flex-wrap items-center justify-between gap-3 text-xs font-mono-numbers select-none shadow-sm">
+      <span className="text-slate-400 font-medium text-[11px] uppercase tracking-wider">
         Predicted Stenosis Probability:
       </span>
 
@@ -22,7 +22,7 @@ export const ColorScaleLegend: React.FC = () => {
                 className="w-2.5 h-2.5 rounded-full shrink-0"
                 style={{ backgroundColor: band.colorHex }}
               />
-              <span className="text-[var(--text,#111827)] font-medium">
+              <span className="text-slate-200 font-medium">
                 {band.label} ({band.rangeDisplay})
               </span>
             </div>

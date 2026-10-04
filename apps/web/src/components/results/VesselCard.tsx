@@ -1,5 +1,5 @@
 /**
- * Vessel Stenosis Status Card (Tasks 4.3, 4.4, 4.5, A2)
+ * Vessel Stenosis Status Card (Tasks 4.3, 4.4, 4.5, A2, Phase C)
  * Displays predicted stenosis probability, standardized category label ("Low" / "Moderate" / "High"),
  * mini progress bar, and handles bidirectional 3D twin vessel synchronization.
  */
@@ -19,7 +19,6 @@ interface VesselCardProps {
 }
 
 export const VesselCard: React.FC<VesselCardProps> = ({
-  vesselKey,
   title,
   subtitle,
   prediction,
@@ -47,15 +46,15 @@ export const VesselCard: React.FC<VesselCardProps> = ({
           onSelect();
         }
       }}
-      className={`p-4 rounded-xl transition-all cursor-pointer select-none text-left border relative overflow-hidden ${
+      className={`p-3.5 rounded-md transition-colors cursor-pointer select-none text-left border relative overflow-hidden ${
         isSelected
-          ? 'bg-slate-900/90 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/50 scale-[1.01]'
-          : 'bg-slate-900/50 border-white/[0.08] hover:border-white/[0.18] hover:bg-slate-900/70'
+          ? 'bg-[#1c2637] border-blue-500 ring-1 ring-blue-500'
+          : 'bg-[#131a26] border-[#283548] hover:border-[#384961] hover:bg-[#182130]'
       }`}
     >
       {/* Active Focus Indicator Pip */}
       {isSelected && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] font-mono text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full border border-cyan-500/40">
+        <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] font-mono-numbers text-blue-300 bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-800/60">
           <Eye className="w-3 h-3" />
           <span>Focused</span>
         </div>
@@ -64,21 +63,21 @@ export const VesselCard: React.FC<VesselCardProps> = ({
       {/* Header Info */}
       <div className="flex items-start justify-between gap-2 pr-16">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+          <h3 className="text-sm font-semibold text-white flex items-center gap-1.5">
             <span>{title}</span>
           </h3>
           <p className="text-[11px] text-slate-400 font-mono truncate">{subtitle}</p>
         </div>
       </div>
 
-      {/* Probability Display (Task 4.5: Labeled as 'predicted stenosis probability') */}
-      <div className="mt-3 flex items-baseline justify-between">
+      {/* Probability Display */}
+      <div className="mt-2.5 flex items-baseline justify-between">
         <div>
           <span className="text-[10px] uppercase font-mono text-slate-400 block tracking-wider">
             Predicted Stenosis Probability
           </span>
           <span
-            className="text-2xl font-mono font-bold tracking-tight"
+            className="text-2xl font-mono-numbers font-bold tracking-tight"
             style={{ color: band.colorHex }}
           >
             {probPct.toFixed(1)}%
@@ -87,14 +86,14 @@ export const VesselCard: React.FC<VesselCardProps> = ({
 
         <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: band.colorHex }}>
           <TierIcon className="w-3.5 h-3.5" />
-          <span className="text-[11px] font-mono">{band.label} Risk</span>
+          <span className="text-[11px] font-mono">{band.label}</span>
         </div>
       </div>
 
       {/* Probability Progress Bar */}
-      <div className="w-full bg-slate-950/80 h-2 rounded-full overflow-hidden mt-2.5 border border-white/[0.06]">
+      <div className="w-full bg-[#0b0f17] h-2 rounded-full overflow-hidden mt-2.5 border border-[#283548]">
         <div
-          className="h-full rounded-full transition-all duration-500 ease-out"
+          className="h-full rounded-full transition-all duration-300 ease-out"
           style={{
             width: `${Math.min(100, Math.max(4, probPct))}%`,
             backgroundColor: band.colorHex,

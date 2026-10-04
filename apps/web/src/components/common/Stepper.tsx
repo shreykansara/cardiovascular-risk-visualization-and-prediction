@@ -1,6 +1,6 @@
 /**
- * Interactive Clinical Wizard Stepper & Progress Navigation
- * Displays Step 1 to 4 with status: active, completed, or locked.
+ * Interactive Clinical Wizard Stepper & Progress Navigation (Phase C)
+ * Displays Step 1 to 4 with clean clinical design tokens.
  */
 
 import React from 'react';
@@ -21,7 +21,6 @@ export const Stepper: React.FC = () => {
   const progressPercentage = ((currentStepNumber - 1) / (WIZARD_STEPS.length - 1)) * 100;
 
   const handleStepClick = (targetPath: string, stepNumber: number) => {
-    // Can only click if step is unlocked and not future locked
     if (isStepUnlocked(stepNumber)) {
       navigate(targetPath);
     }
@@ -30,30 +29,30 @@ export const Stepper: React.FC = () => {
   return (
     <nav
       aria-label="Clinical Workflow Stepper"
-      className="w-full bg-slate-900/80 border-b border-white/[0.08] backdrop-blur-xl px-4 py-2.5 sm:px-6 select-none"
+      className="w-full bg-[#131a26] border-b border-[#283548] px-4 py-2.5 sm:px-6 select-none"
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Brand & Progress Badge */}
         <div className="flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.35)]">
-              <Activity className="w-4 h-4 text-white" />
+            <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center text-white">
+              <Activity className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-sm font-semibold tracking-wide text-white flex items-center gap-1.5">
+              <span className="text-sm font-semibold tracking-tight text-white flex items-center gap-1.5">
                 Perfusion3D
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  Twin
+                <span className="text-[10px] uppercase font-mono-numbers px-1.5 py-0.5 rounded bg-blue-950/60 text-blue-300 border border-blue-800/60">
+                  DWS
                 </span>
               </span>
-              <p className="text-[11px] text-slate-400 font-mono">
+              <p className="text-[11px] text-slate-400 font-mono-numbers">
                 Step {currentStepNumber} of {WIZARD_STEPS.length}: {currentStepDef.label}
               </p>
             </div>
           </div>
 
           {/* Mobile Step Counter Pill */}
-          <div className="md:hidden flex items-center gap-1.5 text-xs font-mono text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-full border border-cyan-500/30">
+          <div className="md:hidden flex items-center gap-1.5 text-xs font-mono-numbers text-slate-300 bg-[#1c2637] px-2.5 py-1 rounded border border-[#283548]">
             <span>{Math.round(progressPercentage)}%</span>
           </div>
         </div>
@@ -75,12 +74,12 @@ export const Stepper: React.FC = () => {
                   type="button"
                   onClick={() => handleStepClick(s.path, s.step)}
                   disabled={!isUnlocked}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors shrink-0 cursor-pointer ${
                     isActive
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-[0_0_12px_rgba(6,182,212,0.25)] font-semibold'
+                      ? 'bg-[#1c2637] text-white border border-[#384961] font-semibold'
                       : isCompleted && isUnlocked
-                      ? 'bg-slate-800/80 text-emerald-300 hover:bg-slate-700/80 border border-emerald-500/30 cursor-pointer'
-                      : 'bg-slate-900/40 text-slate-500 border border-white/[0.04] cursor-not-allowed opacity-60'
+                      ? 'bg-[#131a26] text-green-300 hover:bg-[#1c2637] border border-green-800/60'
+                      : 'bg-[#0b0f17] text-slate-500 border border-[#283548]/50 cursor-not-allowed opacity-60'
                   }`}
                   title={
                     !isUnlocked
@@ -92,16 +91,16 @@ export const Stepper: React.FC = () => {
                 >
                   {/* Step Status Icon */}
                   <span
-                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono shrink-0 ${
+                    className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-mono-numbers shrink-0 ${
                       isActive
-                        ? 'bg-cyan-400 text-slate-950 font-bold'
+                        ? 'bg-blue-600 text-white font-bold'
                         : isCompleted
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
-                        : 'bg-slate-800 text-slate-500'
+                        ? 'bg-green-950/80 text-green-400 border border-green-700/60'
+                        : 'bg-[#1c2637] text-slate-500'
                     }`}
                   >
                     {isCompleted && !isActive ? (
-                      <Check className="w-3 h-3 stroke-[3]" />
+                      <Check className="w-2.5 h-2.5 stroke-[3]" />
                     ) : !isUnlocked ? (
                       <Lock className="w-2.5 h-2.5" />
                     ) : (

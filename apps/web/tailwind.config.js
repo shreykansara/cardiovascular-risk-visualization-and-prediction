@@ -18,40 +18,34 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Perfusion3D Surface Elevation System
-        surface: {
-          0: '#05070B', // Deep Obsidian Canvas Void
-          1: '#0A0F1A', // Slate Obsidian Panels
-          2: '#131C2E', // Deep Navy Cards
-          3: '#1E293B', // Polished Obsidian Modals
-        },
-        // Clinical Risk Semantic Palette
-        risk: {
-          optimal: '#10B981',   // Normal / Unobstructed (Emerald)
-          warning: '#F59E0B',   // Borderline / Moderate Stenosis (Amber)
-          critical: '#EF4444',  // Critical Stenosis / Ischemia (Crimson)
-        },
-        // Telemetry & Diagnostic Accents
-        telemetry: {
-          cyan: '#06B6D4',
-          blue: '#3B82F6',
-          purple: '#8B5CF6',
-        },
+        // Calm clinical dark color tokens (Task C2)
+        'bg-base': '#0b0f17',
+        'surface-base': '#131a26',
+        'surface-raised': '#1c2637',
+        'border-subtle': '#283548',
+        'border-strong': '#384961',
+        'text-primary': '#f1f5f9',
+        'text-secondary': '#94a3b8',
+        'text-muted': '#64748b',
+        'accent-blue': '#2563eb',
+        'accent-blue-hover': '#1d4ed8',
+        'risk-low': '#16a34a',
+        'risk-moderate': '#d97706',
+        'risk-high': '#dc2626',
       },
       fontFamily: {
-        sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['ui-monospace', 'SFMono-Regular', 'Roboto Mono', 'Menlo', 'monospace'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['"JetBrains Mono"', '"Roboto Mono"', 'monospace'],
       },
       boxShadow: {
-        'glow-optimal': '0 0 20px -5px rgba(16, 185, 129, 0.4)',
-        'glow-warning': '0 0 20px -5px rgba(245, 158, 11, 0.4)',
-        'glow-critical': '0 0 25px -5px rgba(239, 68, 68, 0.5)',
-        'glow-cyan': '0 0 20px -5px rgba(6, 182, 212, 0.4)',
-        'glass-panel': '0 8px 32px 0 rgba(0, 0, 0, 0.45)',
+        // Restrained clinical elevation - zero neon glows
+        'sm': '0 1px 2px rgba(0, 0, 0, 0.05)',
+        'md': '0 4px 6px rgba(0, 0, 0, 0.07)',
       },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      borderRadius: {
+        'sm': '6px',
+        'md': '8px',
+        'lg': '12px',
       },
     },
   },

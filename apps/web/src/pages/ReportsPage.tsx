@@ -1,5 +1,5 @@
 /**
- * Step 4: Clinical & Patient Report Generation Page (Task 5.6)
+ * Step 4: Clinical & Patient Report Generation Page (Task 5.6, Phase C)
  * Features:
  * - Two Tabs: 'Technical report (for clinician)' and 'Patient report'
  * - Loading, Regenerate, Download PDF, and Print actions
@@ -15,10 +15,7 @@ import {
   Printer,
   Download,
   RotateCw,
-  Loader2,
-  AlertCircle,
   ArrowLeft,
-  CheckCircle2,
   Sparkles,
   Info,
 } from 'lucide-react';
@@ -26,6 +23,7 @@ import { useWizardStore } from '../store/useWizardStore';
 import { TechnicalReportView } from '../components/reports/TechnicalReportView';
 import { PatientReportView } from '../components/reports/PatientReportView';
 import type { PatientReportData, TechnicalReportData } from '../types/wizard';
+import { Button, Card, Badge, Banner, Spinner } from '../components/ui';
 
 type ReportTab = 'technical' | 'patient';
 
@@ -134,133 +132,131 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col p-3 sm:p-5 md:p-8 max-w-7xl mx-auto w-full gap-5">
       {/* Top Controls Island */}
-      <div className="glass-card p-4 sm:p-5 rounded-2xl border border-white/[0.08] flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl print:hidden">
-        {/* Navigation & Tab Selection */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/results')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-xs font-mono transition-colors shrink-0 w-fit cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to 3D Twin</span>
-          </button>
-
-          {/* Two Tabs (Task 5.6) */}
-          <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-white/[0.06]">
-            <button
-              type="button"
-              id="tab-technical"
-              onClick={() => setActiveTab('technical')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activeTab === 'technical'
-                  ? 'bg-cyan-500/20 text-cyan-300 font-semibold shadow-[0_0_10px_rgba(6,182,212,0.15)] border border-cyan-500/40'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+      <Card variant="base" padding="md" className="w-full print:hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Navigation & Tab Selection */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate('/results')}
+              leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
             >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Technical Report (for Clinician)</span>
-            </button>
+              Back to 3D Twin
+            </Button>
 
-            <button
-              type="button"
-              id="tab-patient"
-              onClick={() => setActiveTab('patient')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activeTab === 'patient'
-                  ? 'bg-cyan-500/20 text-cyan-300 font-semibold shadow-[0_0_10px_rgba(6,182,212,0.15)] border border-cyan-500/40'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Patient Report</span>
-            </button>
-          </div>
-        </div>
+            {/* Two Tabs */}
+            <div className="flex items-center gap-1 bg-[#0b0f17] p-1 rounded-md border border-[#283548]">
+              <button
+                type="button"
+                id="tab-technical"
+                onClick={() => setActiveTab('technical')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer select-none ${
+                  activeTab === 'technical'
+                    ? 'bg-[#1c2637] text-white border border-[#384961] font-semibold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Technical Report (Clinician)</span>
+              </button>
 
-        {/* Action Buttons: Regenerate, Download PDF, Print */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {/* LLM Status Pill */}
-          <div
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-mono border ${
-              llmStatus?.configured
-                ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                : 'bg-slate-800 text-slate-400 border-white/[0.06]'
-            }`}
-            title={
-              llmStatus?.configured
-                ? `Connected to ${llmStatus.model}`
-                : 'Deterministic verified clinical template active'
-            }
-          >
-            <Sparkles className="w-3 h-3 text-cyan-400" />
-            <span>
-              {llmStatus?.configured ? `LLM Active (${llmStatus.model})` : 'Deterministic Template Mode'}
-            </span>
+              <button
+                type="button"
+                id="tab-patient"
+                onClick={() => setActiveTab('patient')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer select-none ${
+                  activeTab === 'patient'
+                    ? 'bg-[#1c2637] text-white border border-[#384961] font-semibold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Patient Report</span>
+              </button>
+            </div>
           </div>
 
-          <button
-            type="button"
-            id="regenerate-report-btn"
-            onClick={handleRegenerate}
-            disabled={isLoading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 text-slate-200 text-xs font-medium border border-white/[0.08] transition-all cursor-pointer disabled:opacity-60"
-          >
-            <RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Regenerate</span>
-          </button>
+          {/* Action Buttons: Regenerate, Download PDF, Print */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {/* Groq / LLM Status Pill */}
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono-numbers border ${
+                llmStatus?.configured
+                  ? 'bg-blue-950/60 text-blue-300 border-blue-800/60'
+                  : 'bg-[#1c2637] text-slate-400 border-[#283548]'
+              }`}
+              title={
+                llmStatus?.configured
+                  ? `Connected to Groq ${llmStatus.model}`
+                  : 'Deterministic verified clinical template active'
+              }
+            >
+              <Sparkles className="w-3 h-3 text-blue-400" />
+              <span>
+                {llmStatus?.configured ? `Groq (${llmStatus.model})` : 'Deterministic Template Mode'}
+              </span>
+            </div>
 
-          <button
-            type="button"
-            id="download-pdf-btn"
-            onClick={handleDownloadPdf}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 text-cyan-300 text-xs font-medium border border-cyan-500/30 transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.15)]"
-          >
-            <Download className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Download PDF</span>
-          </button>
+            <Button
+              id="regenerate-report-btn"
+              variant="secondary"
+              size="sm"
+              onClick={handleRegenerate}
+              disabled={isLoading}
+              leftIcon={<RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
+            >
+              Regenerate
+            </Button>
 
-          <button
-            type="button"
-            id="print-report-btn"
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-semibold transition-all shadow-[0_0_15px_rgba(6,182,212,0.35)] cursor-pointer"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Print</span>
-          </button>
+            <Button
+              id="download-pdf-btn"
+              variant="secondary"
+              size="sm"
+              onClick={handleDownloadPdf}
+              leftIcon={<Download className="w-3.5 h-3.5" />}
+            >
+              Download PDF
+            </Button>
+
+            <Button
+              id="print-report-btn"
+              variant="primary"
+              size="sm"
+              onClick={handlePrint}
+              leftIcon={<Printer className="w-3.5 h-3.5" />}
+            >
+              Print
+            </Button>
+          </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Non-blocking LLM notice if not configured */}
+      {/* Non-blocking notice if Groq not configured */}
       {!llmStatus?.configured && (
-        <div className="p-3 rounded-xl bg-slate-900/60 border border-white/[0.06] text-slate-400 text-xs flex items-center gap-2 print:hidden font-mono">
-          <Info className="w-4 h-4 text-cyan-400 shrink-0" />
-          <span>
-            LLM API key not configured in environment. Displaying verified deterministic clinical template derived directly from model context.
-          </span>
-        </div>
+        <Banner variant="info" className="print:hidden">
+          Groq API key not configured in environment. Displaying verified deterministic clinical template derived directly from model context.
+        </Banner>
       )}
 
       {/* Error state */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-3">
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
+        <Banner variant="danger">
+          {errorMessage}
+        </Banner>
       )}
 
       {/* Loading state */}
       {isLoading && (
-        <div className="p-16 rounded-2xl glass-card border border-white/[0.08] flex flex-col items-center justify-center gap-3 text-center">
-          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+        <Card variant="base" padding="lg" className="flex flex-col items-center justify-center gap-3 text-center py-16">
+          <Spinner size="lg" />
           <span className="text-sm font-semibold text-white">
             Synthesizing Structured Clinical Report...
           </span>
-          <p className="text-xs text-slate-400 font-mono">
+          <p className="text-xs text-slate-400 font-mono-numbers">
             Validating 55 input vectors, TreeSHAP attributions, and regulatory disclosures.
           </p>
-        </div>
+        </Card>
       )}
 
       {/* Rendered Document View */}

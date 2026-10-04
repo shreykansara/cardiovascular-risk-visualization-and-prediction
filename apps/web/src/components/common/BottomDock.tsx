@@ -42,7 +42,7 @@ export const BottomDock: React.FC = () => {
   return (
     <div className="w-full flex flex-col items-center gap-2 pointer-events-none z-30 select-none animate-cinema-bottom">
       {/* Floating Segmented Vessel Dock */}
-      <div className="pointer-events-auto flex items-center gap-1.5 p-1.5 rounded-full border border-white/10 bg-slate-950/60 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]">
+      <div className="pointer-events-auto flex items-center gap-1.5 p-1.5 rounded-full border border-white/10 bg-slate-950/60  shadow-md">
         {buttons.map((btn) => {
           const isActive = activeVesselFocus === btn.key;
           return (
@@ -51,7 +51,7 @@ export const BottomDock: React.FC = () => {
               onClick={() => setVesselFocus(btn.key)}
               className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all duration-200 ${
                 isActive
-                  ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/15 scale-[1.02]'
+                  ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/15 '
                   : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
               }`}
             >

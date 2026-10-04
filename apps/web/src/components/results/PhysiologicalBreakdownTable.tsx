@@ -1,5 +1,5 @@
 /**
- * Physiological Feature Breakdown Table (Task 4.8)
+ * Physiological Feature Breakdown Table (Task 4.8, Phase C)
  * Shows feature name, patient value, unit, reference range, within/outside range marker,
  * and relative contribution (% of total absolute SHAP) for the selected target.
  * Sortable by relative contribution, feature name, or value.
@@ -8,7 +8,7 @@
 import React, { useState, useMemo } from 'react';
 import type { VesselExplanation } from '../../types/clinical';
 import { FEATURE_SCHEMA, isWithinReferenceRange } from '../../config/featureSchema';
-import { ArrowUpDown, Check, AlertCircle, Info } from 'lucide-react';
+import { ArrowUpDown, Check, Info } from 'lucide-react';
 
 interface BreakdownRow {
   key: string;
@@ -93,27 +93,27 @@ export const PhysiologicalBreakdownTable: React.FC<PhysiologicalBreakdownTablePr
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-white/[0.08]">
-      <div className="flex items-center justify-between gap-3">
+    <div className="flex flex-col gap-3 p-4 rounded-md bg-[#131a26] border border-[#283548]">
+      <div className="flex items-center justify-between gap-3 border-b border-[#283548] pb-3">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
             <span>Physiological Breakdown & Risk Attribution</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+            <span className="text-[11px] font-mono-numbers px-2 py-0.5 rounded bg-blue-950/60 text-blue-300 border border-blue-800/60">
               {targetName}
             </span>
           </h3>
-          <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+          <p className="text-[11px] text-slate-400 font-mono-numbers mt-0.5">
             Parameters mapped against reference ranges and relative SHAP model contribution.
           </p>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
+      <div className="overflow-x-auto rounded-md border border-[#283548]">
         <table className="w-full text-left text-xs font-sans">
-          <thead className="bg-slate-950/80 text-slate-400 font-mono text-[10px] uppercase tracking-wider border-b border-white/[0.06]">
+          <thead className="bg-[#1c2637] text-slate-400 font-mono-numbers text-[10px] uppercase tracking-wider border-b border-[#283548]">
             <tr>
               <th
-                className="p-3 cursor-pointer hover:text-white transition-colors"
+                className="p-2.5 cursor-pointer hover:text-white transition-colors"
                 onClick={() => handleToggleSort('name')}
               >
                 <div className="flex items-center gap-1.5">
@@ -122,7 +122,7 @@ export const PhysiologicalBreakdownTable: React.FC<PhysiologicalBreakdownTablePr
                 </div>
               </th>
               <th
-                className="p-3 cursor-pointer hover:text-white transition-colors"
+                className="p-2.5 cursor-pointer hover:text-white transition-colors"
                 onClick={() => handleToggleSort('value')}
               >
                 <div className="flex items-center gap-1.5">
@@ -130,10 +130,10 @@ export const PhysiologicalBreakdownTable: React.FC<PhysiologicalBreakdownTablePr
                   <ArrowUpDown className="w-3 h-3" />
                 </div>
               </th>
-              <th className="p-3">Reference Range</th>
-              <th className="p-3">Status</th>
+              <th className="p-2.5">Reference Range</th>
+              <th className="p-2.5">Status</th>
               <th
-                className="p-3 cursor-pointer hover:text-white transition-colors text-right"
+                className="p-2.5 cursor-pointer hover:text-white transition-colors text-right"
                 onClick={() => handleToggleSort('relativePct')}
               >
                 <div className="flex items-center justify-end gap-1.5">
@@ -143,43 +143,43 @@ export const PhysiologicalBreakdownTable: React.FC<PhysiologicalBreakdownTablePr
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/[0.04] text-slate-200">
+          <tbody className="divide-y divide-[#283548] bg-[#0b0f17] text-slate-200">
             {sortedRows.map((r) => {
               const hasShap = r.relativePct > 0;
               const isIncrease = r.direction === 'INCREASES_RISK';
 
               return (
-                <tr key={r.key} className="hover:bg-slate-800/40 transition-colors">
+                <tr key={r.key} className="hover:bg-[#131a26]/60 transition-colors">
                   {/* Parameter Name */}
-                  <td className="p-3 font-medium text-slate-200">
+                  <td className="p-2.5 font-medium text-slate-200">
                     <span>{r.name}</span>
                     {r.unit && (
-                      <span className="text-[10px] text-slate-400 font-mono ml-1.5">
+                      <span className="text-[10px] text-slate-400 font-mono-numbers ml-1.5">
                         ({r.unit})
                       </span>
                     )}
                   </td>
 
                   {/* Patient Value */}
-                  <td className="p-3 font-mono text-white font-semibold">
+                  <td className="p-2.5 font-mono-numbers text-white font-semibold">
                     {String(r.value)}
                   </td>
 
                   {/* Reference Range */}
-                  <td className="p-3 font-mono text-slate-400 text-[11px]">
+                  <td className="p-2.5 font-mono-numbers text-slate-400 text-[11px]">
                     {r.refDisplay}
                   </td>
 
-                  {/* Within / Outside Range Marker (Task 4.8) */}
-                  <td className="p-3 text-[11px] font-mono">
+                  {/* Within / Outside Range Marker */}
+                  <td className="p-2.5 text-[11px] font-mono-numbers">
                     {r.withinRange === true ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                        <Check className="w-3 h-3" />
+                      <span className="inline-flex items-center gap-1 text-green-300 bg-green-950/60 px-2 py-0.5 rounded border border-green-800/60">
+                        <Check className="w-3 h-3 text-green-400" />
                         <span>Within range</span>
                       </span>
                     ) : r.withinRange === false ? (
-                      <span className="inline-flex items-center gap-1 text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-                        <Info className="w-3 h-3 text-slate-400" />
+                      <span className="inline-flex items-center gap-1 text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/60">
+                        <Info className="w-3 h-3 text-amber-400" />
                         <span>Outside typical</span>
                       </span>
                     ) : (
@@ -188,11 +188,11 @@ export const PhysiologicalBreakdownTable: React.FC<PhysiologicalBreakdownTablePr
                   </td>
 
                   {/* Relative Contribution (% of total absolute SHAP) */}
-                  <td className="p-3 text-right font-mono">
+                  <td className="p-2.5 text-right font-mono-numbers">
                     {hasShap ? (
                       <span
                         className={`font-semibold ${
-                          isIncrease ? 'text-rose-400' : 'text-cyan-400'
+                          isIncrease ? 'text-blue-400' : 'text-slate-400'
                         }`}
                       >
                         {r.relativePct.toFixed(1)}%

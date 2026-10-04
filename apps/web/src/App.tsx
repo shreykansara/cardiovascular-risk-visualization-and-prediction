@@ -10,6 +10,7 @@ import { WelcomePage } from './pages/WelcomePage';
 import { DataEntryPage } from './pages/DataEntryPage';
 import { ResultsPage } from './pages/ResultsPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { DesignSystemPage } from './pages/DesignSystemPage';
 
 export const App: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ export const App: React.FC = () => {
           <Route path="/enter-data" element={<DataEntryPage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/design-system" element={<DesignSystemPage />} />
           <Route path="*" element={<Navigate to="/welcome" replace />} />
         </Route>
       </Routes>

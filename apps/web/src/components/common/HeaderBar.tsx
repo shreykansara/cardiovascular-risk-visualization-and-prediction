@@ -35,10 +35,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
 
   return (
     <header className="w-full flex justify-center items-center pointer-events-none z-30 select-none animate-cinema-top">
-      <div className="pointer-events-auto flex items-center gap-2 sm:gap-3.5 px-3.5 sm:px-5 py-2 rounded-full border border-white/10 bg-slate-950/55 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transition-all">
+      <div className="pointer-events-auto flex items-center gap-2 sm:gap-3.5 px-3.5 sm:px-5 py-2 rounded-full border border-white/10 bg-slate-950/55  shadow-md transition-all">
         {/* Brand Mark */}
         <div className="flex items-center gap-2 pr-1 sm:pr-2">
-          <div className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.3)]">
+          <div className="w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-400 ">
             <Activity className="w-3.5 h-3.5 animate-pulse" />
           </div>
           <div className="flex items-center gap-1.5">
@@ -66,7 +66,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
                   onClick={onToggleDrawer}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)] scale-[1.02]'
+                      ? 'bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-400/40  '
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.06] border border-transparent'
                   }`}
                   title={
@@ -78,7 +78,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
                       isActive
-                        ? 'bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]'
+                        ? 'bg-cyan-400 animate-pulse '
                         : 'bg-slate-500'
                     }`}
                   />
@@ -93,7 +93,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
                 onClick={() => loadProfile(key as PatientProfileKey)}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/15 scale-[1.02]'
+                    ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/15 '
                     : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.06]'
                 }`}
               >
@@ -110,8 +110,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
           <span
             className={`w-1.5 h-1.5 rounded-full ${
               offlineMode
-                ? 'bg-amber-400 shadow-[0_0_8px_#f59e0b]'
-                : 'bg-emerald-400 shadow-[0_0_8px_#10b981]'
+                ? 'bg-amber-400 '
+                : 'bg-emerald-400 '
             }`}
           />
           <span className="text-slate-400">
@@ -141,7 +141,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onToggleDrawer, isDrawerOp
             onClick={onToggleDrawer}
             className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-xs font-medium transition-all border ${
               isDrawerOpen
-                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-[0_0_12px_rgba(6,182,212,0.3)]'
+                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 '
                 : 'bg-white/[0.04] text-slate-300 border-white/10 hover:bg-white/[0.08] hover:text-white'
             }`}
           >

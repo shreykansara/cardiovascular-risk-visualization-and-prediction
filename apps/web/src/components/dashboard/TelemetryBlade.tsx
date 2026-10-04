@@ -113,13 +113,13 @@ export const TelemetryBlade: React.FC<TelemetryBladeProps> = ({ onOpenParameters
   const targetsList: TargetVessel[] = ['CAD', 'LAD', 'LCX', 'RCA'];
 
   return (
-    <aside className="w-80 md:w-96 ultra-glass rounded-3xl border border-white/10 shadow-[0_20px_48px_0_rgba(0,0,0,0.65)] backdrop-blur-2xl flex flex-col pointer-events-auto select-none transition-all duration-300 animate-cinema-right overflow-hidden">
+    <aside className="w-80 md:w-96 ultra-glass rounded-3xl border border-white/10 shadow-md  flex flex-col pointer-events-auto select-none transition-all duration-300 animate-cinema-right overflow-hidden">
       {/* 1. Sleek Compact Primary Cardiac Verdict (Hero Summary) */}
       <div className="p-4 sm:p-5 pb-3">
         {/* Top Header Pill Row */}
         <div className="flex items-center justify-between gap-2 mb-2.5">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse " />
             <span className="text-[10px] font-mono tracking-widest text-slate-400 uppercase font-semibold">
               CARDIAC VERDICT
             </span>
@@ -129,12 +129,12 @@ export const TelemetryBlade: React.FC<TelemetryBladeProps> = ({ onOpenParameters
           <div
             className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider flex items-center gap-1 border ${
               overallCad.risk_tier === 'CRITICAL'
-                ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
+                ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 '
                 : overallCad.risk_tier === 'HIGH'
                 ? 'bg-red-500/15 text-red-300 border-red-500/30'
                 : overallCad.risk_tier === 'BORDERLINE'
                 ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 '
             }`}
           >
             {overallCad.risk_tier === 'CRITICAL' && <Flame className="w-3 h-3 text-rose-400" />}
@@ -179,7 +179,7 @@ export const TelemetryBlade: React.FC<TelemetryBladeProps> = ({ onOpenParameters
                 onClick={() => setVesselFocus(isVesselFocused ? 'default' : v.focusNode)}
                 className={`p-2 rounded-xl text-left transition-all duration-200 border flex flex-col justify-between ${
                   isVesselFocused
-                    ? 'bg-white/10 border-cyan-400/60 shadow-[0_0_16px_rgba(6,182,212,0.25)] scale-[1.02]'
+                    ? 'bg-white/10 border-cyan-400/60  '
                     : 'bg-white/[0.02] border-transparent hover:bg-white/[0.06] hover:border-white/10'
                 }`}
               >
@@ -342,7 +342,7 @@ export const TelemetryBlade: React.FC<TelemetryBladeProps> = ({ onOpenParameters
                         <div className="flex-1 flex justify-end h-full">
                           {!isRiskElevating && (
                             <div
-                              className="h-full rounded-full bg-gradient-to-l from-emerald-400 to-teal-400 shadow-[0_0_8px_rgba(16,185,129,0.5)] transition-all duration-300"
+                              className="h-full rounded-full bg-slate-500  transition-all duration-300"
                               style={{ width: `${barWidthPercent}%` }}
                             />
                           )}
@@ -355,7 +355,7 @@ export const TelemetryBlade: React.FC<TelemetryBladeProps> = ({ onOpenParameters
                         <div className="flex-1 flex justify-start h-full">
                           {isRiskElevating && (
                             <div
-                              className="h-full rounded-full bg-gradient-to-r from-rose-500 to-red-500 shadow-[0_0_8px_rgba(244,63,94,0.5)] transition-all duration-300"
+                              className="h-full rounded-full bg-blue-600  transition-all duration-300"
                               style={{ width: `${barWidthPercent}%` }}
                             />
                           )}

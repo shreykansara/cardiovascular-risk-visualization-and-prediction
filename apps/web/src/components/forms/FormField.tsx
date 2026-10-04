@@ -29,7 +29,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   const source = meta?.source || 'manual';
 
   return (
-    <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-slate-900/40 border border-white/[0.05] hover:border-white/[0.1] transition-all">
+    <div className="flex flex-col gap-1.5 p-3 rounded-md bg-[#131a26] border border-[#283548] hover:border-[#384961] transition-colors">
       {/* Label, Source Badge & Unit Hint */}
       <div className="flex items-center justify-between gap-2">
         <label
@@ -43,15 +43,15 @@ export const FormField: React.FC<FormFieldProps> = ({
           )}
         </label>
 
-        {/* Source Badge (Task 3.4) */}
+        {/* Source Badge */}
         <div className="flex items-center gap-1.5 shrink-0">
           <span
-            className={`text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.2 rounded border ${
+            className={`text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border ${
               source === 'extracted'
-                ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                ? 'bg-blue-950/60 text-blue-300 border-blue-800/60'
                 : source === 'unverified'
-                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                : 'bg-slate-800 text-slate-400 border-slate-700'
+                ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
+                : 'bg-[#1c2637] text-slate-400 border-[#283548]'
             }`}
           >
             {source}
@@ -74,24 +74,24 @@ export const FormField: React.FC<FormFieldProps> = ({
               const val = e.target.value === '' ? '' : Number(e.target.value);
               onChange(val);
             }}
-            className={`w-full bg-slate-950/80 rounded-lg px-3 py-1.5 text-xs text-slate-100 font-mono border focus:outline-none focus:ring-1 transition-all ${
+            className={`w-full bg-[#0b0f17] rounded-md px-3 py-1.5 text-xs text-slate-100 font-mono-numbers border focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors ${
               hasError
-                ? 'border-rose-500/60 focus:ring-rose-500/50'
+                ? 'border-red-500/80 focus:ring-red-500'
                 : isOutside
-                ? 'border-slate-700 focus:ring-cyan-500/50 focus:border-cyan-500/50'
-                : 'border-white/[0.08] focus:ring-cyan-500/50 focus:border-cyan-500/50'
+                ? 'border-amber-500/50 focus:border-blue-500'
+                : 'border-[#283548] hover:border-[#384961] focus:border-blue-500'
             }`}
           />
         ) : feature.type === 'toggle' ? (
-          <div className="flex gap-1.5 bg-slate-950/80 p-1 rounded-lg border border-white/[0.08]">
+          <div className="flex gap-1 bg-[#0b0f17] p-1 rounded-md border border-[#283548]">
             {feature.options?.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => onChange(opt.value)}
-                className={`flex-1 py-1 px-2 rounded text-xs font-medium transition-all ${
+                className={`flex-1 py-1 px-2 rounded text-xs font-medium transition-colors select-none cursor-pointer ${
                   String(value) === String(opt.value)
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold shadow-[0_0_10px_rgba(6,182,212,0.15)]'
+                    ? 'bg-[#1c2637] text-white border border-[#384961] font-semibold shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -104,10 +104,10 @@ export const FormField: React.FC<FormFieldProps> = ({
             id={`field-${feature.key}`}
             value={value !== undefined ? String(value) : ''}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full bg-slate-950/80 rounded-lg px-3 py-1.5 text-xs text-slate-200 border border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all font-sans cursor-pointer"
+            className="w-full bg-[#0b0f17] rounded-md px-3 py-1.5 text-xs text-slate-200 border border-[#283548] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-500 transition-colors font-sans cursor-pointer"
           >
             {feature.options?.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-slate-900 text-slate-200">
+              <option key={opt.value} value={opt.value} className="bg-[#131a26] text-slate-200">
                 {opt.label}
               </option>
             ))}
@@ -118,18 +118,17 @@ export const FormField: React.FC<FormFieldProps> = ({
       {/* Reference Range & Inline Validation Hints */}
       <div className="flex items-center justify-between text-[10px] min-h-[16px] px-0.5">
         {hasError ? (
-          <span className="text-rose-400 flex items-center gap-1 font-sans">
+          <span className="text-red-400 flex items-center gap-1 font-sans">
             <AlertCircle className="w-3 h-3 shrink-0" />
             {meta?.error}
           </span>
         ) : isOutside ? (
-          /* Neutral out-of-range marker (Task 3.3: not an alarm, not advice) */
-          <span className="text-slate-400 font-mono flex items-center gap-1">
-            <Info className="w-3 h-3 text-slate-400 shrink-0" />
+          <span className="text-amber-400/90 font-mono-numbers flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
             <span>Outside typical range: {feature.refDisplay}</span>
           </span>
         ) : (
-          <span className="text-slate-400 font-mono">
+          <span className="text-slate-500 font-mono-numbers">
             Ref: {feature.refDisplay}
           </span>
         )}

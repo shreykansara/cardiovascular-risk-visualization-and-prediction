@@ -138,7 +138,7 @@ export const ShapWaterfall: React.FC = () => {
                 <div className="flex-1 flex justify-end items-center h-full">
                   {!isRiskElevating && (
                     <div
-                      className="h-3 rounded-l-full bg-gradient-to-l from-emerald-500 to-teal-400 transition-all duration-300 shadow-sm"
+                      className="h-3 rounded-l-full bg-slate-500 transition-all duration-300 shadow-sm"
                       style={{ width: `${barWidthPercent}%` }}
                     />
                   )}
@@ -151,7 +151,7 @@ export const ShapWaterfall: React.FC = () => {
                 <div className="flex-1 flex justify-start items-center h-full">
                   {isRiskElevating && (
                     <div
-                      className="h-3 rounded-r-full bg-gradient-to-r from-rose-500 to-red-500 transition-all duration-300 shadow-sm"
+                      className="h-3 rounded-r-full bg-blue-600 transition-all duration-300 shadow-sm"
                       style={{ width: `${barWidthPercent}%` }}
                     />
                   )}

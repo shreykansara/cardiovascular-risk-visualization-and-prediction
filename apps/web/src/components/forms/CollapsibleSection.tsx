@@ -1,6 +1,6 @@
 /**
  * Collapsible Clinical Section Container
- * Displays section title, completion counter (e.g., '5/5 filled'), and expandable grid.
+ * Displays section title, completion counter, and expandable grid.
  */
 
 import React, { useState } from 'react';
@@ -39,28 +39,28 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   const isComplete = filledCount === totalCount && errorCount === 0;
 
   return (
-    <div className="w-full rounded-2xl bg-slate-900/40 border border-white/[0.07] overflow-hidden transition-all duration-200">
+    <div className="w-full rounded-md bg-[#131a26] border border-[#283548] overflow-hidden transition-colors">
       {/* Section Header Accordion Trigger */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-5 py-3.5 flex items-center justify-between gap-4 bg-slate-900/60 hover:bg-slate-800/60 transition-colors text-left select-none cursor-pointer"
+        className="w-full px-4 py-3 flex items-center justify-between gap-4 bg-[#1c2637] hover:bg-[#253248] transition-colors text-left select-none cursor-pointer border-b border-[#283548]"
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-3">
           <div
-            className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono shrink-0 ${
+            className={`w-6 h-6 rounded flex items-center justify-center text-xs font-mono shrink-0 ${
               isComplete
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                ? 'bg-green-950/60 text-green-300 border border-green-800/60'
                 : errorCount > 0
-                ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                ? 'bg-red-950/60 text-red-300 border border-red-800/60'
+                : 'bg-blue-950/60 text-blue-300 border border-blue-800/60'
             }`}
           >
             {isComplete ? (
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="w-3.5 h-3.5 text-green-400" />
             ) : errorCount > 0 ? (
-              <AlertCircle className="w-4 h-4" />
+              <AlertCircle className="w-3.5 h-3.5 text-red-400" />
             ) : (
               <span>{filledCount}</span>
             )}
@@ -68,21 +68,21 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
           <div>
             <h2 className="text-sm font-semibold text-white tracking-wide">{section}</h2>
-            <p className="text-[11px] text-slate-400 font-mono">
+            <p className="text-[11px] text-slate-400 font-mono-numbers">
               {filledCount} of {totalCount} parameters configured
             </p>
           </div>
         </div>
 
         {/* Status Pill & Expand Caret */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <span
-            className={`text-xs font-mono px-2 py-0.5 rounded-full border ${
+            className={`text-xs font-mono-numbers px-2 py-0.5 rounded-full border ${
               isComplete
-                ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                ? 'bg-green-950/60 text-green-300 border-green-800/60'
                 : errorCount > 0
-                ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
-                : 'bg-slate-800 text-slate-400 border-white/[0.08]'
+                ? 'bg-red-950/60 text-red-300 border-red-800/60'
+                : 'bg-[#131a26] text-slate-400 border-[#283548]'
             }`}
           >
             {errorCount > 0
@@ -90,7 +90,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
               : `${filledCount}/${totalCount} filled`}
           </span>
 
-          <div className="p-1 rounded-lg bg-slate-800/80 text-slate-400">
+          <div className="p-1 rounded text-slate-400">
             {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
         </div>
@@ -98,7 +98,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
       {/* Expandable Grid Body */}
       {isOpen && (
-        <div className="p-4 sm:p-5 border-t border-white/[0.06] bg-slate-950/30">
+        <div className="p-4 sm:p-5 bg-[#0b0f17]">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
             {features.map((feat) => (
               <FormField
