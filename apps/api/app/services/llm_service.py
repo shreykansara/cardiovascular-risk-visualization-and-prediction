@@ -15,14 +15,17 @@ import re
 import json
 import time
 import logging
+import warnings
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Set
 from pathlib import Path
-import urllib.request
-import urllib.error
+import httpx
 
 from dotenv import load_dotenv
 from apps.api.app.services.risk_bands import risk_label
+
+# Suppress LightGBM binary classifier list-of-arrays TreeExplainer warning (Task 2.9)
+warnings.filterwarnings("ignore", message=".*LightGBM binary classifier with TreeExplainer.*")
 
 logger = logging.getLogger("cardio_api")
 
@@ -146,12 +149,16 @@ def load_and_check_env() -> Tuple[bool, str]:
 
 
 def clean_env_str(val: Optional[str]) -> str:
-    """Strips whitespace and surrounding quotes from an environment string."""
+    """
+    Task 2.1: Strips whitespace, \r, \n, UTF-8 BOM, and one pair of surrounding single or double quotes.
+    After stripping, reject nothing else.
+    """
     if not val:
         return ""
-    s = val.strip()
+    s = val.lstrip("\ufeff")
+    s = s.strip(" \t\r\n")
     if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
-        s = s[1:-1].strip()
+        s = s[1:-1].strip(" \t\r\n")
     return s
 
 
@@ -175,8 +182,8 @@ def is_placeholder(key: Optional[str]) -> bool:
 
 def get_groq_config() -> Tuple[Optional[str], str]:
     """
-    Task 1.3: Reads GROQ_API_KEY and GROQ_MODEL from os.environ at request time.
-    Strips leading/trailing whitespace and surrounding quotes.
+    Task 1.3 & 2.1: Reads GROQ_API_KEY and GROQ_MODEL from os.environ at request time.
+    Strips leading/trailing whitespace, \r, \n, BOM, and surrounding quotes.
     """
     raw_key = os.environ.get("GROQ_API_KEY", "")
     raw_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
@@ -189,16 +196,71 @@ def get_groq_config() -> Tuple[Optional[str], str]:
     return key, model
 
 
+def classify_groq_error(status_code: int, response_text: str, headers: Any) -> Tuple[str, str]:
+    """
+    Task 2.3: Correct error classification.
+    - 401 or JSON error body with code 'invalid_api_key' -> 'key_rejected'
+    - 403 with non-JSON/HTML body, or Cloudflare signature -> 'request_blocked'
+    - 403 with JSON error body about permissions or organization -> 'access_denied'
+    - 404 or 400 about the model -> 'model_unavailable'
+    - 429 -> 'rate_limited'
+    - timeouts, DNS, connection errors -> 'network_error'
+    - validator failure -> 'validation_failed'
+    - success -> 'ok'
+    Exposes the sanitized Groq error code/type (never the key) in last_error_message.
+    """
+    server_hdr = ""
+    cf_ray = ""
+    ctype = ""
+    if headers is not None:
+        try:
+            server_hdr = (headers.get("server") or "").lower()
+            cf_ray = headers.get("cf-ray") or ""
+            ctype = (headers.get("content-type") or "").lower()
+        except Exception:
+            pass
+
+    err_code = None
+    err_type = None
+    is_json = False
+    try:
+        data = json.loads(response_text)
+        if isinstance(data, dict):
+            err_obj = data.get("error", {})
+            if isinstance(err_obj, dict):
+                is_json = True
+                err_code = err_obj.get("code")
+                err_type = err_obj.get("type")
+    except Exception:
+        is_json = False
+
+    if status_code == 401 or err_code == "invalid_api_key":
+        return "key_rejected", f"Groq rejected API key (401: {err_code or err_type or 'invalid_api_key'})"
+
+    if status_code == 403:
+        if not is_json or "cloudflare" in server_hdr or cf_ray or "<html" in response_text.lower():
+            return "request_blocked", "Groq request blocked by edge firewall (HTTP 403)"
+        else:
+            return "access_denied", f"Groq denied access for this key ({err_code or err_type or 'permission_denied'})"
+
+    if status_code in (400, 404):
+        return "model_unavailable", f"Groq model unavailable (HTTP {status_code}: {err_code or err_type or 'model_not_found'})"
+
+    if status_code == 429:
+        return "rate_limited", f"Groq rate limit exceeded (HTTP 429: {err_type or 'rate_limit'})"
+
+    return "network_error", f"Groq HTTP error {status_code}: {err_code or err_type or 'error'}"
+
+
 def perform_live_groq_check(
     api_key: Optional[str],
     model: str,
     force: bool = False,
 ) -> Tuple[Optional[bool], str, Optional[str]]:
     """
-    Task 1.8: Calls GET https://api.groq.com/openai/v1/models with the key.
+    Tasks 1.8, 2.2, 2.3: Calls GET https://api.groq.com/openai/v1/models with httpx.
+    Headers: Authorization, Content-Type, Accept, User-Agent: perfusion3d/1.0.
     Cached for 60 seconds unless force=True.
-    Returns: (model_listed_by_groq, last_error_code, last_error_message)
-    Error codes: ok, no_key, key_rejected, model_unavailable, rate_limited, network_error, validation_failed
     """
     global _last_live_check_time, _cached_live_status, _last_error_code, _last_error_message
     now = time.time()
@@ -224,6 +286,8 @@ def perform_live_groq_check(
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "perfusion3d/1.0",
     }
 
     model_listed: Optional[bool] = None
@@ -231,35 +295,26 @@ def perform_live_groq_check(
     err_msg: Optional[str] = None
 
     try:
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            available_models = [m.get("id") for m in data.get("data", [])]
-            if model in available_models:
-                model_listed = True
-                err_code = "ok"
-                err_msg = None
+        with httpx.Client(timeout=30.0) as client:
+            resp = client.get(url, headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                available_models = [m.get("id") for m in data.get("data", [])]
+                if model in available_models:
+                    model_listed = True
+                    err_code = "ok"
+                    err_msg = None
+                else:
+                    model_listed = False
+                    err_code = "model_unavailable"
+                    err_msg = f"Model '{model}' not found in Groq available models"
             else:
-                model_listed = False
-                err_code = "model_unavailable"
-                err_msg = f"Model '{model}' not found in Groq available models"
-    except urllib.error.HTTPError as e:
-        if e.code in (401, 403):
-            err_code = "key_rejected"
-            err_msg = f"Groq rejected API key (HTTP {e.code})"
-            model_listed = False
-        elif e.code == 429:
-            err_code = "rate_limited"
-            err_msg = "Groq rate limit exceeded (HTTP 429)"
-            model_listed = None
-        elif e.code in (400, 404):
-            err_code = "model_unavailable"
-            err_msg = f"Groq returned HTTP {e.code}"
-            model_listed = False
-        else:
-            err_code = "network_error"
-            err_msg = f"HTTP {e.code}: {e.reason}"
-            model_listed = None
+                err_code, err_msg = classify_groq_error(resp.status_code, resp.text, resp.headers)
+                model_listed = False if err_code in ("key_rejected", "model_unavailable", "access_denied") else None
+    except (httpx.TimeoutException, httpx.NetworkError, httpx.RequestError) as e:
+        err_code = "network_error"
+        err_msg = f"Groq connection error: {type(e).__name__}"
+        model_listed = None
     except Exception as e:
         err_code = "network_error"
         err_msg = str(e)
@@ -320,6 +375,12 @@ def get_reports_diagnostics() -> Dict[str, Any]:
         err_code = _last_error_code
         err_msg = _last_error_message
 
+    env_loaded = {
+        "key_found": bool(key),
+        "key_length": len(key) if key else 0,
+        "starts_with_gsk": bool(key and key.startswith("gsk_")),
+    }
+
     return {
         "env_file_found": env_found,
         "env_file_path": env_path,
@@ -330,6 +391,7 @@ def get_reports_diagnostics() -> Dict[str, Any]:
         "model_listed_by_groq": model_listed,
         "last_error_code": err_code,
         "last_error_message": err_msg,
+        "env_loaded": env_loaded,
         # Backward compatibility properties
         "configured": (key is not None and not key_is_placeholder and err_code == "ok"),
         "model_status": "ready" if (key and err_code == "ok") else ("unconfigured" if not key else "unavailable"),
@@ -547,7 +609,7 @@ def validate_report_json(
     4. Format-tolerant number validation against context.
     """
     # 1. Section presence and ordering
-    actual_keys = list(report_dict.keys())
+    actual_keys = [k for k in report_dict.keys() if k != "source"]
     for i, exp_sec in enumerate(expected_sections):
         if exp_sec not in report_dict:
             return False, f"Missing required section: '{exp_sec}'"
@@ -583,7 +645,8 @@ def validate_report_json(
 
 def call_groq(prompt: str, system_prompt: str) -> str:
     """
-    Executes Groq OpenAI-compatible chat completion with JSON object mode.
+    Task 2.2: Executes Groq OpenAI-compatible chat completion via httpx with 30s timeout
+    and User-Agent: perfusion3d/1.0.
     """
     api_key, model = get_groq_config()
     if not api_key:
@@ -602,10 +665,19 @@ def call_groq(prompt: str, system_prompt: str) -> str:
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "perfusion3d/1.0",
     }
-    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
-    with urllib.request.urlopen(req, timeout=45) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    with httpx.Client(timeout=30.0) as client:
+        resp = client.post(url, json=payload, headers=headers)
+        if resp.status_code != 200:
+            err_code, err_msg = classify_groq_error(resp.status_code, resp.text, resp.headers)
+            raise httpx.HTTPStatusError(
+                message=err_msg,
+                request=resp.request,
+                response=resp,
+            )
+        data = resp.json()
         return data["choices"][0]["message"]["content"]
 
 
@@ -740,6 +812,7 @@ def generate_deterministic_technical_report(context: Dict[str, Any]) -> Dict[str
             "Reported outputs reflect calibrated probabilities derived from empirical post-test Bayesian odds, not direct anatomical lumen caliber measurements.",
         ],
         "disclaimer": MANDATORY_DISCLAIMER,
+        "source": "template",
     }
 
 
@@ -848,6 +921,7 @@ def generate_deterministic_patient_report(context: Dict[str, Any]) -> Dict[str, 
             "The computer program does not take pictures of your heart or directly measure blood flow."
         ),
         "disclaimer": MANDATORY_DISCLAIMER,
+        "source": "template",
     }
 
 
@@ -898,28 +972,26 @@ def generate_report(
             if is_valid:
                 _last_error_code = "ok"
                 _last_error_message = None
+                parsed_json["source"] = "groq"
                 return parsed_json
 
             logger.warning(f"Groq report validation failed (attempt {attempt+1}/3): {error_msg}")
             _last_error_code = "validation_failed"
             _last_error_message = error_msg
             current_prompt = f"{user_prompt}\n\nPREVIOUS ATTEMPT REJECTED BY CLINICAL SAFETY VALIDATOR: {error_msg}\nRegenerate valid JSON strictly fixing this error and conforming to all rules."
-        except urllib.error.HTTPError as e:
-            if e.code in (401, 403):
-                _last_error_code = "key_rejected"
-                _last_error_message = f"Groq rejected API key (HTTP {e.code})"
+        except httpx.HTTPStatusError as e:
+            err_code, err_msg = classify_groq_error(e.response.status_code, e.response.text, e.response.headers)
+            _last_error_code = err_code
+            _last_error_message = err_msg
+            logger.warning(f"Groq HTTP error (attempt {attempt+1}/3): {err_msg}")
+            if err_code in ("key_rejected", "request_blocked", "access_denied"):
                 break
-            elif e.code == 429:
-                _last_error_code = "rate_limited"
-                _last_error_message = "Groq rate limit exceeded (HTTP 429)"
-            elif e.code in (400, 404):
-                _last_error_code = "model_unavailable"
-                _last_error_message = f"Groq endpoint returned HTTP {e.code}"
-            else:
-                _last_error_code = "network_error"
-                _last_error_message = f"HTTP {e.code}: {e.reason}"
-            logger.warning(f"Groq HTTP error (attempt {attempt+1}/3): {e}")
             time.sleep(1.0)
+        except (httpx.TimeoutException, httpx.NetworkError, httpx.RequestError) as e:
+            _last_error_code = "network_error"
+            _last_error_message = f"Groq network error: {type(e).__name__}"
+            logger.warning(f"Groq connection error (attempt {attempt+1}/3): {e}")
+            time.sleep(0.5)
         except Exception as e:
             _last_error_code = "network_error"
             _last_error_message = str(e)
@@ -928,5 +1000,8 @@ def generate_report(
 
     # Fallback to deterministic template if Groq retries fail
     if report_type == "patient":
-        return generate_deterministic_patient_report(context)
-    return generate_deterministic_technical_report(context)
+        report = generate_deterministic_patient_report(context)
+    else:
+        report = generate_deterministic_technical_report(context)
+    report["source"] = "template"
+    return report

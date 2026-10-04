@@ -27,6 +27,7 @@ To run Perfusion3D with Docker Compose in 3 simple steps:
    ```bash
    docker compose up --build
    ```
+   > **Note on Environment Configuration**: `.env` must use LF line endings (no CRLF). After editing `.env`, run `docker compose up -d --force-recreate api`; a plain restart or `up` does not reload it.
 3. **Open the Web Interface**:
    ```
    http://localhost:8080

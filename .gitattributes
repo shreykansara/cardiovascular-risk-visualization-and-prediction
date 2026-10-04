@@ -1,0 +1,2 @@
+# Force LF line endings for environment configuration templates
+.env.example text eol=lf

@@ -97,7 +97,7 @@ export const ReportsPage: React.FC = () => {
       if (statusRes.ok) {
         const diag = await statusRes.json();
         setDiagnosticStatus(diag);
-        if (diag.last_error_code === 'ok') {
+        if (diag.last_error_code === 'ok' || (techData as any).source === 'groq' || (patData as any).source === 'groq') {
           setLlmOutputUsed(true);
         }
       }
@@ -123,13 +123,19 @@ export const ReportsPage: React.FC = () => {
     window.print();
   };
 
-  // Task 1.11: Single status line under the report tabs driven by status codes
+  // Task 1.11 & 2.4: Single status line under the report tabs driven by status codes
   const getStatusLine = () => {
     const code = diagnosticStatus?.last_error_code;
     const model = diagnosticStatus?.model || 'llama-3.3-70b-versatile';
 
     if (code === 'ok' && llmOutputUsed) {
       return `Generated with Groq (${model})`;
+    }
+    if (code === 'request_blocked') {
+      return 'Groq blocked the request. Using standard template.';
+    }
+    if (code === 'access_denied') {
+      return 'Groq denied access for this key. Using standard template.';
     }
     if (code === 'key_rejected') {
       return 'Groq rejected the API key. Using standard template.';
