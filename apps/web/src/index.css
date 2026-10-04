@@ -54,32 +54,12 @@ html, body, * {
   scrollbar-color: var(--bds) var(--panel);
 }
 
-/* Print and PDF forced light token overrides (Task 5.5e) */
+/* Print and PDF overrides (Task 5.5e) */
 @media print {
-  :root,
-  :root[data-theme="dark"],
-  [data-theme="dark"],
-  :root[data-theme="light"],
-  [data-theme="light"] {
-    color-scheme: light !important;
-    --page: #FFFFFF !important;
-    --panel: #FFFFFF !important;
-    --ink: #241618 !important;
-    --mut: #6A5558 !important;
-    --acc: #1D3F8A !important;
-    --onacc: #FFFFFF !important;
-    --bd: #E3CFCC !important;
-    --bds: #B99A96 !important;
-    --sheet: #FFFFFF !important;
-    --sheetink: #241618 !important;
-    --sheetmut: #6A5558 !important;
-    --sbd: #E3CFCC !important;
-  }
-
   body {
-    background-color: #FFFFFF !important;
+    background-color: var(--sheet) !important;
     background-image: none !important;
-    color: #241618 !important;
+    color: var(--sheetink) !important;
   }
 
   .no-print {
