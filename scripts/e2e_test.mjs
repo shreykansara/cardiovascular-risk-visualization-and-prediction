@@ -12,7 +12,7 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
   fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 }
 
-const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:5173';
+const BASE_URL = process.argv[2] || process.env.BASE_URL || 'http://127.0.0.1:5173';
 
 async function runE2E() {
   console.log(`=== Starting Clinical Paper Playwright E2E Test ===`);

@@ -137,7 +137,12 @@ def load_and_check_env() -> Tuple[bool, str]:
             "rename LLM_API_KEY to GROQ_API_KEY"
         )
 
-    return env_file_found, str(env_path)
+    env_path_str = str(env_path)
+    if not env_file_found and ("GROQ_API_KEY" in os.environ or "GROQ_MODEL" in os.environ):
+        env_file_found = True
+        env_path_str = f"{env_path} (loaded via env_file)"
+
+    return env_file_found, env_path_str
 
 
 def clean_env_str(val: Optional[str]) -> str:
