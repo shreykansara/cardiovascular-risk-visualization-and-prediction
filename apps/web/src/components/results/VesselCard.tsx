@@ -1,11 +1,12 @@
 /**
- * Vessel Stenosis Status Card (Tasks 4.3, 4.4, 4.5)
- * Displays predicted stenosis probability, category label, mini progress bar,
- * and handles bidirectional 3D twin vessel synchronization.
+ * Vessel Stenosis Status Card (Tasks 4.3, 4.4, 4.5, A2)
+ * Displays predicted stenosis probability, standardized category label ("Low" / "Moderate" / "High"),
+ * mini progress bar, and handles bidirectional 3D twin vessel synchronization.
  */
 
 import React from 'react';
 import type { TargetPrediction } from '../../types/clinical';
+import { getRiskBand } from '../../config/riskBands';
 import { Eye, ShieldCheck, AlertTriangle, AlertOctagon } from 'lucide-react';
 
 interface VesselCardProps {
@@ -27,15 +28,12 @@ export const VesselCard: React.FC<VesselCardProps> = ({
 }) => {
   const prob = prediction?.probability ?? 0;
   const probPct = Math.round(prob * 1000) / 10;
-  const colorHex = prediction?.color_hex || '#10B981';
+  const band = getRiskBand(prob);
 
-  let tierLabel = 'Patent / Low Risk';
   let TierIcon = ShieldCheck;
-  if (prob > 0.70) {
-    tierLabel = 'Critical Ischemia';
+  if (band.level === 'high') {
     TierIcon = AlertOctagon;
-  } else if (prob > 0.40) {
-    tierLabel = 'Borderline Risk';
+  } else if (band.level === 'moderate') {
     TierIcon = AlertTriangle;
   }
 
@@ -49,7 +47,7 @@ export const VesselCard: React.FC<VesselCardProps> = ({
           onSelect();
         }
       }}
-      className={`p-4 rounded-2xl transition-all cursor-pointer select-none text-left border relative overflow-hidden ${
+      className={`p-4 rounded-xl transition-all cursor-pointer select-none text-left border relative overflow-hidden ${
         isSelected
           ? 'bg-slate-900/90 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/50 scale-[1.01]'
           : 'bg-slate-900/50 border-white/[0.08] hover:border-white/[0.18] hover:bg-slate-900/70'
@@ -81,15 +79,15 @@ export const VesselCard: React.FC<VesselCardProps> = ({
           </span>
           <span
             className="text-2xl font-mono font-bold tracking-tight"
-            style={{ color: colorHex }}
+            style={{ color: band.colorHex }}
           >
             {probPct.toFixed(1)}%
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: colorHex }}>
+        <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: band.colorHex }}>
           <TierIcon className="w-3.5 h-3.5" />
-          <span className="text-[11px] font-mono">{tierLabel}</span>
+          <span className="text-[11px] font-mono">{band.label} Risk</span>
         </div>
       </div>
 
@@ -98,9 +96,8 @@ export const VesselCard: React.FC<VesselCardProps> = ({
         <div
           className="h-full rounded-full transition-all duration-500 ease-out"
           style={{
-            width: `${Math.min(100, Math.max(0, prob * 100))}%`,
-            backgroundColor: colorHex,
-            boxShadow: `0 0 10px ${colorHex}`,
+            width: `${Math.min(100, Math.max(4, probPct))}%`,
+            backgroundColor: band.colorHex,
           }}
         />
       </div>

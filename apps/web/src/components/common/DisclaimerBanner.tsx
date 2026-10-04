@@ -31,10 +31,6 @@ export const DisclaimerBanner: React.FC<DisclaimerBannerProps> = ({
           </span>
         </p>
       </div>
-      <div className="hidden md:flex items-center gap-1.5 shrink-0 text-[10px] font-mono text-amber-400/70 border-l border-amber-500/20 pl-3">
-        <AlertTriangle className="w-3 h-3 text-amber-400" />
-        <span>SaMD Protocol IIa</span>
-      </div>
     </aside>
   );
 };

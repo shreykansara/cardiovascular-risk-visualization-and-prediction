@@ -27,13 +27,8 @@ export const WelcomePage: React.FC = () => {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
         <div className="relative z-10 flex flex-col gap-6">
-          {/* Header Badge & Title */}
+          {/* Header Title */}
           <div className="flex flex-col gap-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-mono w-fit">
-              <Activity className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Multimodal AI Hackathon 2026 — Track A</span>
-            </div>
-
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white mt-1">
               Perfusion<span className="text-cyan-400">3D</span>
             </h1>
@@ -45,7 +40,7 @@ export const WelcomePage: React.FC = () => {
           {/* Product Overview Paragraph */}
           <div className="p-4 sm:p-5 rounded-xl bg-slate-900/60 border border-white/[0.06] text-slate-300 text-sm leading-relaxed">
             <p>
-              Perfusion3D is a clinical decision-support and spatial digital twin platform designed to evaluate multi-vessel coronary artery disease (CAD) risk across 55 physiological parameters. By coupling calibrated multi-head gradient-boosted ensembles with interactive 3D Catmull-Rom hemodynamic vascular conduits, the system estimates localized stenosis probabilities for the Left Anterior Descending (LAD), Left Circumflex (LCX), and Right Coronary (RCA) arteries alongside sub-10ms TreeSHAP feature attributions and structured clinical reports.
+              Perfusion3D is a clinical decision-support and spatial digital twin platform designed to evaluate multi-vessel coronary artery disease (CAD) risk across 55 physiological parameters. By coupling calibrated multi-head gradient-boosted ensembles with interactive 3D Catmull-Rom hemodynamic vascular conduits, the system estimates localized stenosis probabilities for the Left Anterior Descending (LAD), Left Circumflex (LCX), and Right Coronary (RCA) arteries alongside TreeSHAP feature attributions and structured clinical reports.
             </p>
           </div>
 

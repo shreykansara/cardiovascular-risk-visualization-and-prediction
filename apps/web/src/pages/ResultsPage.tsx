@@ -353,6 +353,26 @@ export const ResultsPage: React.FC = () => {
 
             {activeTab === 'metrics' && <ModelPerformanceTab />}
           </div>
+
+          {/* Action button leading to /reports (Task 4.11) */}
+          <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => navigate('/enter-data')}
+              className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              &larr; Edit Clinical Data
+            </button>
+            <button
+              type="button"
+              id="generate-reports-btn"
+              onClick={() => navigate('/reports')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] cursor-pointer"
+            >
+              <span>Generate Reports</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

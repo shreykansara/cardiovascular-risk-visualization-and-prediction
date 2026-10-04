@@ -1,35 +1,33 @@
 /**
  * Shared Color Scale Legend for 3D Vessel Probability Shading
- * Task 4.2: Visible legend showing probability ranges and clinical tiers.
+ * Task 4.2 / Task A2: Standardized risk bands: Low (<= 40%), Moderate (41-70%), High (> 70%)
  */
 
 import React from 'react';
+import { RISK_BANDS, RISK_LEVELS } from '../../config/riskBands';
 
 export const ColorScaleLegend: React.FC = () => {
   return (
-    <div className="glass-card p-3 rounded-xl border border-white/[0.08] flex flex-wrap items-center justify-between gap-3 text-xs font-mono select-none">
-      <span className="text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+    <div className="p-3 rounded-lg border border-[var(--border,#E3E6EB)] bg-[var(--surface,#F7F8FA)] flex flex-wrap items-center justify-between gap-3 text-xs font-mono select-none">
+      <span className="text-[var(--text-muted,#5B6472)] font-medium text-[11px] uppercase tracking-wider">
         Predicted Stenosis Probability:
       </span>
 
-      <div className="flex flex-wrap items-center gap-3 text-[11px]">
-        {/* Optimal / Patent */}
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0" />
-          <span className="text-slate-200">Patent (&le; 40%)</span>
-        </div>
-
-        {/* Borderline / Moderate */}
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-[#F59E0B] shadow-[0_0_8px_rgba(245,158,11,0.5)] shrink-0" />
-          <span className="text-slate-200">Borderline (40 – 70%)</span>
-        </div>
-
-        {/* Critical Ischemia */}
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(239,68,68,0.5)] shrink-0" />
-          <span className="text-slate-200">Critical (&gt; 70%)</span>
-        </div>
+      <div className="flex flex-wrap items-center gap-4 text-[12px]">
+        {RISK_LEVELS.map((level) => {
+          const band = RISK_BANDS[level];
+          return (
+            <div key={level} className="flex items-center gap-1.5">
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: band.colorHex }}
+              />
+              <span className="text-[var(--text,#111827)] font-medium">
+                {band.label} ({band.rangeDisplay})
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
