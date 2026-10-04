@@ -984,7 +984,7 @@ def generate_report(
             _last_error_code = err_code
             _last_error_message = err_msg
             logger.warning(f"Groq HTTP error (attempt {attempt+1}/3): {err_msg}")
-            if err_code in ("key_rejected", "request_blocked", "access_denied"):
+            if err_code in ("key_rejected", "request_blocked", "access_denied", "rate_limited", "model_unavailable"):
                 break
             time.sleep(1.0)
         except (httpx.TimeoutException, httpx.NetworkError, httpx.RequestError) as e:
