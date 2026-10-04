@@ -11,33 +11,74 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
   return (
     <article
       id="printable-report-sheet"
-      className="w-full max-w-[800px] bg-page border border-border rounded p-12 text-text flex flex-col gap-8 mx-auto"
+      className="wipe w-full"
+      style={{
+        backgroundColor: 'var(--sheet)',
+        color: 'var(--sheetink)',
+        border: '1px solid var(--bd)',
+        borderRadius: '3px',
+        maxWidth: '720px',
+        margin: '16px auto',
+        padding: '24px 28px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        '--i': 0,
+      } as React.CSSProperties}
     >
-      {/* 1. Header */}
-      <header className="border-b border-border pb-4">
-        <h1 className="text-[20px] leading-[28px] font-semibold text-text mb-1">
+      {/* Header */}
+      <header style={{ borderBottom: '1px solid var(--sbd)', paddingBottom: '12px' }}>
+        {/* Title 18px/600 */}
+        <h1
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '18px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: 0,
+          }}
+        >
           {report.report_header.report_title}
         </h1>
-        <div className="flex flex-wrap items-center justify-between text-[13px] leading-[20px] text-text-muted mt-2">
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            fontFamily: 'var(--fs)',
+            fontSize: '11px',
+            color: 'var(--sheetmut)',
+            marginTop: '6px',
+            gap: '8px',
+          }}
+        >
           <span>Model version: {report.report_header.model_version || 'Perfusion3D v1.0.0'}</span>
           <span>Date: {report.report_header.generation_date_time}</span>
           <span>Patient: {report.report_header.patient_age} years, {report.report_header.patient_sex}</span>
         </div>
       </header>
 
-      {/* 2. Model Output Summary */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 1. Model Output Summary */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           1. Model output summary
         </h2>
-        <table className="w-full text-left border-collapse">
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
-            <tr className="border-b border-border text-[13px] leading-[20px] font-medium text-text-muted">
-              <th className="py-2 px-2">Target</th>
-              <th className="py-2 px-2">Vessel / condition</th>
-              <th className="py-2 px-2 text-right">Probability</th>
-              <th className="py-2 px-2">Model classification</th>
-              <th className="py-2 px-2">Risk band</th>
+            <tr style={{ borderBottom: '1px solid var(--sbd)' }}>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left' }}>Target</th>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left' }}>Vessel / condition</th>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'right' }}>Probability</th>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Model classification</th>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Risk band</th>
             </tr>
           </thead>
           <tbody>
@@ -48,14 +89,14 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
               const band = tgt.risk_band || tgt.category || riskLabel(probFraction);
 
               return (
-                <tr key={tgt.target} className="border-b border-border">
-                  <td className="py-2 px-2 text-[14px] font-medium text-text">{tgt.target}</td>
-                  <td className="py-2 px-2 text-[14px] text-text-muted">{tgt.display_name}</td>
-                  <td className="py-2 px-2 text-[14px] text-right tabular-nums text-text font-medium">
+                <tr key={tgt.target} style={{ borderBottom: '1px solid var(--sbd)' }}>
+                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetink)', fontWeight: 500 }}>{tgt.target}</td>
+                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetmut)' }}>{tgt.display_name}</td>
+                  <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetink)' }}>
                     {probPct.toFixed(1)}%
                   </td>
-                  <td className="py-2 px-2 text-[14px] text-text">{classification}</td>
-                  <td className="py-2 px-2 text-[14px]">
+                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 12px', color: 'var(--sheetink)' }}>{classification}</td>
+                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 12px' }}>
                     <RiskLabel band={band} />
                   </td>
                 </tr>
@@ -65,25 +106,41 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
         </table>
       </section>
 
-      {/* 3. Input Parameters */}
-      <section className="flex flex-col gap-4">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 2. Clinical measurements */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           2. Clinical measurements
         </h2>
         {report.input_parameters.groups.map((grp) => (
-          <div key={grp.group_name} className="flex flex-col gap-1">
-            <h3 className="text-[13px] leading-[20px] font-medium text-text-muted">
+          <div key={grp.group_name} style={{ marginBottom: '8px' }}>
+            <h3
+              style={{
+                fontFamily: 'var(--fs)',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--sheetmut)',
+                margin: '8px 0 4px',
+              }}
+            >
               {grp.group_name}
             </h3>
-            <table className="w-full text-left border-collapse mb-2">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <tbody>
                 {grp.parameters.map((p) => (
-                  <tr key={p.name} className="border-b border-border text-[13px] leading-[20px]">
-                    <td className="py-1.5 px-2 text-text">{p.name}</td>
-                    <td className="py-1.5 px-2 text-right tabular-nums font-medium text-text">
+                  <tr key={p.name} style={{ borderBottom: '1px solid var(--sbd)' }}>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetink)' }}>{p.name}</td>
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetink)' }}>
                       {p.value} {p.unit}
                     </td>
-                    <td className="py-1.5 px-2 text-right text-text-muted">
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetmut)' }}>
                       {p.reference_range}
                     </td>
                   </tr>
@@ -94,54 +151,95 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
         ))}
       </section>
 
-      {/* 4. Parameters Outside Typical Range */}
-      <section className="flex flex-col gap-2">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 3. Parameters Outside Typical Reference Range */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           3. Parameters outside typical reference range
         </h2>
         {report.parameters_outside_reference_range && report.parameters_outside_reference_range.length > 0 ? (
-          <ul className="list-disc pl-5 text-[14px] leading-[22px] text-text flex flex-col gap-1">
+          <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
             {report.parameters_outside_reference_range.map((item, idx) => (
-              <li key={idx}>{item}</li>
+              <li
+                key={idx}
+                style={{
+                  fontFamily: 'var(--fs)',
+                  fontSize: '13px',
+                  lineHeight: '1.45',
+                  color: 'var(--sheetink)',
+                  margin: '4px 0',
+                }}
+              >
+                {item}
+              </li>
             ))}
           </ul>
         ) : (
-          <p className="text-[14px] leading-[22px] text-text-muted">
+          <p
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '13px',
+              lineHeight: '1.45',
+              color: 'var(--sheetmut)',
+              margin: '4px 0',
+            }}
+          >
             All physiological parameters are within typical reference intervals.
           </p>
         )}
       </section>
 
-      {/* 5. Contributing Factors & SHAP Attribution */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 4. Contributing Factors */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           4. Factors influencing model output
         </h2>
         {report.model_attribution.targets.map((tgt) => (
-          <div key={tgt.target} className="flex flex-col gap-1 mb-3">
-            <h3 className="text-[13px] leading-[20px] font-medium text-text-muted">
+          <div key={tgt.target} style={{ marginBottom: '10px' }}>
+            <h3
+              style={{
+                fontFamily: 'var(--fs)',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--sheetmut)',
+                margin: '8px 0 4px',
+              }}
+            >
               Target: {tgt.target}
             </h3>
-            <table className="w-full text-left border-collapse">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
-                <tr className="border-b border-border text-[13px] leading-[20px] font-medium text-text-muted">
-                  <th className="py-1.5 px-2">Factor</th>
-                  <th className="py-1.5 px-2">Patient value</th>
-                  <th className="py-1.5 px-2">Effect on probability</th>
-                  <th className="py-1.5 px-2 text-right">SHAP value</th>
+                <tr style={{ borderBottom: '1px solid var(--sbd)' }}>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left' }}>Factor</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '8px' }}>Patient value</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '8px' }}>Effect on probability</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'right' }}>SHAP value</th>
                 </tr>
               </thead>
               <tbody>
                 {tgt.top_features.map((f, fIdx) => (
-                  <tr key={fIdx} className="border-b border-border text-[13px] leading-[20px]">
-                    <td className="py-1.5 px-2 text-text font-medium">{f.feature}</td>
-                    <td className="py-1.5 px-2 text-text-muted">{f.patient_value ?? f.input_value ?? '—'}</td>
-                    <td className="py-1.5 px-2">
-                      <span className={f.direction === 'INCREASES_RISK' ? 'text-risk-high font-medium' : 'text-accent font-medium'}>
-                        {f.direction === 'INCREASES_RISK' ? 'Raises probability' : 'Lowers probability'}
-                      </span>
+                  <tr key={fIdx} style={{ borderBottom: '1px solid var(--sbd)' }}>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetink)', fontWeight: 500 }}>{f.feature}</td>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--sheetmut)' }}>{f.patient_value ?? f.input_value ?? '—'}</td>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--sheetink)' }}>
+                      {f.direction === 'INCREASES_RISK' ? 'Raises probability' : 'Lowers probability'}
                     </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums text-text">
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetink)' }}>
                       {f.shap_value.toFixed(4)}
                     </td>
                   </tr>
@@ -152,21 +250,48 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
         ))}
       </section>
 
-      {/* 6. Methodological Notes */}
-      <section className="flex flex-col gap-2">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 5. Methodological Notes */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           5. Methodological notes
         </h2>
-        <ul className="list-disc pl-5 text-[13px] leading-[20px] text-text-muted flex flex-col gap-1">
+        <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
           {report.methodological_notes.map((note, idx) => (
-            <li key={idx}>{note}</li>
+            <li
+              key={idx}
+              style={{
+                fontFamily: 'var(--fs)',
+                fontSize: '13px',
+                lineHeight: '1.45',
+                color: 'var(--sheetmut)',
+                margin: '4px 0',
+              }}
+            >
+              {note}
+            </li>
           ))}
         </ul>
       </section>
 
-      {/* 7. Mandatory Disclaimer */}
-      <section className="border-t border-border pt-4">
-        <p className="text-[13px] leading-[20px] text-text-muted">
+      {/* 6. Mandatory Disclaimer */}
+      <section style={{ borderTop: '1px solid var(--sbd)', paddingTop: '12px' }}>
+        <p
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '11px',
+            lineHeight: '1.4',
+            color: 'var(--sheetmut)',
+            margin: '4px 0',
+          }}
+        >
           {report.disclaimer}
         </p>
       </section>

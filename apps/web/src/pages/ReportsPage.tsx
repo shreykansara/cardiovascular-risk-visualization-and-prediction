@@ -6,6 +6,7 @@ import { PatientReportView } from '../components/reports/PatientReportView';
 import type { PatientReportData, TechnicalReportData } from '../types/wizard';
 import { Button } from '../components/ui/Button';
 import { Tabs } from '../components/ui/Tabs';
+import { Panel } from '../components/ui/Panel';
 import { Skeleton } from '../components/ui/Skeleton';
 
 type ReportTab = 'technical' | 'patient';
@@ -60,7 +61,6 @@ export const ReportsPage: React.FC = () => {
   const fetchActiveReport = async (force: boolean = false) => {
     if (!prediction) return;
 
-    // Only fetch if forced or if we don't have the report for the current tab
     if (!force) {
       if (activeTab === 'technical' && technicalReport) return;
       if (activeTab === 'patient' && patientReport) return;
@@ -77,7 +77,7 @@ export const ReportsPage: React.FC = () => {
 
     try {
       const endpoint = activeTab === 'technical' ? '/api/v1/reports/technical' : '/api/v1/reports/patient';
-      
+
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,7 +96,6 @@ export const ReportsPage: React.FC = () => {
         setPatientReport(data as PatientReportData);
       }
 
-      // Re-fetch diagnostic status to capture result of generation
       const statusRes = await fetch('/api/v1/reports/status');
       if (statusRes.ok) {
         const diag = await statusRes.json();
@@ -112,7 +111,6 @@ export const ReportsPage: React.FC = () => {
     }
   };
 
-  // Generate when tab changes if not already fetched
   useEffect(() => {
     fetchActiveReport();
   }, [activeTab]);
@@ -125,7 +123,6 @@ export const ReportsPage: React.FC = () => {
     window.print();
   };
 
-  // Task 1.11 & 2.4: Single status line under the report tabs driven by status codes
   const getStatusLine = () => {
     const code = diagnosticStatus?.last_error_code;
     const model = diagnosticStatus?.model || 'llama-3.3-70b-versatile';
@@ -154,7 +151,6 @@ export const ReportsPage: React.FC = () => {
     if (code === 'network_error') {
       return 'Could not reach Groq. Using standard template.';
     }
-    // Default / no_key / placeholder
     return 'Groq API key not found. Using standard template.';
   };
 
@@ -164,83 +160,135 @@ export const ReportsPage: React.FC = () => {
   ];
 
   return (
-    <div className="w-full bg-panel py-6 px-4 md:px-8 flex flex-col items-center min-h-[calc(100vh-120px)]">
-      <div className="w-full max-w-[800px] flex flex-col gap-6">
-        {/* Top Control Bar: Tabs left, Actions right (hidden during print) */}
-        <div className="no-print w-full flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-2">
-          <div>
-            <Tabs
-              tabs={tabs}
-              activeTab={activeTab}
-              onChange={(id) => setActiveTab(id as ReportTab)}
-              className="border-b-0"
-            />
-            {/* Task 1.11 single status line: plain 12px muted text */}
-            <p className="text-[12px] leading-[16px] text-text-muted mt-2">
-              {getStatusLine()}
-            </p>
-          </div>
+    <div className="w-full flex-1 flex flex-col pb-16">
+      {/* Task 5.5a: Solid Panel band at top (padding 8px 16px) containing Tabs left, Buttons right, status line below tabs */}
+      <Panel
+        className="no-print w-full mb-4 flex flex-col gap-2"
+        style={{ padding: '8px 16px' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <Tabs
+            tabs={tabs}
+            activeTab={activeTab}
+            onChange={(id) => setActiveTab(id as ReportTab)}
+            className="border-b-0"
+          />
 
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
               onClick={() => fetchActiveReport(true)}
               disabled={isLoading}
+              style={{ height: '32px' }}
             >
               Regenerate
             </Button>
             <Button
               variant="secondary"
               onClick={handleDownloadPdf}
+              style={{ height: '32px' }}
             >
               Download PDF
             </Button>
             <Button
               variant="secondary"
               onClick={handlePrint}
+              style={{ height: '32px' }}
             >
               Print
             </Button>
           </div>
         </div>
 
-        {/* Error message if any */}
-        {errorMessage && (
-          <div className="no-print w-full text-[13px] text-risk-high flex items-center justify-between">
-            <span>{errorMessage}</span>
-            <Button variant="link" onClick={() => fetchActiveReport(true)}>
-              Try again
-            </Button>
-          </div>
-        )}
+        {/* Status line (12px --mut, Sora) */}
+        <p
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '12px',
+            color: 'var(--mut)',
+            margin: '2px 0 0',
+          }}
+        >
+          {getStatusLine()}
+        </p>
+      </Panel>
 
-        {/* Loading Skeleton */}
-        {isLoading ? (
-          <div className="w-full max-w-[800px] bg-page border border-border rounded p-12 flex flex-col gap-6 mx-auto">
-            <div className="flex items-center gap-3">
-              <span className="spinner" />
-              <span className="text-[14px] text-text-muted">Generating structured report...</span>
-            </div>
-            <Skeleton height={32} width="60%" />
-            <Skeleton height={20} width="40%" />
-            <div className="flex flex-col gap-2 pt-4">
-              <Skeleton height={24} width="100%" />
-              <Skeleton height={24} width="100%" />
-              <Skeleton height={24} width="100%" />
-            </div>
+      {/* Task 5.7 Plain error line in --ink with small --high dot and "Try again" text link */}
+      {errorMessage && (
+        <div
+          className="no-print w-full flex items-center justify-center gap-2 py-2"
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '13px',
+            color: 'var(--ink)',
+          }}
+        >
+          <span
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--high)',
+              display: 'inline-block',
+            }}
+          />
+          <span>{errorMessage}</span>
+          <button
+            type="button"
+            onClick={() => fetchActiveReport(true)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              fontFamily: 'var(--fs)',
+              fontSize: '13px',
+              color: 'var(--acc)',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              marginLeft: '4px',
+            }}
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Loading state: Static Skeletons (no spinners!) */}
+      {isLoading ? (
+        <article
+          style={{
+            backgroundColor: 'var(--sheet)',
+            border: '1px solid var(--bd)',
+            borderRadius: '3px',
+            maxWidth: '720px',
+            margin: '16px auto',
+            padding: '24px 28px',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}
+        >
+          <Skeleton height={28} width="50%" />
+          <Skeleton height={14} width="35%" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '16px' }}>
+            <Skeleton height={20} width="100%" />
+            <Skeleton height={20} width="90%" />
+            <Skeleton height={20} width="95%" />
+            <Skeleton height={20} width="80%" />
           </div>
-        ) : (
-          /* Rendered Report Document Sheet */
-          <div>
-            {activeTab === 'technical' && technicalReport && (
-              <TechnicalReportView report={technicalReport} />
-            )}
-            {activeTab === 'patient' && patientReport && (
-              <PatientReportView report={patientReport} />
-            )}
-          </div>
-        )}
-      </div>
+        </article>
+      ) : (
+        /* Rendered Document Sheet */
+        <div className="w-full">
+          {activeTab === 'technical' && technicalReport && (
+            <TechnicalReportView report={technicalReport} />
+          )}
+          {activeTab === 'patient' && patientReport && (
+            <PatientReportView report={patientReport} />
+          )}
+        </div>
+      )}
     </div>
   );
 };

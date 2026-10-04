@@ -10,62 +10,161 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
   return (
     <article
       id="printable-report-sheet"
-      className="w-full max-w-[800px] bg-page border border-border rounded p-12 text-text flex flex-col gap-8 mx-auto"
+      className="wipe w-full"
+      style={{
+        backgroundColor: 'var(--sheet)',
+        color: 'var(--sheetink)',
+        border: '1px solid var(--bd)',
+        borderRadius: '3px',
+        maxWidth: '720px',
+        margin: '16px auto',
+        padding: '24px 28px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        '--i': 0,
+      } as React.CSSProperties}
     >
-      {/* 1. Title and Date */}
-      <header className="border-b border-border pb-4">
-        <h1 className="text-[20px] leading-[28px] font-semibold text-text mb-1">
+      {/* Header: Title and Date */}
+      <header style={{ borderBottom: '1px solid var(--sbd)', paddingBottom: '12px' }}>
+        {/* Title 18px/600 */}
+        <h1
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '18px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: 0,
+          }}
+        >
           {report.title_and_date.title}
         </h1>
-        <p className="text-[13px] leading-[20px] text-text-muted">
+        <p
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '11px',
+            color: 'var(--sheetmut)',
+            marginTop: '6px',
+            margin: '6px 0 0',
+          }}
+        >
           Date: {report.title_and_date.generation_date}
         </p>
       </header>
 
-      {/* 2. What this summary is */}
-      <section className="flex flex-col gap-2">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 1. What this summary is */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           1. What this summary is
         </h2>
-        <p className="text-[14px] leading-[22px] text-text">
+        <p
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '13px',
+            lineHeight: '1.45',
+            color: 'var(--sheetink)',
+            margin: '4px 0',
+          }}
+        >
           {report.what_this_summary_is}
         </p>
       </section>
 
-      {/* 3. Overall picture */}
-      <section className="flex flex-col gap-2">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 2. Overall picture */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           2. Overall picture
         </h2>
-        <p className="text-[14px] leading-[22px] text-text">
+        <p
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '13px',
+            lineHeight: '1.45',
+            color: 'var(--sheetink)',
+            margin: '4px 0',
+          }}
+        >
           {report.overall_picture}
         </p>
       </section>
 
-      {/* 4. Your three main heart arteries */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 3. Your three main heart arteries */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           3. Your three main heart arteries
         </h2>
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {[
             { key: 'lad', vessel: report.your_three_main_heart_arteries.lad, defaultName: 'Left anterior descending (LAD) artery' },
             { key: 'lcx', vessel: report.your_three_main_heart_arteries.lcx, defaultName: 'Left circumflex (LCX) artery' },
             { key: 'rca', vessel: report.your_three_main_heart_arteries.rca, defaultName: 'Right coronary (RCA) artery' },
           ].map(({ key, vessel, defaultName }) => (
-            <div key={key} className="py-2.5 border-b border-border">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[14px] font-medium text-text">
+            <div
+              key={key}
+              style={{
+                padding: '8px 0',
+                borderBottom: '1px solid var(--sbd)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--fs)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--sheetink)',
+                  }}
+                >
                   {vessel.name || defaultName}
                 </span>
-                <div className="flex items-center gap-3">
-                  <span className="text-[14px] tabular-nums font-semibold text-text">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span
+                    style={{
+                      fontFamily: 'var(--fm)',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      color: 'var(--sheetink)',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
                     {Math.round(vessel.probability_pct)}%
                   </span>
                   <RiskLabel band={vessel.category} />
                 </div>
               </div>
-              <p className="text-[13px] leading-[20px] text-text-muted mt-1">
+              <p
+                style={{
+                  fontFamily: 'var(--fs)',
+                  fontSize: '12px',
+                  lineHeight: '1.4',
+                  color: 'var(--sheetmut)',
+                  margin: '2px 0 0',
+                }}
+              >
                 {vessel.description}
               </p>
             </div>
@@ -73,32 +172,48 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
         </div>
       </section>
 
-      {/* 5. Your measurements */}
-      <section className="flex flex-col gap-4">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 4. Your measurements */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           4. Your measurements
         </h2>
         {report.your_measurements.groups.map((grp) => (
-          <div key={grp.category_name} className="flex flex-col gap-1">
-            <h3 className="text-[13px] leading-[20px] font-medium text-text-muted">
+          <div key={grp.category_name} style={{ marginBottom: '8px' }}>
+            <h3
+              style={{
+                fontFamily: 'var(--fs)',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--sheetmut)',
+                margin: '8px 0 4px',
+              }}
+            >
               {grp.category_name}
             </h3>
-            <table className="w-full text-left border-collapse mb-2">
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
-                <tr className="border-b border-border text-[13px] leading-[20px] font-medium text-text-muted">
-                  <th className="py-1.5 px-2">Measurement</th>
-                  <th className="py-1.5 px-2 text-right">Your value</th>
-                  <th className="py-1.5 px-2 text-right">Typical range</th>
-                  <th className="py-1.5 px-2">Status</th>
+                <tr style={{ borderBottom: '1px solid var(--sbd)' }}>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left' }}>Measurement</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'right' }}>Your value</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'right' }}>Typical range</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {grp.items.map((item) => (
-                  <tr key={item.plain_name} className="border-b border-border text-[13px] leading-[20px]">
-                    <td className="py-1.5 px-2 text-text">{item.plain_name}</td>
-                    <td className="py-1.5 px-2 text-right tabular-nums font-medium text-text">{item.your_value}</td>
-                    <td className="py-1.5 px-2 text-right text-text-muted">{item.typical_range}</td>
-                    <td className="py-1.5 px-2 text-text-muted">{item.status}</td>
+                  <tr key={item.plain_name} style={{ borderBottom: '1px solid var(--sbd)' }}>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetink)' }}>{item.plain_name}</td>
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetink)' }}>{item.your_value}</td>
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetmut)' }}>{item.typical_range}</td>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 12px', color: 'var(--sheetmut)' }}>{item.status}</td>
                   </tr>
                 ))}
               </tbody>
@@ -107,31 +222,74 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
         ))}
       </section>
 
-      {/* 6. What influenced the prediction most */}
-      <section className="flex flex-col gap-2">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 5. What influenced the prediction most */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           5. What influenced the prediction most
         </h2>
-        <ul className="list-disc pl-5 text-[14px] leading-[22px] text-text flex flex-col gap-1">
+        <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
           {report.what_influenced_the_prediction_most.map((item, idx) => (
-            <li key={idx}>{item}</li>
+            <li
+              key={idx}
+              style={{
+                fontFamily: 'var(--fs)',
+                fontSize: '13px',
+                lineHeight: '1.45',
+                color: 'var(--sheetink)',
+                margin: '4px 0',
+              }}
+            >
+              {item}
+            </li>
           ))}
         </ul>
       </section>
 
-      {/* 7. About this estimate */}
-      <section className="flex flex-col gap-2">
-        <h2 className="text-[16px] leading-[24px] font-semibold text-text pb-1 border-b border-border">
+      {/* 6. About this estimate */}
+      <section>
+        <h2
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: 'var(--sheetink)',
+            margin: '16px 0 6px',
+          }}
+        >
           6. About this estimate
         </h2>
-        <p className="text-[14px] leading-[22px] text-text">
+        <p
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '13px',
+            lineHeight: '1.45',
+            color: 'var(--sheetink)',
+            margin: '4px 0',
+          }}
+        >
           {report.about_this_estimate}
         </p>
       </section>
 
-      {/* 8. Mandatory Disclaimer */}
-      <section className="border-t border-border pt-4">
-        <p className="text-[13px] leading-[20px] text-text-muted">
+      {/* 7. Mandatory Disclaimer */}
+      <section style={{ borderTop: '1px solid var(--sbd)', paddingTop: '12px' }}>
+        <p
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '11px',
+            lineHeight: '1.4',
+            color: 'var(--sheetmut)',
+            margin: '4px 0',
+          }}
+        >
           {report.disclaimer}
         </p>
       </section>
