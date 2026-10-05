@@ -94,7 +94,7 @@ export const SegmentedChoice: React.FC<SegmentedChoiceProps> = ({
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.5 : 1,
                 outline: 'none',
-                transition: 'all 120ms',
+                transition: 'color 120ms, background-color 120ms, border-color 120ms',
               }}
               className="focus-visible:outline-[var(--focus)] focus-visible:outline-offset-[var(--focus-offset)]"
             >

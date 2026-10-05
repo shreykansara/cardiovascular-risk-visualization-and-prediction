@@ -377,6 +377,7 @@ export const DataEntryPage: React.FC = () => {
           </Button>
 
           <select
+            id="sample-patient-select"
             value={selectedSampleKey}
             onChange={handleSelectSample}
             aria-label="Load sample patient"

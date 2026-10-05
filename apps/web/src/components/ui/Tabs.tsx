@@ -20,6 +20,7 @@ export const Tabs: React.FC<TabsProps> = ({
 }) => {
   return (
     <div
+      role="tablist"
       className={`flex items-center ${className}`}
       style={{
         gap: '18px',
@@ -31,6 +32,8 @@ export const Tabs: React.FC<TabsProps> = ({
         return (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={isActive}
             type="button"
             onClick={() => onChange(tab.id)}
             style={{

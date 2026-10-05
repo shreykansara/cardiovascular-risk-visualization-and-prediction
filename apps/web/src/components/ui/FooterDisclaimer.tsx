@@ -7,7 +7,7 @@ export const MANDATORY_DISCLAIMER =
 export const FooterDisclaimer: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
     <footer
-      className={`w-full ${className}`}
+      className={`app-chrome no-print w-full ${className}`}
       style={{
         backgroundColor: 'var(--panel)',
         borderTop: '1px solid var(--bd)',

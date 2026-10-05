@@ -16,6 +16,7 @@
     "test:e2e": "node e2e/full_flow.spec.cjs",
     "test:conformance": "node e2e/design_conformance.spec.cjs",
     "test:contrast": "node e2e/contrast.spec.cjs",
+    "test:print": "node e2e/print.spec.cjs",
     "optimize:mesh": "node scripts/optimize_mesh.mjs",
     "preprocess:data": "python scripts/preprocess.py --strict-leakage-check",
     "train:models": "python scripts/train.py --cv-folds 5 --calibrate isotonic"
@@ -47,6 +48,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",
     "concurrently": "^8.2.2",
+    "pdf-parse": "^2.4.5",
     "playwright-core": "^1.63.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",

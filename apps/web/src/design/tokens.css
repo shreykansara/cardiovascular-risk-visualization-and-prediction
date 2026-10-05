@@ -12,6 +12,7 @@
   --radius: 3px;
   --focus: 2px solid var(--acc);
   --focus-offset: 1px;
+  --s-black: #000000;
 
   /* Motion tokens */
   --ease-wipe: cubic-bezier(.3,0,.2,1);

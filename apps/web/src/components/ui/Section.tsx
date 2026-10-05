@@ -75,7 +75,6 @@ export const Section: React.FC<SectionProps> = ({
           {collapsible && (
             <ChevronDown
               size={16}
-              className="transition-transform duration-120"
               style={{
                 color: 'var(--mut)',
                 transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',

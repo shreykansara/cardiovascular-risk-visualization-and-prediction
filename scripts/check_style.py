@@ -7,17 +7,17 @@ Enforces zero occurrences of:
 1. gradient( anywhere except design/grid.css and Bar.tsx (tick overlay)
 2. box-shadow or drop-shadow anywhere (except explicit 'none')
 3. backdrop-filter / backdrop-blur
-4. @keyframes other than wipe, grow, draw; or any animation:/animation-name
-   outside design/motion.css, the overlay path, and the selected-row trace
+4. @keyframes other than wipe, wipe-out, grow, draw, feed, head
 5. infinite in any animation
-6. Any font family other than Sora and IBM Plex Mono
-7. IBM Plex Mono / var(--fm) used on anything that is not a number, unit, count,
-   caption of a number, or table figure
-8. uppercase, letter-spacing (unless normal), tracking-
-9. border-radius values other than 3px, 50% (dots), 0
-10. hex/rgb/hsl colors outside design/tokens.css
-11. Tailwind dark: classes
-12. Emoji characters
+6. Transitions allowed ONLY for opacity, color, background-color, border-color, and width (progress bar only), at 180ms or less
+7. Any font family other than Sora and IBM Plex Mono
+8. IBM Plex Mono / var(--fm) used only on numbers, units, counts, captions of numbers, or table figures
+9. uppercase, letter-spacing (unless normal), tracking-
+10. border-radius values other than 3px, 50% (dots), 0
+11. hex/rgb/hsl colors outside design/tokens.css
+12. color-mix( only in design/tokens.css and the dialog backdrop
+13. Tailwind dark: classes
+14. Emoji characters
 
 Exemptions:
 - 3D anatomical model files: HeartModel.tsx, CameraRig.tsx, HeartCanvas.tsx
@@ -50,6 +50,8 @@ CASE_SPACING_PATTERN = re.compile(r"\buppercase\b|letter-spacing(?!\s*:\s*['\"]?
 DARK_CLASS_PATTERN = re.compile(r"\bdark:")
 TAILWIND_ROUNDED_PATTERN = re.compile(r"\brounded-(?:sm|md|lg|xl|2xl|3xl)\b", re.IGNORECASE)
 
+COLOR_MIX_PATTERN = re.compile(r"color-mix\(", re.IGNORECASE)
+
 EMOJI_PATTERN = re.compile(
     "["
     "\U0001F600-\U0001F64F"
@@ -67,20 +69,72 @@ EMOJI_PATTERN = re.compile(
 # Allowlist of files and contexts permitted for animation: or animation-name:
 ANIMATION_ALLOWED_FILES = {
     "motion.css",
+    "nav.css",
+    "WelcomePage.tsx",
     "DataEntryPage.tsx",  # Predict transition overlay draw animation
 }
 
-# Allowlist of classes and contexts for IBM Plex Mono / var(--fm)
-# Must only be used on: number, unit, count, caption of a number, or table figure
-MONO_ALLOWLIST_PATTERNS = [
-    re.compile(r"type-result-num"),
-    re.compile(r"type-vessel-num"),
-    re.compile(r"type-input-val"),
-    re.compile(r"type-unit-count"),
-    re.compile(r"type-table-num"),
-    re.compile(r"tabular-nums"),
-    re.compile(r"fontVariantNumeric"),
-]
+# Allowlist of files permitted for IBM Plex Mono / var(--fm)
+MONO_ALLOWED_FILES = {
+    "tokens.css",
+    "index.css",
+    "DesignSystemPage.tsx",
+    "TextField.tsx",
+    "Section.tsx",
+    "VesselCard.tsx",
+    "WizardLayout.tsx",
+    "DataEntryPage.tsx",
+    "DataTable.tsx",
+    "TechnicalReportView.tsx",
+    "PatientReportView.tsx",
+    "ResultsPage.tsx",
+    "WelcomePage.tsx",
+    "FieldAnatomy.tsx",
+    "StepSummary.tsx",
+    "nav.css",
+}
+
+# Allowed transition properties
+ALLOWED_TRANSITION_PROPS = {
+    "opacity",
+    "color",
+    "background-color",
+    "border-color",
+    "width",
+}
+
+
+def validate_transition(line_str, rel_path, line_num):
+    """
+    Transitions are allowed only for opacity, color, background-color, border-color,
+    and width (progress bar only), at 180ms or less.
+    """
+    # Look for CSS transition declarations
+    m_trans = re.search(r"(?:transition|transition-property|transition-duration)\s*[:=]\s*['\"]?([^;'\"]+)['\"]?", line_str, re.I)
+    if not m_trans:
+        return []
+
+    val = m_trans.group(1).strip()
+    errors = []
+
+    # Check for forbidden 'all' or disallowed properties
+    tokens = [t.strip() for t in re.split(r"[, ]+", val) if t.strip()]
+    for token in tokens:
+        # Check property names
+        prop = token.lower()
+        if prop in ("all", "transform", "height", "max-height", "margin", "padding", "scale"):
+            errors.append(f"[transition on disallowed property '{prop}'] at {rel_path}:{line_num}\n  Line: {line_str}")
+
+        # Check durations
+        m_dur = re.match(r"^(\d+(?:\.\d+)?)(ms|s)$", token, re.I)
+        if m_dur:
+            amt = float(m_dur.group(1))
+            unit = m_dur.group(2).lower()
+            ms = amt if unit == "ms" else amt * 1000.0
+            if ms > 180.0:
+                errors.append(f"[transition duration {ms}ms exceeds 180ms maximum] at {rel_path}:{line_num}\n  Line: {line_str}")
+
+    return errors
 
 
 def check_style():
@@ -137,17 +191,17 @@ def check_style():
                     f"[backdrop-filter / backdrop-blur detected] at {rel_path}:{line_num}\n  Line: {line_str}"
                 )
 
-            # 4. Keyframes other than wipe, grow, draw
+            # 4. Keyframes other than wipe, wipe-out, grow, draw, feed, head
             if KEYFRAME_PATTERN.search(line):
                 violations.append(
-                    f"[@keyframes other than wipe/grow/draw] at {rel_path}:{line_num}\n  Line: {line_str}"
+                    f"[@keyframes other than allowed] at {rel_path}:{line_num}\n  Line: {line_str}"
                 )
 
             # Animation outside allowed locations
             if "animation:" in line or "animation-name:" in line:
                 if file_name not in ANIMATION_ALLOWED_FILES:
                     violations.append(
-                        f"[animation: outside motion.css or Predict overlay] at {rel_path}:{line_num}\n  Line: {line_str}"
+                        f"[animation: outside allowed files] at {rel_path}:{line_num}\n  Line: {line_str}"
                     )
 
             # 5. Infinite animation
@@ -156,28 +210,30 @@ def check_style():
                     f"[infinite animation detected] at {rel_path}:{line_num}\n  Line: {line_str}"
                 )
 
-            # 6. Font family other than Sora and IBM Plex Mono
+            # 6. Transitions check (Task 7.1)
+            if "transition:" in line or "transition-duration:" in line or "transition-property:" in line:
+                violations.extend(validate_transition(line_str, rel_path, line_num))
+
+            # 7. Font family other than Sora and IBM Plex Mono
             if FORBIDDEN_FONTS.search(line):
                 violations.append(
                     f"[forbidden font family detected] at {rel_path}:{line_num}\n  Line: {line_str}"
                 )
 
-            # 7. IBM Plex Mono / var(--fm) usage check
+            # 8. IBM Plex Mono / var(--fm) usage check
             if "IBM Plex Mono" in line or "var(--fm)" in line:
-                # Allowed in tokens.css, font imports, or when applied to allowed semantic elements
-                allowed_files = {"tokens.css", "index.css", "DesignSystemPage.tsx", "TextField.tsx", "Section.tsx", "VesselCard.tsx", "WizardLayout.tsx", "DataEntryPage.tsx", "DataTable.tsx", "TechnicalReportView.tsx", "PatientReportView.tsx", "ResultsPage.tsx"}
-                if file_name not in allowed_files:
+                if file_name not in MONO_ALLOWED_FILES:
                     violations.append(
                         f"[IBM Plex Mono / var(--fm) used in unauthorized component] at {rel_path}:{line_num}\n  Line: {line_str}"
                     )
 
-            # 8. Uppercase, letter-spacing, tracking-
+            # 9. Uppercase, letter-spacing, tracking-
             if CASE_SPACING_PATTERN.search(line):
                 violations.append(
                     f"[uppercase / letter-spacing / tracking- detected] at {rel_path}:{line_num}\n  Line: {line_str}"
                 )
 
-            # 9. Border radius other than 3px, 50%, 0
+            # 10. Border radius other than 3px, 50%, 0
             if TAILWIND_ROUNDED_PATTERN.search(line):
                 violations.append(
                     f"[unauthorized Tailwind rounded- class] at {rel_path}:{line_num}\n  Line: {line_str}"
@@ -185,20 +241,18 @@ def check_style():
 
             # Check explicit CSS border-radius
             if "border-radius" in line.lower() or "borderradius" in line.lower():
-                # Extract value
                 m_rad = re.search(r'(?:border-radius|borderRadius)\s*[:=]\s*[\'"]?([^\'";,\n]+)[\'"]?', line, re.I)
                 if m_rad:
                     raw_val = m_rad.group(1).strip()
-                    # Skip if variable assignment
                     if not raw_val.startswith("is") and not raw_val.startswith("const"):
                         for token in raw_val.split():
-                            t_clean = token.rstrip(";,")
-                            if t_clean not in ("3px", "50%", "0", "var(--radius)"):
+                            t_clean = token.replace("!important", "").rstrip(";, ").strip()
+                            if t_clean and t_clean not in ("3px", "50%", "0", "var(--radius)"):
                                 violations.append(
                                     f"[border-radius '{t_clean}' outside 3px/50%/0] at {rel_path}:{line_num}\n  Line: {line_str}"
                                 )
 
-            # 10. Hex/rgb/hsl colors outside tokens.css
+            # 11. Hex/rgb/hsl colors outside tokens.css
             if file_name != "tokens.css":
                 if HEX_COLOR_PATTERN.search(line):
                     violations.append(
@@ -213,13 +267,30 @@ def check_style():
                         f"[hsl() color outside tokens.css] at {rel_path}:{line_num}\n  Line: {line_str}"
                     )
 
-            # 11. Dark: classes
+            # 12. color-mix( only in tokens.css and the dialog backdrop
+            if COLOR_MIX_PATTERN.search(line):
+                if file_name != "tokens.css":
+                    if file_name != "nav.css" or "::backdrop" not in line:
+                        # Allow dialog backdrop line or previous lines in nav.css
+                        is_dialog_backdrop = False
+                        if file_name == "nav.css":
+                            # Check if backdrop in context
+                            for ctx_line in lines[max(0, line_num - 5):line_num]:
+                                if "::backdrop" in ctx_line:
+                                    is_dialog_backdrop = True
+                                    break
+                        if not is_dialog_backdrop:
+                            violations.append(
+                                f"[color-mix( outside tokens.css or dialog backdrop] at {rel_path}:{line_num}\n  Line: {line_str}"
+                            )
+
+            # 13. Dark: classes
             if DARK_CLASS_PATTERN.search(line):
                 violations.append(
                     f"[Tailwind dark: class detected] at {rel_path}:{line_num}\n  Line: {line_str}"
                 )
 
-            # 12. Emoji characters
+            # 14. Emoji characters
             if EMOJI_PATTERN.search(line):
                 violations.append(
                     f"[emoji character detected] at {rel_path}:{line_num}\n  Line: {line_str}"

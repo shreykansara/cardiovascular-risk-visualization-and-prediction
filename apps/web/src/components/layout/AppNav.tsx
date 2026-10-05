@@ -71,7 +71,7 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
   return (
     <header className="app-chrome app-header">
       {/* Task 2.1 Visually-hidden Skip link, visible on focus */}
-      <a href="#main-content" className="skip-link">
+      <a href="#main-content" className="skip-link app-chrome no-print">
         Skip to content
       </a>
 
@@ -202,7 +202,7 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
       </div>
 
       {/* Confirmation Dialog for New Assessment */}
-      <dialog ref={dialogRef} className="nav-confirm-dialog">
+      <dialog ref={dialogRef} className="nav-confirm-dialog app-chrome no-print">
         <h3
           style={{
             fontFamily: 'var(--fs)',

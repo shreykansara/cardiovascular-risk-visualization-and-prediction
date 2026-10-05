@@ -6,6 +6,7 @@
 @import './design/grid.css';
 @import './design/motion.css';
 @import './design/nav.css';
+@import './design/print.css';
 
 @tailwind base;
 @tailwind components;
@@ -55,19 +56,3 @@ html, body, * {
   scrollbar-color: var(--bds) var(--panel);
 }
 
-/* Print and PDF overrides (Task 5.5e) */
-@media print {
-  body {
-    background-color: var(--sheet) !important;
-    background-image: none !important;
-    color: var(--sheetink) !important;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  .print-only {
-    display: block !important;
-  }
-}
