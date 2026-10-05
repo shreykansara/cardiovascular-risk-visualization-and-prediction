@@ -96,6 +96,7 @@ export interface TechnicalReportData {
   };
   methodological_notes: string[];
   disclaimer: string;
+  source?: string;
 }
 
 export interface PatientReportData {
@@ -124,4 +125,5 @@ export interface PatientReportData {
   what_influenced_the_prediction_most: string[];
   about_this_estimate: string;
   disclaimer: string;
+  source?: string;
 }

@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWizardStore } from '../store/useWizardStore';
+import { useReportGeneration } from '../hooks/useReportGeneration';
 import { TechnicalReportView } from '../components/reports/TechnicalReportView';
 import { PatientReportView } from '../components/reports/PatientReportView';
-import type { PatientReportData, TechnicalReportData } from '../types/wizard';
+import { GeneratingView } from '../components/reports/GeneratingView';
 import { Button } from '../components/ui/Button';
 import { Tabs } from '../components/ui/Tabs';
 import { Panel } from '../components/ui/Panel';
-import { Skeleton } from '../components/ui/Skeleton';
 
 type ReportTab = 'technical' | 'patient';
 
 interface DiagnosticStatus {
-  last_error_code?: string | null;
+  last_status?: string;
   model?: string;
   key_present?: boolean;
   key_is_placeholder?: boolean;
+  cooldown_s?: number | null;
+  groq_calls_last_hour?: number;
 }
 
 export const ReportsPage: React.FC = () => {
@@ -24,11 +26,8 @@ export const ReportsPage: React.FC = () => {
   const {
     inputs,
     prediction,
-    shapResult,
     technicalReport,
     patientReport,
-    setTechnicalReport,
-    setPatientReport,
     isStepUnlocked,
   } = useWizardStore();
 
@@ -45,10 +44,19 @@ export const ReportsPage: React.FC = () => {
   }, [isPaperFeed]);
 
   const [activeTab, setActiveTab] = useState<ReportTab>('technical');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [diagnosticStatus, setDiagnosticStatus] = useState<DiagnosticStatus | null>(null);
-  const [llmOutputUsed, setLlmOutputUsed] = useState<boolean>(false);
+
+  // Single-call report generation hook (Tasks 4.1 & 4.2)
+  const {
+    status: genStatus,
+    currentStage,
+    retryInSeconds,
+    elapsedSeconds,
+    cooldownRemaining,
+    meta,
+    error: genError,
+    generate,
+  } = useReportGeneration(inputs);
 
   // Guard: if no prediction exists yet, redirect to results
   useEffect(() => {
@@ -57,7 +65,7 @@ export const ReportsPage: React.FC = () => {
     }
   }, [isStepUnlocked, prediction, navigate]);
 
-  // Fetch Groq diagnostics on mount
+  // Fetch zero-Groq configuration diagnostics on mount (Task 3.12)
   useEffect(() => {
     fetch('/api/v1/reports/status')
       .then((res) => (res.ok ? res.json() : null))
@@ -67,66 +75,16 @@ export const ReportsPage: React.FC = () => {
         }
       })
       .catch(() => {
-        setDiagnosticStatus({ last_error_code: 'network_error' });
+        setDiagnosticStatus({ last_status: 'network_error' });
       });
   }, []);
 
-  const fetchActiveReport = async (force: boolean = false) => {
-    if (!prediction) return;
-
-    if (!force) {
-      if (activeTab === 'technical' && technicalReport) return;
-      if (activeTab === 'patient' && patientReport) return;
-    }
-
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    const payload = {
-      patient: inputs,
-      predictions: prediction,
-      explanations: shapResult,
-    };
-
-    try {
-      const endpoint = activeTab === 'technical' ? '/api/v1/reports/technical' : '/api/v1/reports/patient';
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        throw new Error('Report endpoint returned an error.');
-      }
-
-      const data = await res.json();
-
-      if (activeTab === 'technical') {
-        setTechnicalReport(data as TechnicalReportData);
-      } else {
-        setPatientReport(data as PatientReportData);
-      }
-
-      const statusRes = await fetch('/api/v1/reports/status');
-      if (statusRes.ok) {
-        const diag = await statusRes.json();
-        setDiagnosticStatus(diag);
-        if (diag.last_error_code === 'ok' || data.source === 'groq') {
-          setLlmOutputUsed(true);
-        }
-      }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Failed generating report.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Auto-generate on initial mount if neither report is present in store
   useEffect(() => {
-    fetchActiveReport();
-  }, [activeTab]);
+    if (prediction && (!technicalReport || !patientReport) && genStatus === 'idle') {
+      generate();
+    }
+  }, [prediction, technicalReport, patientReport, genStatus, generate]);
 
   const handlePrintOrDownloadPdf = () => {
     const origTitle = document.title;
@@ -146,35 +104,33 @@ export const ReportsPage: React.FC = () => {
     window.print();
   };
 
+  // Status line in metadata bar (Task 4.3)
   const getStatusLine = () => {
-    const code = diagnosticStatus?.last_error_code;
-    const model = diagnosticStatus?.model || 'llama-3.3-70b-versatile';
+    const source = meta?.source || (technicalReport?.source === 'groq' ? 'groq' : 'template');
+    const model = meta?.model || diagnosticStatus?.model || 'llama-3.3-70b-versatile';
+    const elapsedSec = meta?.elapsed_ms ? (meta.elapsed_ms / 1000).toFixed(1) : null;
+    const effectiveCooldown = cooldownRemaining ?? meta?.cooldown_s ?? diagnosticStatus?.cooldown_s;
 
-    if (code === 'ok' && llmOutputUsed) {
-      return `Generated with Groq (${model})`;
+    let baseText = '';
+    if (source === 'groq') {
+      baseText = `Synthesized by Groq (${model})${elapsedSec ? ` in ${elapsedSec}s` : ''}`;
+    } else if (source === 'mixed') {
+      const templateSections = Object.entries(meta?.section_sources || {})
+        .filter(([_, s]) => s === 'template')
+        .map(([sec]) => sec.split('.').pop());
+      baseText = `Synthesized by Groq with rule-based fallback for ${
+        templateSections.length > 0 ? templateSections.join(', ') : 'safety validation'
+      }`;
+    } else {
+      const errStatus = meta?.status || diagnosticStatus?.last_status || 'template';
+      baseText = `Synthesized from clinical rules and TreeSHAP values (Groq offline or rate limited: ${errStatus})`;
     }
-    if (code === 'request_blocked') {
-      return 'Groq blocked the request. Using standard template.';
+
+    if (effectiveCooldown && effectiveCooldown > 0) {
+      baseText += ` • Next AI generation available in ${effectiveCooldown}s`;
     }
-    if (code === 'access_denied') {
-      return 'Groq denied access for this key. Using standard template.';
-    }
-    if (code === 'key_rejected') {
-      return 'Groq rejected the API key. Using standard template.';
-    }
-    if (code === 'model_unavailable') {
-      return 'Groq model not available. Using standard template.';
-    }
-    if (code === 'rate_limited') {
-      return 'Groq rate limit reached. Using standard template.';
-    }
-    if (code === 'validation_failed') {
-      return 'Generated text failed safety checks. Using standard template.';
-    }
-    if (code === 'network_error') {
-      return 'Could not reach Groq. Using standard template.';
-    }
-    return 'Groq API key not found. Using standard template.';
+
+    return baseText;
   };
 
   const tabs = [
@@ -182,9 +138,29 @@ export const ReportsPage: React.FC = () => {
     { id: 'patient', label: 'Patient report' },
   ];
 
+  const isGenerating = genStatus === 'generating';
+  const hasReports = Boolean(technicalReport && patientReport);
+  const isRegenerateDisabled = isGenerating || Boolean(cooldownRemaining && cooldownRemaining > 0);
+
   return (
     <div className="w-full flex-1 flex flex-col pb-16">
-      {/* Task 5.4 / 6.1 Top band: tabs, buttons, status line */}
+      <style>{`
+        .report-fade-in {
+          animation: reportFadeIn 250ms cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+        }
+        @keyframes reportFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
+      {/* Top band: tabs, buttons, status line */}
       <Panel
         className="app-chrome no-print wipe w-full mb-4 flex flex-col gap-2"
         style={{ padding: '8px 16px', '--i': 0 } as React.CSSProperties}
@@ -200,15 +176,21 @@ export const ReportsPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
-              onClick={() => fetchActiveReport(true)}
-              disabled={isLoading}
+              onClick={() => generate({ force: true })}
+              disabled={isRegenerateDisabled}
+              title={
+                cooldownRemaining && cooldownRemaining > 0
+                  ? `Next AI generation available in ${cooldownRemaining}s`
+                  : 'Regenerate reports'
+              }
               style={{ height: '32px' }}
             >
-              Regenerate
+              {isGenerating ? 'Generating...' : 'Regenerate'}
             </Button>
             <Button
               variant="secondary"
               onClick={handlePrintOrDownloadPdf}
+              disabled={isGenerating || !hasReports}
               style={{ height: '32px' }}
             >
               Download PDF
@@ -216,6 +198,7 @@ export const ReportsPage: React.FC = () => {
             <Button
               variant="secondary"
               onClick={handlePrintOrDownloadPdf}
+              disabled={isGenerating || !hasReports}
               style={{ height: '32px' }}
             >
               Print
@@ -236,10 +219,10 @@ export const ReportsPage: React.FC = () => {
         </p>
       </Panel>
 
-      {/* Task 5.7 Plain error line in --ink with small --high dot and "Try again" text link */}
-      {errorMessage && (
+      {/* Plain error line in --ink with small --high dot and "Try again" text link */}
+      {genError && (
         <div
-          className="app-chrome no-print w-full flex items-center justify-center gap-2 py-2"
+          className="app-chrome no-print w-full flex items-center justify-center gap-2 py-2 mb-2"
           style={{
             fontFamily: 'var(--fs)',
             fontSize: '13px',
@@ -255,10 +238,10 @@ export const ReportsPage: React.FC = () => {
               display: 'inline-block',
             }}
           />
-          <span>{errorMessage}</span>
+          <span>{genError}</span>
           <button
             type="button"
-            onClick={() => fetchActiveReport(true)}
+            onClick={() => generate({ force: true })}
             style={{
               background: 'transparent',
               border: 'none',
@@ -278,45 +261,28 @@ export const ReportsPage: React.FC = () => {
 
       {/* Main printable report root */}
       <main id="print-root" className="w-full">
-        <div
-          className={`sheet-wrapper ${isPaperFeed ? 'feed-sheet' : 'wipe'}`}
-          style={{ position: 'relative', width: '100%', '--i': 1 } as React.CSSProperties}
-        >
-          {isPaperFeed && showPrintHead && (
-            <div
-              className="print-head-line no-print"
-              aria-hidden="true"
-              onAnimationEnd={() => setShowPrintHead(false)}
-            />
-          )}
+        {isGenerating ? (
+          /* True System State Generating View (Task 4.2) */
+          <GeneratingView
+            currentStage={currentStage}
+            elapsedSeconds={elapsedSeconds}
+            retryInSeconds={retryInSeconds}
+            modelName={meta?.model || diagnosticStatus?.model || 'llama-3.3-70b-versatile'}
+          />
+        ) : (
+          /* Completed Reports View with 250ms Smooth Fade Transition (Task 4.3) */
+          <div
+            className={`sheet-wrapper report-fade-in ${isPaperFeed ? 'feed-sheet' : 'wipe'}`}
+            style={{ position: 'relative', width: '100%', '--i': 1 } as React.CSSProperties}
+          >
+            {isPaperFeed && showPrintHead && (
+              <div
+                className="print-head-line no-print"
+                aria-hidden="true"
+                onAnimationEnd={() => setShowPrintHead(false)}
+              />
+            )}
 
-          {/* Loading state: Static Skeletons (no spinners!) */}
-          {isLoading ? (
-            <article
-              className="sheet w-full"
-              style={{
-                backgroundColor: 'var(--s-bg)',
-                border: '1px solid var(--s-bd)',
-                borderRadius: '3px',
-                maxWidth: '720px',
-                margin: '16px auto',
-                padding: '24px 28px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-              }}
-            >
-              <Skeleton height={28} width="50%" />
-              <Skeleton height={14} width="35%" />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '16px' }}>
-                <Skeleton height={20} width="100%" />
-                <Skeleton height={20} width="90%" />
-                <Skeleton height={20} width="95%" />
-                <Skeleton height={20} width="80%" />
-              </div>
-            </article>
-          ) : (
-            /* Rendered Document Sheet */
             <div className="w-full">
               {activeTab === 'technical' && technicalReport && (
                 <TechnicalReportView report={technicalReport} />
@@ -325,8 +291,8 @@ export const ReportsPage: React.FC = () => {
                 <PatientReportView report={patientReport} />
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </main>
     </div>
   );
