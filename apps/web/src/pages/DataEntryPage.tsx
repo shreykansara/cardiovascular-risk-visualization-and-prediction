@@ -675,6 +675,7 @@ export const DataEntryPage: React.FC = () => {
                 {/* Section Header Button */}
                 <button
                   type="button"
+                  className="section-panel-header"
                   aria-expanded={isExpanded}
                   onClick={() => toggleSection(sec.id)}
                   style={{
@@ -744,7 +745,7 @@ export const DataEntryPage: React.FC = () => {
 
       {/* Task 4.9 Sticky action bar at the bottom */}
       <div
-        className="app-chrome"
+        className="app-chrome sticky-action-bar"
         style={{
           position: 'sticky',
           bottom: 0,

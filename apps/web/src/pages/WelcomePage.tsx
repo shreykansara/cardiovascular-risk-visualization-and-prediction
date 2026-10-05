@@ -70,7 +70,7 @@ export const WelcomePage: React.FC = () => {
       >
         {/* Task 3.2 A. ECG strip band (wipes with --i: 0) */}
         <div
-          className="wipe ecg-grid"
+          className="wipe ecg-grid ecg-strip-band"
           style={{
             height: '64px',
             borderBottom: '1px solid var(--bd)',

@@ -1,10 +1,10 @@
 # Automated WCAG 2.1 Contrast Scanner Report (Task 1.5)
 
-Generated: 2026-10-05T05:45:58.371Z
+Generated: 2026-10-05T06:26:13.684Z
 Scanner: Playwright system browser engine against `http://localhost:5173`
 
 ## Summary
-- **Total Elements Audited**: 1315
+- **Total Elements Audited**: 1532
 - **Total Failures**: 0
 - **Verdict**: **PASSED (Zero Failures)**
 
@@ -12,7 +12,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 
 | Screen | Theme | Element / Snippet | Ratio | Required | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| /welcome | Paper (Light) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /welcome | Paper (Light) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /welcome | Paper (Light) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /welcome | Paper (Light) | `label.theme-label` ("Theme") | 6.88:1 | 4.5:1 | **PASS** |
 | /welcome | Paper (Light) | `select#nav-theme-select.theme-select-control` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
@@ -34,7 +34,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /welcome | Paper (Light) | `span` ("Tick the box to continue") | 6.88:1 | 4.5:1 | **PASS** |
 | /welcome | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /welcome | Paper (Light) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /enter-data | Paper (Light) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /enter-data | Paper (Light) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span.nav-step-num` ("1") | 17.46:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("Welcome") | 17.46:1 | 4.5:1 | **PASS** |
@@ -43,15 +43,15 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /enter-data | Paper (Light) | `button.nav-new-assessment-btn` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `h1` ("Clinical data") | 17.46:1 | 3.0:1 | **PASS** |
 | /enter-data | Paper (Light) | `p` ("Enter or check each measurement before p") | 6.88:1 | 4.5:1 | **PASS** |
-| /enter-data | Paper (Light) | `select` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
+| /enter-data | Paper (Light) | `select#sample-patient-select` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
 | /enter-data | Paper (Light) | `button` ("Collapse all") | 9.27:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `div` ("Sections") | 6.88:1 | 4.5:1 | **PASS** |
-| /enter-data | Paper (Light) | `span` ("Demographics") | 16.27:1 | 4.5:1 | **PASS** |
-| /enter-data | Paper (Light) | `risk-dot` ("Risk Dot") | 3.45:1 | 3.0:1 | **PASS** |
-| /enter-data | Paper (Light) | `span` ("5 of 5") | 6.41:1 | 4.5:1 | **PASS** |
-| /enter-data | Paper (Light) | `span` ("Clinical examination") | 17.46:1 | 4.5:1 | **PASS** |
+| /enter-data | Paper (Light) | `span` ("Demographics") | 17.46:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `risk-dot` ("Risk Dot") | 3.70:1 | 3.0:1 | **PASS** |
-| /enter-data | Paper (Light) | `span` ("26 of 26") | 6.88:1 | 4.5:1 | **PASS** |
+| /enter-data | Paper (Light) | `span` ("5 of 5") | 6.88:1 | 4.5:1 | **PASS** |
+| /enter-data | Paper (Light) | `span` ("Clinical examination") | 16.27:1 | 4.5:1 | **PASS** |
+| /enter-data | Paper (Light) | `risk-dot` ("Risk Dot") | 3.45:1 | 3.0:1 | **PASS** |
+| /enter-data | Paper (Light) | `span` ("26 of 26") | 6.41:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("ECG") | 17.46:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("7 of 7") | 6.88:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("Laboratory") | 17.46:1 | 4.5:1 | **PASS** |
@@ -289,7 +289,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /enter-data | Paper (Light) | `span` ("Predict") | 9.86:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /results | Paper (Light) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /results | Paper (Light) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `span.nav-step-num` ("1") | 17.46:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `span` ("Welcome") | 17.46:1 | 4.5:1 | **PASS** |
@@ -334,7 +334,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /results | Paper (Light) | `span` ("Create reports") | 9.86:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span.nav-step-num` ("1") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Welcome") | 17.46:1 | 4.5:1 | **PASS** |
@@ -348,13 +348,230 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (clinician tab) | Paper (Light) | `button` ("Clinician report") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `button` ("Patient report") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("Regenerate") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Download PDF") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Print") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `p` ("Groq API key not found. Using standard t") | 6.88:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `p` ("Generated with Groq (qwen/qwen3.8-27b)") | 6.88:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h1` ("Perfusion3D Hemodynamic & Coronary Ische") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("Model version: Perfusion3D v1.0.0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("Date: 2026-10-05 11:56:05 UTC") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("Patient: 58 years, Male") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h2` ("1. Model output summary") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Target") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Vessel / condition") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Probability") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Model classification") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Risk band") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("CAD") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Overall Coronary Artery Disease") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("36.0 %") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Negative") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `risk-dot` ("Risk Dot") | 6.14:1 | 3.0:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span.risk-label-text` ("Low") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("LAD") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Left Anterior Descending Artery") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("23.5 %") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Negative") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `risk-dot` ("Risk Dot") | 6.14:1 | 3.0:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span.risk-label-text` ("Low") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("LCX") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Left Circumflex Artery") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("34.5 %") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Positive") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `risk-dot` ("Risk Dot") | 6.14:1 | 3.0:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span.risk-label-text` ("Low") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("RCA") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Right Coronary Artery") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("30.0 %") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Positive") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `risk-dot` ("Risk Dot") | 6.14:1 | 3.0:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span.risk-label-text` ("Low") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h2` ("2. Clinical measurements") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("Demographics") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Age") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("58 years") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("18-75") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Sex") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Male") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Male/Female") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Weight") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("74 kg") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("50-90") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Length") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("165 cm") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("150-190") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("BMI") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("27.18 kg/m²") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("18.5-24.9") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("Clinical Examination") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("BP") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("130 mmHg") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("90-120") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("PR") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("72 bpm") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("60-100") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("DM") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("HTN") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("1") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Typical Chest Pain") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("ECG") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Q Wave") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("St Elevation") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("St Depression") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Tinversion") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("Laboratory") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("FBS") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("98 mg/dL") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("70-99") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("CR") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("1 mg/dL") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0.6-1.2") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("TG") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("122 mg/dL") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("50-150") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("LDL") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("100 mg/dL") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("50-100") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("HDL") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("39 mg/dL") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("40-60") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("Echocardiography") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("EF-TTE") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("50 %") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("55-70") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Region RWMA") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0 score") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("VHD") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("N grade") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("N") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h2` ("3. Parameters outside typical reference ") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `li` ("BP: 130.0 mmHg (reference 90-120 mmHg)") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `li` ("EF-TTE: 50.0% (reference 55-70%)") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h2` ("4. Factors influencing model output") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("Target: CAD") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Factor") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Patient value") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Effect on probability") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("SHAP value") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Typical Chest Pain_0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.1017") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Typical Chest Pain_1") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0726") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Atypical_Y") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("N") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Raises probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0.0304") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Atypical_N") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("N") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Raises probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0.0299") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("num__Age") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("58.0 years") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Raises probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0.0244") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("Target: LAD") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Factor") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Patient value") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Effect on probability") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("SHAP value") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Typical Chest Pain_0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0975") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Typical Chest Pain_1") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0841") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Region RWMA_0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0307") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Atypical_N") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("N") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Raises probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0.0246") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Atypical_Y") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("N") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Raises probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0.0166") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("Target: LCX") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Factor") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Patient value") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Effect on probability") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("SHAP value") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Typical Chest Pain_0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0573") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Typical Chest Pain_1") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0510") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("num__CR") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("1.0 mg/dL") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0234") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("num__Age") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("58.0 years") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Raises probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0.0189") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("num__Lymph") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("32.0 %") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0179") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h3` ("Target: RCA") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Factor") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Patient value") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("Effect on probability") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `th` ("SHAP value") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("cat__Typical Chest Pain_0") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("0") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.4284") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("num__TG") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("122.0 mg/dL") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.1573") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("num__Neut") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("60.0 %") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.1547") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("num__Age") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("58.0 years") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0752") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("num__PLT") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("210.0 ×10³/mcL") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("Lowers probability") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `td` ("-0.0731") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `h2` ("5. Methodological notes") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `li` ("Evaluated using 55 non-invasive physiolo") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `li` ("Target features LAD, LCX, RCA, and Cath ") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `li` ("Reported outputs reflect calibrated prob") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `p` ("Predictions are for decision-support and") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Paper (Light) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Paper (Light) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `span.nav-step-num` ("1") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `span` ("Welcome") | 17.46:1 | 4.5:1 | **PASS** |
@@ -375,7 +592,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (patient tab) | Paper (Light) | `span` ("Print") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `p` ("Groq rate limit reached. Using standard ") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h1` ("Your Heart Health Summary") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Paper (Light) | `p` ("Date: 2026-10-05 05:45:51 UTC") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Paper (Light) | `p` ("Date: 2026-10-05 11:56:06 UTC") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h2` ("1. What this summary is") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `p` ("This summary describes the numbers you e") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h2` ("2. Overall picture") | 17.46:1 | 4.5:1 | **PASS** |
@@ -463,7 +680,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (patient tab) | Paper (Light) | `p` ("Predictions are for decision-support and") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /model-info | Paper (Light) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /model-info | Paper (Light) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /model-info | Paper (Light) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /model-info | Paper (Light) | `label.theme-label` ("Theme") | 6.88:1 | 4.5:1 | **PASS** |
 | /model-info | Paper (Light) | `select#nav-theme-select.theme-select-control` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
@@ -558,7 +775,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /model-info | Paper (Light) | `td` ("Prediction target only. Prohibited in mo") | 17.46:1 | 4.5:1 | **PASS** |
 | /model-info | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /model-info | Paper (Light) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /welcome | Monitor (Dark) | `a.skip-link` ("Skip to content") | 13.71:1 | 4.5:1 | **PASS** |
+| /welcome | Monitor (Dark) | `a.skip-link.app-chrome` ("Skip to content") | 13.71:1 | 4.5:1 | **PASS** |
 | /welcome | Monitor (Dark) | `span` ("Perfusion3D") | 15.43:1 | 4.5:1 | **PASS** |
 | /welcome | Monitor (Dark) | `label.theme-label` ("Theme") | 7.92:1 | 4.5:1 | **PASS** |
 | /welcome | Monitor (Dark) | `select#nav-theme-select.theme-select-control` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
@@ -586,7 +803,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /welcome | Monitor (Dark) | `span` ("Start assessment") | 14.67:1 | 4.5:1 | **PASS** |
 | /welcome | Monitor (Dark) | `span` ("DECISION SUPPORT ONLY: This system is an") | 7.92:1 | 4.5:1 | **PASS** |
 | /welcome | Monitor (Dark) | `a` ("Model information") | 13.71:1 | 4.5:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `a.skip-link` ("Skip to content") | 13.71:1 | 4.5:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `a.skip-link.app-chrome` ("Skip to content") | 13.71:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("Perfusion3D") | 15.43:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span.nav-step-num` ("1") | 15.43:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("Welcome") | 15.43:1 | 4.5:1 | **PASS** |
@@ -595,15 +812,15 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /enter-data | Monitor (Dark) | `button.nav-new-assessment-btn` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `h1` ("Clinical data") | 15.43:1 | 3.0:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `p` ("Enter or check each measurement before p") | 7.92:1 | 4.5:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `select` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `select#sample-patient-select` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `button` ("Collapse all") | 14.79:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `div` ("Sections") | 7.92:1 | 4.5:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `span` ("Demographics") | 13.44:1 | 4.5:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `risk-dot` ("Risk Dot") | 9.71:1 | 3.0:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `span` ("5 of 5") | 6.89:1 | 4.5:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `span` ("Clinical examination") | 15.43:1 | 4.5:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `span` ("Demographics") | 15.43:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `risk-dot` ("Risk Dot") | 11.15:1 | 3.0:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `span` ("26 of 26") | 7.92:1 | 4.5:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `span` ("5 of 5") | 7.92:1 | 4.5:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `span` ("Clinical examination") | 13.44:1 | 4.5:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `risk-dot` ("Risk Dot") | 9.71:1 | 3.0:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `span` ("26 of 26") | 6.89:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("ECG") | 15.43:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("7 of 7") | 7.92:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("Laboratory") | 15.43:1 | 4.5:1 | **PASS** |
@@ -841,7 +1058,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /enter-data | Monitor (Dark) | `span` ("Predict") | 14.67:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("DECISION SUPPORT ONLY: This system is an") | 7.92:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `a` ("Model information") | 13.71:1 | 4.5:1 | **PASS** |
-| /results | Monitor (Dark) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /results | Monitor (Dark) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `span.nav-step-num` ("1") | 17.46:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `span` ("Welcome") | 17.46:1 | 4.5:1 | **PASS** |
@@ -886,7 +1103,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /results | Monitor (Dark) | `span` ("Create reports") | 9.86:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Monitor (Dark) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Monitor (Dark) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span.nav-step-num` ("1") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Welcome") | 17.46:1 | 4.5:1 | **PASS** |
@@ -908,7 +1125,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (clinician tab) | Monitor (Dark) | `p` ("Groq rate limit reached. Using standard ") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `h1` ("Perfusion3D Hemodynamic & Coronary Ische") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Model version: Perfusion3D v1.0.0") | 8.10:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Monitor (Dark) | `span` ("Date: 2026-10-05 05:45:56 UTC") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Monitor (Dark) | `span` ("Date: 2026-10-05 11:56:05 UTC") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Patient: 58 years, Male") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `h2` ("1. Model output summary") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `th` ("Target") | 8.10:1 | 4.5:1 | **PASS** |
@@ -1123,7 +1340,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (clinician tab) | Monitor (Dark) | `p` ("Predictions are for decision-support and") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Monitor (Dark) | `a.skip-link` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Monitor (Dark) | `a.skip-link.app-chrome` ("Skip to content") | 9.86:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `span` ("Perfusion3D") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `span.nav-step-num` ("1") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `span` ("Welcome") | 17.46:1 | 4.5:1 | **PASS** |
@@ -1144,7 +1361,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (patient tab) | Monitor (Dark) | `span` ("Print") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `p` ("Groq rate limit reached. Using standard ") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h1` ("Your Heart Health Summary") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Monitor (Dark) | `p` ("Date: 2026-10-05 05:45:51 UTC") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Monitor (Dark) | `p` ("Date: 2026-10-05 11:56:06 UTC") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h2` ("1. What this summary is") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `p` ("This summary describes the numbers you e") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h2` ("2. Overall picture") | 17.46:1 | 4.5:1 | **PASS** |
@@ -1232,7 +1449,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (patient tab) | Monitor (Dark) | `p` ("Predictions are for decision-support and") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
-| /model-info | Monitor (Dark) | `a.skip-link` ("Skip to content") | 13.71:1 | 4.5:1 | **PASS** |
+| /model-info | Monitor (Dark) | `a.skip-link.app-chrome` ("Skip to content") | 13.71:1 | 4.5:1 | **PASS** |
 | /model-info | Monitor (Dark) | `span` ("Perfusion3D") | 15.43:1 | 4.5:1 | **PASS** |
 | /model-info | Monitor (Dark) | `label.theme-label` ("Theme") | 7.92:1 | 4.5:1 | **PASS** |
 | /model-info | Monitor (Dark) | `select#nav-theme-select.theme-select-control` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
@@ -1376,8 +1593,6 @@ Reports |
 Reports |
 | /reports (clinician tab) | Paper (Light) | `<span>` | 4 |
 | /reports (clinician tab) | Paper (Light) | `<span>` | Reports |
-| /reports (clinician tab) | Paper (Light) | `<button>` | Regenerate |
-| /reports (clinician tab) | Paper (Light) | `<span>` | Regenerate |
 | /reports (patient tab) | Paper (Light) | `<button>` | 4
 Reports |
 | /reports (patient tab) | Paper (Light) | `<span>` | 4 |

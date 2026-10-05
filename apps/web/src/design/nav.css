@@ -277,3 +277,17 @@ dialog.nav-confirm-dialog::backdrop {
   }
 }
 
+/* Welcome ECG strip band (Task 3.2) */
+.ecg-strip-band {
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+}
+@media (max-width: 599px) {
+  .ecg-strip-band {
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+  }
+}
+

@@ -301,7 +301,7 @@ async function runContrastSuite() {
     // Create reports & wait
     const reportsBtn = page.getByRole('button', { name: /create reports/i }).first();
     await reportsBtn.click();
-    await page.waitForURL('**/reports', { timeout: 15000 });
+    await page.waitForFunction(() => window.location.pathname.includes('/reports'), { timeout: 15000 });
     await page.waitForTimeout(600);
 
     // 4. /reports (clinician tab)
@@ -309,7 +309,7 @@ async function runContrastSuite() {
     recordResults('/reports (clinician tab)', themeName, rReportsClinician.items, rReportsClinician.disabledItems);
 
     // Switch to patient tab
-    const patientTab = page.getByRole('button', { name: /patient/i }).first();
+    const patientTab = page.locator('button[role="tab"]', { hasText: /patient/i }).first();
     await patientTab.click();
     await page.waitForTimeout(400);
 
