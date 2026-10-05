@@ -76,3 +76,34 @@ The 3D heart visualization in Perfusion3D is organized under `apps/web/src/compo
   - **LCX Badge**: Lines 523–560 (`<Html position={lcxBadgePos} center distanceFactor={3.5}...>`)
   - **RCA Badge**: Lines 595–632 (`<Html position={rcaBadgePos} center distanceFactor={3.5}...>`)
   - Currently styled as large rounded-full pills (`gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md shadow-lg`) with animated ping dots, which violate the DLS rules (no shadows, no pills, no blur).
+
+## 7. Round 4 Baseline & Reversion (Task 0.2 & 0.4)
+
+- **BASELINE_SHA**: `64e9f331941c74a4981bdb8e3765459c09101c51` (`64e9f33`)
+  - Commit message: `feat(screens): implement Task 5.4 Results screen layout and telemetry`
+  - Immediately precedes commit `b7ac9dd` (`feat(viewer): recessed chest cavity, compact vessel labels, and interactive toolbar`) which introduced `cavityConfig.ts`, `CavityBackdrop.tsx`, `cavity.css`, scene fog, and rim/fill/glow lights.
+
+### Baseline Scene Luminance & Occupancy (Sample Patient: Normal, 1440px desktop)
+Measured from baseline scene renders (`rgb(246, 247, 249)` background, heart pixels only):
+- **Front View**:
+  - Heart Occupancy: 26.81% (63,706 / 237,600 pixels)
+  - Mean Heart Luminance (0–255): 63.50
+  - Mean Heart Luminance (0–1): 0.2490
+- **Left View**:
+  - Heart Occupancy: 24.70% (58,698 / 237,600 pixels)
+  - Mean Heart Luminance (0–255): 57.25
+  - Mean Heart Luminance (0–1): 0.2245
+- **Back View**:
+  - Heart Occupancy: 23.44% (55,687 / 237,600 pixels)
+  - Mean Heart Luminance (0–255): 53.96
+  - Mean Heart Luminance (0–1): 0.2116
+- **Right View**:
+  - Heart Occupancy: 26.22% (62,299 / 237,600 pixels)
+  - Mean Heart Luminance (0–255): 61.61
+  - Mean Heart Luminance (0–1): 0.2416
+- **Overall Baseline Mean Heart Luminance**: 59.08 (0–255) / 0.2317 (0–1)
+
+### Artifacts Captured:
+- Current (broken cavity) look: `docs/screenshots/round4/viewer-before/{front,left,back,right}.png`
+- Baseline (pre-cavity) look: `docs/screenshots/round4/viewer-baseline/{front,left,back,right}.png`
+
