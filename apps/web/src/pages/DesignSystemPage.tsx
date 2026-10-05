@@ -229,6 +229,70 @@ const ShowcasePanel: React.FC<ShowcasePanelProps> = ({ title, themeScope }) => {
       </Panel>
 
       <Panel>
+        <Section title="Navigation steps (Task 2.7)">
+          <div className="flex flex-col gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="nav-step-item-btn completed"
+                style={{ height: '44px', border: '1px solid var(--bd)' }}
+              >
+                <span className="nav-step-num">1</span>
+                <span>Welcome (completed)</span>
+              </button>
+
+              <button
+                type="button"
+                className="nav-step-item-btn current"
+                aria-current="step"
+                style={{ height: '44px', border: '1px solid var(--bd)' }}
+              >
+                <span className="nav-step-num">2</span>
+                <span>Clinical data (current)</span>
+              </button>
+
+              <button
+                type="button"
+                className="nav-step-item-btn upcoming"
+                aria-disabled="true"
+                style={{ height: '44px', border: '1px solid var(--bd)' }}
+              >
+                <span className="nav-step-num">3</span>
+                <span>Results (upcoming)</span>
+              </button>
+
+              <button
+                type="button"
+                className="nav-step-item-btn completed"
+                style={{
+                  height: '44px',
+                  backgroundColor: 'var(--hov)',
+                  border: '1px solid var(--bd)',
+                }}
+              >
+                <span className="nav-step-num">1</span>
+                <span>Welcome (hover)</span>
+              </button>
+
+              <button
+                type="button"
+                className="nav-step-item-btn completed"
+                style={{
+                  height: '44px',
+                  outline: 'var(--focus)',
+                  outlineOffset: 'var(--focus-offset)',
+                  border: '1px solid var(--bd)',
+                }}
+              >
+                <span className="nav-step-num">1</span>
+                <span>Welcome (focus)</span>
+              </button>
+            </div>
+          </div>
+        </Section>
+      </Panel>
+
+      <Panel>
         <Section title="Data table">
           <DataTable
             columns={tableColumns}

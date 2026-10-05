@@ -299,7 +299,7 @@ async function runContrastSuite() {
     recordResults('/results', themeName, rResults.items, rResults.disabledItems);
 
     // Create reports & wait
-    const reportsBtn = page.getByRole('button', { name: /report/i }).first();
+    const reportsBtn = page.getByRole('button', { name: /create reports/i }).first();
     await reportsBtn.click();
     await page.waitForURL('**/reports', { timeout: 15000 });
     await page.waitForTimeout(600);
