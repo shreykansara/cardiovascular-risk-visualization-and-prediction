@@ -29,18 +29,24 @@ export const DataEntryPage: React.FC = () => {
   const navigate = useNavigate();
   const {
     disclaimerAccepted,
+    isDirty,
     inputs,
     fieldMeta,
     setFieldValue,
     loadSamplePatient,
     predictPatient,
+    reset,
+    setDisclaimerAccepted,
   } = useWizardStore();
 
   const [samplePatientLoaded, setSamplePatientLoaded] = useState(false);
   const [selectedSampleKey, setSelectedSampleKey] = useState('');
   const [showAllErrors, setShowAllErrors] = useState(false);
+  const [hasAttemptedPredict, setHasAttemptedPredict] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState<string>('demographics');
+
+  const clearDialogRef = useRef<HTMLDialogElement>(null);
 
   // Track expanded state for each of the 5 sections (default: all expanded)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -158,15 +164,26 @@ export const DataEntryPage: React.FC = () => {
     setFieldValue(key, val);
   };
 
-  // Sample patient selection (Task 4.2)
+  // Sample patient selection (Task 1.7)
   const handleSelectSample = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const key = e.target.value;
-    setSelectedSampleKey(key);
     if (key) {
       loadSamplePatient(key);
       setSamplePatientLoaded(true);
       setShowAllErrors(false);
+      setHasAttemptedPredict(false);
     }
+    setSelectedSampleKey('');
+  };
+
+  const handleConfirmClearForm = () => {
+    reset();
+    setDisclaimerAccepted(true);
+    setSamplePatientLoaded(false);
+    setSelectedSampleKey('');
+    setShowAllErrors(false);
+    setHasAttemptedPredict(false);
+    clearDialogRef.current?.close();
   };
 
   // Toggle single section
@@ -219,8 +236,9 @@ export const DataEntryPage: React.FC = () => {
     }
   };
 
-  // Predict button click (Task 4.9: Predict is ALWAYS enabled)
+  // Predict button click (Task 1.8: mark all errors, scroll & focus first invalid, make NO api call)
   const handlePredictClick = async () => {
+    setHasAttemptedPredict(true);
     if (metrics.invalidFields.length > 0) {
       focusFirstInvalid();
       return;
@@ -356,7 +374,7 @@ export const DataEntryPage: React.FC = () => {
               margin: '2px 0 0 0',
             }}
           >
-            Enter or check each measurement before predicting.
+            Enter each measurement, or load a sample patient.
           </p>
         </div>
 
@@ -448,11 +466,13 @@ export const DataEntryPage: React.FC = () => {
         })}
       </Panel>
 
-      {/* Collapse all / Expand all button placed above form column */}
+      {/* Collapse all / Expand all and Clear form buttons placed above form column */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'flex-end',
+          alignItems: 'center',
+          gap: '16px',
           marginBottom: '8px',
         }}
       >
@@ -471,6 +491,24 @@ export const DataEntryPage: React.FC = () => {
           }}
         >
           {allExpanded ? 'Collapse all' : 'Expand all'}
+        </button>
+        <button
+          type="button"
+          id="clear-form-button"
+          disabled={!isDirty}
+          onClick={() => clearDialogRef.current?.showModal()}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            fontFamily: 'var(--fs)',
+            fontSize: '13px',
+            color: isDirty ? 'var(--acc)' : 'var(--mut)',
+            cursor: isDirty ? 'pointer' : 'default',
+            textDecoration: isDirty ? 'underline' : 'none',
+          }}
+        >
+          Clear form
         </button>
       </div>
 
@@ -519,7 +557,7 @@ export const DataEntryPage: React.FC = () => {
               };
 
               let dotColor = null;
-              if (secMet.hasInvalid) {
+              if (hasAttemptedPredict && secMet.hasInvalid) {
                 dotColor = 'var(--high)';
               } else if (secMet.hasOutOfRange) {
                 dotColor = 'var(--mod)';
@@ -619,7 +657,7 @@ export const DataEntryPage: React.FC = () => {
                 marginBottom: '6px',
               }}
             >
-              {metrics.enteredTotal} of 55
+              {metrics.enteredTotal} of {FEATURE_SCHEMA.length}
             </div>
             {/* 4px thin Bar */}
             <div
@@ -634,7 +672,7 @@ export const DataEntryPage: React.FC = () => {
               <div
                 style={{
                   height: '100%',
-                  width: `${Math.min(100, (metrics.enteredTotal / 55) * 100)}%`,
+                  width: `${Math.min(100, (metrics.enteredTotal / FEATURE_SCHEMA.length) * 100)}%`,
                   backgroundColor: 'var(--acc)',
                   transition: 'width 180ms var(--ease-wipe)',
                 }}
@@ -785,7 +823,9 @@ export const DataEntryPage: React.FC = () => {
             }}
           >
             <span>
-              {metrics.enteredTotal === 55 ? 'All 55 entered' : `${metrics.enteredTotal} of 55 entered`}
+              {metrics.enteredTotal === FEATURE_SCHEMA.length
+                ? `All ${FEATURE_SCHEMA.length} entered`
+                : `${metrics.enteredTotal} of ${FEATURE_SCHEMA.length} entered`}
             </span>
             {metrics.outsideTotal > 0 && (
               <>
@@ -793,7 +833,7 @@ export const DataEntryPage: React.FC = () => {
                 <span>{metrics.outsideTotal} outside typical range</span>
               </>
             )}
-            {metrics.invalidFields.length > 0 && (
+            {hasAttemptedPredict && metrics.invalidFields.length > 0 && (
               <>
                 <span>·</span>
                 <button
@@ -836,6 +876,48 @@ export const DataEntryPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog for Clear Form (Task 1.7) */}
+      <dialog ref={clearDialogRef} className="nav-confirm-dialog app-chrome no-print">
+        <h3
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '14px',
+            fontWeight: 600,
+            color: 'var(--ink)',
+            margin: '0 0 8px 0',
+          }}
+        >
+          Clear all values?
+        </h3>
+        <p
+          style={{
+            fontFamily: 'var(--fs)',
+            fontSize: '13px',
+            color: 'var(--mut)',
+            margin: '0 0 20px 0',
+            lineHeight: 1.45,
+          }}
+        >
+          This removes every value you entered.
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <Button
+            variant="secondary"
+            onClick={() => clearDialogRef.current?.close()}
+            style={{ height: '32px' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleConfirmClearForm}
+            style={{ height: '32px' }}
+          >
+            Clear values
+          </Button>
+        </div>
+      </dialog>
     </div>
   );
 };

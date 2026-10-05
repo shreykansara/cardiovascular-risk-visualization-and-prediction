@@ -10,7 +10,21 @@ import type { FieldMeta, FieldSource, PatientReportData, TechnicalReportData } f
 import { FEATURE_SCHEMA, getDefaultPatientData, validateFeatureValue } from '../config/featureSchema';
 import { PATIENT_PROFILES, usePatientStore } from './usePatientStore';
 
+// Clean up legacy storage keys on module startup
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('perfusion3d-wizard-session');
+    localStorage.removeItem('perfusion3d-wizard-v2');
+    sessionStorage.removeItem('perfusion3d-wizard-session');
+  } catch (e) {
+    // Ignore storage errors on startup
+  }
+}
+
 interface WizardState {
+  // --- Dirty Flag (Task 1.3) ---
+  isDirty: boolean;
+
   // --- Step 1 State ---
   disclaimerAccepted: boolean;
   completedSteps: number[];
@@ -47,6 +61,7 @@ interface WizardState {
   setVesselFocus: (focus: string) => void;
   isStepUnlocked: (stepNumber: number) => boolean;
   markStepCompleted: (stepNumber: number) => void;
+  reset: () => void;
   resetSession: () => void;
 }
 
@@ -66,12 +81,13 @@ function initializeFieldMeta(): Record<string, FieldMeta> {
 export const useWizardStore = create<WizardState>()(
   persist(
     (set, get) => ({
+      isDirty: false,
       disclaimerAccepted: false,
       completedSteps: [],
 
       inputs: getDefaultPatientData(),
       fieldMeta: initializeFieldMeta(),
-      isFormValid: true,
+      isFormValid: false,
 
       prediction: null,
       shapResult: null,
@@ -98,12 +114,15 @@ export const useWizardStore = create<WizardState>()(
         const state = get();
         const updatedInputs = { ...state.inputs, [key]: value };
 
-        // Recalculate BMI automatically if Weight or Length changes
+        // Task 1.6: Recalculate BMI automatically if Weight or Length changes; never produce NaN or Infinity
         if (key === 'Weight' || key === 'Length') {
-          const h = (key === 'Length' ? Number(value) : state.inputs.Length) / 100.0;
-          const w = key === 'Weight' ? Number(value) : state.inputs.Weight;
-          if (h > 0) {
-            updatedInputs.BMI = Number((w / (h * h)).toFixed(2));
+          const rawH = key === 'Length' ? Number(value) : Number(state.inputs.Length);
+          const rawW = key === 'Weight' ? Number(value) : Number(state.inputs.Weight);
+          if (rawH > 0 && rawW > 0 && !isNaN(rawH) && !isNaN(rawW)) {
+            const h = rawH / 100.0;
+            updatedInputs.BMI = Number((rawW / (h * h)).toFixed(2));
+          } else {
+            updatedInputs.BMI = null as any;
           }
         }
 
@@ -121,7 +140,7 @@ export const useWizardStore = create<WizardState>()(
           },
         };
 
-        set({ inputs: updatedInputs, fieldMeta: updatedMeta });
+        set({ isDirty: true, inputs: updatedInputs, fieldMeta: updatedMeta });
 
         // Synchronize with existing usePatientStore so 3D viewer has fresh data
         usePatientStore.getState().updatePatientField(key, value);
@@ -204,6 +223,7 @@ export const useWizardStore = create<WizardState>()(
         }
 
         set({
+          isDirty: true,
           inputs: data,
           fieldMeta: updatedMeta,
           isFormValid: true,
@@ -291,33 +311,55 @@ export const useWizardStore = create<WizardState>()(
         }));
       },
 
-      resetSession: () => {
+      reset: () => {
+        try {
+          sessionStorage.removeItem('perfusion3d-wizard-v2');
+        } catch (e) {
+          // Ignore
+        }
         set({
+          isDirty: false,
           disclaimerAccepted: false,
           completedSteps: [],
           inputs: getDefaultPatientData(),
           fieldMeta: initializeFieldMeta(),
+          isFormValid: false,
           prediction: null,
           shapResult: null,
+          analysisLatencyMs: null,
+          isAnalyzing: false,
+          analysisError: null,
+          activeVesselFocus: 'default',
           technicalReport: null,
           patientReport: null,
-          analysisError: null,
+          isGeneratingReports: false,
+          reportGenerationError: null,
         });
+      },
+
+      resetSession: () => {
+        get().reset();
       },
     }),
     {
-      name: 'perfusion3d-wizard-session',
+      name: 'perfusion3d-wizard-v2',
       storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({
-        disclaimerAccepted: state.disclaimerAccepted,
-        completedSteps: state.completedSteps,
-        inputs: state.inputs,
-        fieldMeta: state.fieldMeta,
-        prediction: state.prediction,
-        shapResult: state.shapResult,
-        technicalReport: state.technicalReport,
-        patientReport: state.patientReport,
-      }),
+      partialize: (state) => {
+        if (!state.isDirty) {
+          return {} as any;
+        }
+        return {
+          isDirty: state.isDirty,
+          disclaimerAccepted: state.disclaimerAccepted,
+          completedSteps: state.completedSteps,
+          inputs: state.inputs,
+          fieldMeta: state.fieldMeta,
+          prediction: state.prediction,
+          shapResult: state.shapResult,
+          technicalReport: state.technicalReport,
+          patientReport: state.patientReport,
+        };
+      },
     }
   )
 );

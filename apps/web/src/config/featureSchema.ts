@@ -44,7 +44,6 @@ export interface FeatureDefinition {
   refDisplay: string;
   options?: SelectOption[];
   tooltip?: string;
-  defaultValue: any;
 }
 
 export const FEATURE_SCHEMA: FeatureDefinition[] = [
@@ -65,7 +64,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 75,
     refDisplay: '18 – 75 yrs',
     tooltip: 'Chronological age in completed years',
-    defaultValue: 58,
   },
   {
     key: 'Sex',
@@ -79,7 +77,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'Male', label: 'Male' },
       { value: 'Female', label: 'Female' },
     ],
-    defaultValue: 'Male',
   },
   {
     key: 'Weight',
@@ -95,7 +92,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 90,
     refDisplay: '50 – 90 kg',
     tooltip: 'Measured naked/lightly clothed weight',
-    defaultValue: 74,
   },
   {
     key: 'Length',
@@ -111,7 +107,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 190,
     refDisplay: '150 – 190 cm',
     tooltip: 'Standing stadiometer height in centimeters',
-    defaultValue: 165,
   },
   {
     key: 'BMI',
@@ -127,7 +122,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 24.9,
     refDisplay: '18.5 – 24.9 kg/m²',
     tooltip: 'Calculated as Weight (kg) / [Height (m)]²',
-    defaultValue: 27.18,
   },
 
   // =========================================================================
@@ -147,7 +141,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 120,
     refDisplay: '90 – 120 mmHg',
     tooltip: 'Resting seated brachial systolic pressure',
-    defaultValue: 130,
   },
   {
     key: 'PR',
@@ -163,7 +156,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 100,
     refDisplay: '60 – 100 bpm',
     tooltip: 'Radial or apical resting heart rate',
-    defaultValue: 72,
   },
   {
     key: 'DM',
@@ -177,7 +169,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'No' },
       { value: '1', label: 'Yes' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'HTN',
@@ -191,7 +182,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'No' },
       { value: '1', label: 'Yes' },
     ],
-    defaultValue: '1',
   },
   {
     key: 'Current Smoker',
@@ -205,7 +195,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'No' },
       { value: '1', label: 'Yes' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'EX-Smoker',
@@ -219,7 +208,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'No' },
       { value: '1', label: 'Yes' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'FH',
@@ -233,7 +221,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'No' },
       { value: '1', label: 'Yes' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'Obesity',
@@ -247,7 +234,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'CRF',
@@ -261,7 +247,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'CVA',
@@ -275,7 +260,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Airway disease',
@@ -289,7 +273,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Thyroid Disease',
@@ -303,7 +286,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'CHF',
@@ -317,7 +299,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'DLP',
@@ -331,7 +312,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Edema',
@@ -345,7 +325,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'No' },
       { value: '1', label: 'Yes' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'Weak Peripheral Pulse',
@@ -359,7 +338,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Lung rales',
@@ -373,7 +351,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Systolic Murmur',
@@ -387,7 +364,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Diastolic Murmur',
@@ -401,7 +377,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Typical Chest Pain',
@@ -415,7 +390,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'No' },
       { value: '1', label: 'Yes' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'Dyspnea',
@@ -429,7 +403,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Function Class',
@@ -445,7 +418,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '2', label: 'Class II: Moderate limitation with ordinary activity' },
       { value: '3', label: 'Class III: Severe limitation with minimal activity' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'Atypical',
@@ -459,7 +431,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Nonanginal',
@@ -473,7 +444,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Exertional CP',
@@ -487,7 +457,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'LowTH Ang',
@@ -501,7 +470,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
 
   // =========================================================================
@@ -519,7 +487,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'Absent' },
       { value: '1', label: 'Present' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'St Elevation',
@@ -533,7 +500,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'Absent' },
       { value: '1', label: 'Present' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'St Depression',
@@ -547,7 +513,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'Absent' },
       { value: '1', label: 'Present' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'Tinversion',
@@ -561,7 +526,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '0', label: 'Absent' },
       { value: '1', label: 'Present' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'LVH',
@@ -575,7 +539,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'Poor R Progression',
@@ -589,7 +552,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'N', label: 'No' },
       { value: 'Y', label: 'Yes' },
     ],
-    defaultValue: 'N',
   },
   {
     key: 'BBB',
@@ -604,7 +566,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'LBBB', label: 'Left Bundle Branch Block (LBBB)' },
       { value: 'RBBB', label: 'Right Bundle Branch Block (RBBB)' },
     ],
-    defaultValue: 'N',
   },
 
   // =========================================================================
@@ -624,7 +585,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 99,
     refDisplay: '70 – 99 mg/dL',
     tooltip: 'Serum fasting glucose level',
-    defaultValue: 98,
   },
   {
     key: 'CR',
@@ -640,7 +600,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 1.2,
     refDisplay: '0.6 – 1.2 mg/dL',
     tooltip: 'Serum creatinine marker for renal clearance',
-    defaultValue: 1.0,
   },
   {
     key: 'TG',
@@ -656,7 +615,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 150,
     refDisplay: '50 – 150 mg/dL',
     tooltip: 'Serum triglycerides',
-    defaultValue: 122,
   },
   {
     key: 'LDL',
@@ -672,7 +630,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 100,
     refDisplay: '50 – 100 mg/dL',
     tooltip: 'Atherogenic low-density lipoprotein cholesterol',
-    defaultValue: 100,
   },
   {
     key: 'HDL',
@@ -688,7 +645,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 60,
     refDisplay: '40 – 60 mg/dL',
     tooltip: 'Cardioprotective high-density lipoprotein cholesterol',
-    defaultValue: 39,
   },
   {
     key: 'BUN',
@@ -704,7 +660,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 20,
     refDisplay: '7 – 20 mg/dL',
     tooltip: 'Serum urea nitrogen index',
-    defaultValue: 16,
   },
   {
     key: 'ESR',
@@ -720,7 +675,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 20,
     refDisplay: '0 – 20 mm/hr',
     tooltip: 'Non-specific systemic inflammation marker',
-    defaultValue: 15,
   },
   {
     key: 'HB',
@@ -736,7 +690,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 17.5,
     refDisplay: '12.0 – 17.5 g/dL',
     tooltip: 'Whole blood hemoglobin concentration',
-    defaultValue: 13.2,
   },
   {
     key: 'K',
@@ -752,7 +705,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 5.0,
     refDisplay: '3.5 – 5.0 mEq/L',
     tooltip: 'Electrolyte potassium concentration',
-    defaultValue: 4.2,
   },
   {
     key: 'Na',
@@ -768,7 +720,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 145,
     refDisplay: '135 – 145 mEq/L',
     tooltip: 'Electrolyte sodium concentration',
-    defaultValue: 141,
   },
   {
     key: 'WBC',
@@ -784,7 +735,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 11000,
     refDisplay: '4,000 – 11,000 /mcL',
     tooltip: 'Total leukocyte count',
-    defaultValue: 7100,
   },
   {
     key: 'Lymph',
@@ -800,7 +750,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 40,
     refDisplay: '20 – 40 %',
     tooltip: 'Lymphocyte leukocyte fraction',
-    defaultValue: 32,
   },
   {
     key: 'Neut',
@@ -816,7 +765,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 70,
     refDisplay: '40 – 70 %',
     tooltip: 'Neutrophil granulocyte fraction',
-    defaultValue: 60,
   },
   {
     key: 'PLT',
@@ -832,7 +780,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 450,
     refDisplay: '150 – 450 x10³/mcL',
     tooltip: 'Circulating thrombocyte count',
-    defaultValue: 210,
   },
 
   // =========================================================================
@@ -852,7 +799,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
     refHigh: 70,
     refDisplay: '55 – 70 %',
     tooltip: 'Transthoracic echocardiographic left ventricular ejection fraction',
-    defaultValue: 50,
   },
   {
     key: 'Region RWMA',
@@ -869,7 +815,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: '3', label: '3: Lateral Wall RWMA (LCX territory)' },
       { value: '4', label: '4: Septal / Multiple Wall RWMA' },
     ],
-    defaultValue: '0',
   },
   {
     key: 'VHD',
@@ -885,7 +830,6 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
       { value: 'Moderate', label: 'Moderate valvulopathy' },
       { value: 'Severe', label: 'Severe valvulopathy' },
     ],
-    defaultValue: 'N',
   },
 ];
 
@@ -895,16 +839,19 @@ export const FEATURE_SCHEMA: FeatureDefinition[] = [
 export function getDefaultPatientData(): PatientData {
   const data: any = { patient_id: 'PT-NEW-01' };
   for (const f of FEATURE_SCHEMA) {
-    data[f.key] = f.defaultValue;
+    data[f.key] = null;
   }
   return data as PatientData;
 }
 
+export const getEmptyPatientData = getDefaultPatientData;
+
 /**
  * Evaluates whether a numeric value is within the standard physiological reference range.
- * Returns true if within, false if outside, or null if non-numeric/no range.
+ * Returns true if within, false if outside, or null if non-numeric/no range/empty.
  */
 export function isWithinReferenceRange(feature: FeatureDefinition, value: any): boolean | null {
+  if (value === undefined || value === null || value === '') return null;
   if (feature.refLow === undefined && feature.refHigh === undefined) {
     // For categorical/binary features, compare against default expected normal
     if (feature.key === 'Sex') return true;

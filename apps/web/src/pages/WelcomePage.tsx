@@ -1,7 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWizardStore } from '../store/useWizardStore';
-import { FEATURE_SCHEMA } from '../config/featureSchema';
 import { Panel } from '../components/ui/Panel';
 import { Button } from '../components/ui/Button';
 
@@ -11,45 +10,12 @@ export const WelcomePage: React.FC = () => {
     disclaimerAccepted,
     setDisclaimerAccepted,
     markStepCompleted,
-    inputs,
-    fieldMeta,
-    completedSteps,
-    resetSession,
   } = useWizardStore();
-
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  // Check if store already holds entered values (Task 3.3.4)
-  const isTouched = Object.values(fieldMeta).some((m) => m?.touched);
-  const hasCompleted = completedSteps.length > 0;
-  const hasEnteredValues = isTouched || hasCompleted;
-
-  // Calculate N of 55 values entered
-  const enteredCount = FEATURE_SCHEMA.filter(
-    (f) => inputs[f.key] !== undefined && inputs[f.key] !== null && inputs[f.key] !== ''
-  ).length;
-
-  // If in-progress block is shown, acknowledgement is pre-ticked (persisted in store)
-  useEffect(() => {
-    if (hasEnteredValues && !disclaimerAccepted) {
-      setDisclaimerAccepted(true);
-    }
-  }, [hasEnteredValues, disclaimerAccepted, setDisclaimerAccepted]);
 
   const handleStart = () => {
     if (!disclaimerAccepted) return;
     markStepCompleted(1);
     navigate('/enter-data');
-  };
-
-  const handleConfirmReset = () => {
-    resetSession();
-    try {
-      sessionStorage.removeItem('perfusion3d-wizard-session');
-    } catch (e) {
-      // Ignore sessionStorage error
-    }
-    dialogRef.current?.close();
   };
 
   return (
@@ -221,44 +187,6 @@ export const WelcomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* 4. In-progress block (render ONLY when the store already holds entered values) */}
-          {hasEnteredValues && (
-            <div
-              style={{
-                marginTop: '20px',
-                border: '1px solid var(--bd)',
-                borderRadius: '3px',
-                backgroundColor: 'var(--hov)',
-                padding: '12px 14px',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '13px',
-                  color: 'var(--ink)',
-                }}
-              >
-                An assessment is in progress: {enteredCount} of 55 values entered.
-              </div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                <Button
-                  variant="primary"
-                  onClick={() => navigate('/enter-data')}
-                  style={{ height: '32px' }}
-                >
-                  Continue
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => dialogRef.current?.showModal()}
-                  style={{ height: '32px' }}
-                >
-                  Start new
-                </Button>
-              </div>
-            </div>
-          )}
 
           {/* 5. Disclaimer block (margin-top 24px) */}
           <div
@@ -361,48 +289,6 @@ export const WelcomePage: React.FC = () => {
           </div>
         </div>
       </Panel>
-
-      {/* Confirmation Dialog for Start New from in-progress card */}
-      <dialog ref={dialogRef} className="nav-confirm-dialog">
-        <h3
-          style={{
-            fontFamily: 'var(--fs)',
-            fontSize: '14px',
-            fontWeight: 600,
-            color: 'var(--ink)',
-            margin: '0 0 8px 0',
-          }}
-        >
-          Start a new assessment?
-        </h3>
-        <p
-          style={{
-            fontFamily: 'var(--fs)',
-            fontSize: '13px',
-            color: 'var(--mut)',
-            margin: '0 0 20px 0',
-            lineHeight: 1.45,
-          }}
-        >
-          This clears all entered values and results from this session.
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-          <Button
-            variant="secondary"
-            onClick={() => dialogRef.current?.close()}
-            style={{ height: '32px' }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleConfirmReset}
-            style={{ height: '32px' }}
-          >
-            Clear and start over
-          </Button>
-        </div>
-      </dialog>
     </div>
   );
 };

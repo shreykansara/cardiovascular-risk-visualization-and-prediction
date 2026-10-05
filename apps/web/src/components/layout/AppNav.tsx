@@ -16,7 +16,7 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const resetSession = useWizardStore((s) => s.resetSession);
+  const reset = useWizardStore((s) => s.reset);
   const isStepUnlocked = useWizardStore((s) => s.isStepUnlocked);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -58,12 +58,7 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
   };
 
   const handleConfirmNewAssessment = () => {
-    resetSession();
-    try {
-      sessionStorage.removeItem('perfusion3d-wizard-session');
-    } catch (e) {
-      // Ignore sessionStorage error
-    }
+    reset();
     dialogRef.current?.close();
     navigate('/welcome');
   };

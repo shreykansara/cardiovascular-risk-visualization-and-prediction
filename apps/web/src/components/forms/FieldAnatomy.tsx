@@ -180,7 +180,8 @@ export const FieldAnatomy: React.FC<FieldAnatomyProps> = ({
           /* SegmentedChoice (Yes/No and Male/Female) */
           <div style={{ display: 'flex', alignItems: 'center', height: '34px' }}>
             {feature.options.map((opt, idx) => {
-              const isSelected = String(value) === String(opt.value);
+              const hasValue = value !== undefined && value !== null && value !== '';
+              const isSelected = hasValue && String(value) === String(opt.value);
               const isFirst = idx === 0;
               const isLast = idx === (feature.options?.length ?? 0) - 1;
 
@@ -195,6 +196,7 @@ export const FieldAnatomy: React.FC<FieldAnatomyProps> = ({
                   key={String(opt.value)}
                   type="button"
                   id={isFirst ? autoId : undefined}
+                  aria-pressed={isSelected ? 'true' : 'false'}
                   onClick={() => onChange(opt.value)}
                   onBlur={() => setIsBlurred(true)}
                   style={{
@@ -255,7 +257,7 @@ export const FieldAnatomy: React.FC<FieldAnatomyProps> = ({
               cursor: 'pointer',
             }}
           >
-            <option value="">Select...</option>
+            <option value="" disabled>Select</option>
             {feature.options?.map((opt) => (
               <option key={String(opt.value)} value={opt.value}>
                 {opt.label}

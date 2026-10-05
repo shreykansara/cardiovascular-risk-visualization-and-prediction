@@ -116,28 +116,7 @@ async function runThemeFlow(browser, themeKey, themeName, screenshotDir) {
   console.log(`[${themeName}] 2. Clinical data interactions...`);
   await page.waitForTimeout(500);
 
-  // 2a. Enter a value (e.g. Age = 55) and navigate back to welcome to test in-progress block
-  const fieldAge = page.locator('#field-Age');
-  await fieldAge.fill('55');
-  await page.waitForTimeout(200);
-
-  // Return to welcome to test in-progress card and capture screenshot
-  await page.goto(`${BASE_URL}/welcome`, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(500);
-  const inProgressText = await page.textContent('body');
-  if (!inProgressText.includes('assessment is in progress')) {
-    throw new Error('In-progress assessment block not found on /welcome');
-  }
-  await captureMultiRes(page, screenshotDir, 'welcome_in_progress');
-  console.log(`  -> Screenshots saved: welcome_in_progress (1440, 768, 375)`);
-
-  // Click "Continue" to return to /enter-data
-  const continueBtn = page.getByRole('button', { name: /^Continue$/i });
-  await continueBtn.click();
-  await page.waitForURL('**/enter-data', { timeout: 10000 });
-  await page.waitForTimeout(500);
-
-  // 2b. Load sample patient
+  // 2a. Load sample patient
   const sampleSelect = page.locator('#sample-patient-select');
   await sampleSelect.selectOption({ index: 1 });
   await page.waitForTimeout(500);
