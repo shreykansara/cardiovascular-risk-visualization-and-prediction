@@ -31,7 +31,6 @@ COPY --chown=appuser:appuser models ./models
 COPY --chown=appuser:appuser apps/api ./apps/api
 COPY --chown=appuser:appuser data/processed ./data/processed
 COPY --chown=appuser:appuser reports ./reports
-COPY --chown=appuser:appuser src/prompts ./src/prompts
 
 USER appuser
 

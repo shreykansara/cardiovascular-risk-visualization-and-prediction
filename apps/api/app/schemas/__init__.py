@@ -13,6 +13,8 @@ from apps.api.app.schemas.xai import (
     VesselExplanation,
 )
 
+from apps.api.app.schemas.report import ReportRequestSchema, ReportsResponseSchema
+
 __all__ = [
     "HealthResponse",
     "ErrorResponse",
@@ -25,4 +27,6 @@ __all__ = [
     "VesselExplanation",
     "ExplanationResponse",
     "CompleteAnalysisResponse",
+    "ReportRequestSchema",
+    "ReportsResponseSchema",
 ]

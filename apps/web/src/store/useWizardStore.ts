@@ -45,6 +45,8 @@ interface WizardState {
   // --- Step 4 Reports State ---
   technicalReport: TechnicalReportData | null;
   patientReport: PatientReportData | null;
+  reportsHash: string | null;
+  reportsPreparedAt: string | null;
   isGeneratingReports: boolean;
   reportGenerationError: string | null;
 
@@ -58,6 +60,7 @@ interface WizardState {
   predictPatient: () => Promise<boolean>;
   setTechnicalReport: (report: TechnicalReportData | null) => void;
   setPatientReport: (report: PatientReportData | null) => void;
+  setReports: (clinician: TechnicalReportData, patient: PatientReportData, hash: string, preparedAt: string) => void;
   setVesselFocus: (focus: string) => void;
   isStepUnlocked: (stepNumber: number) => boolean;
   markStepCompleted: (stepNumber: number) => void;
@@ -98,6 +101,8 @@ export const useWizardStore = create<WizardState>()(
 
       technicalReport: null,
       patientReport: null,
+      reportsHash: null,
+      reportsPreparedAt: null,
       isGeneratingReports: false,
       reportGenerationError: null,
 
@@ -291,6 +296,15 @@ export const useWizardStore = create<WizardState>()(
         set({ patientReport: report });
       },
 
+      setReports: (clinician, patient, hash, preparedAt) => {
+        set({
+          technicalReport: clinician,
+          patientReport: patient,
+          reportsHash: hash,
+          reportsPreparedAt: preparedAt,
+        });
+      },
+
       setVesselFocus: (focus: string) => {
         set({ activeVesselFocus: focus });
         usePatientStore.getState().setVesselFocus(focus);
@@ -332,6 +346,8 @@ export const useWizardStore = create<WizardState>()(
           activeVesselFocus: 'default',
           technicalReport: null,
           patientReport: null,
+          reportsHash: null,
+          reportsPreparedAt: null,
           isGeneratingReports: false,
           reportGenerationError: null,
         });
@@ -358,6 +374,8 @@ export const useWizardStore = create<WizardState>()(
           shapResult: state.shapResult,
           technicalReport: state.technicalReport,
           patientReport: state.patientReport,
+          reportsHash: state.reportsHash,
+          reportsPreparedAt: state.reportsPreparedAt,
         };
       },
     }

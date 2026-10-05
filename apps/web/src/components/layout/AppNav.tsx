@@ -58,9 +58,9 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
   };
 
   const handleConfirmNewAssessment = () => {
-    reset();
     dialogRef.current?.close();
-    navigate('/welcome');
+    navigate('/welcome', { replace: true });
+    reset();
   };
 
   return (

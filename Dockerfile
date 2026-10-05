@@ -31,11 +31,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend application, scripts, test data, and ML model artifacts
+# Copy backend application, ML model artifacts, data, and reports
 COPY apps/api ./apps/api
 COPY models ./models
-COPY scripts ./scripts
 COPY data/processed ./data/processed
+COPY reports ./reports
 
 # Copy built frontend SPA assets from Stage 1
 COPY --from=builder-web /app/apps/web/dist ./apps/web/dist

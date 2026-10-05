@@ -46,7 +46,7 @@ HSL_COLOR_PATTERN = re.compile(r"\bhsla?\(", re.IGNORECASE)
 GRADIENT_PATTERN = re.compile(r"gradient\(", re.IGNORECASE)
 SHADOW_PATTERN = re.compile(r"(?:box-shadow|drop-shadow|shadow-(?!none\b)[a-zA-Z0-9]+)", re.IGNORECASE)
 BACKDROP_PATTERN = re.compile(r"backdrop-(?:filter|blur)", re.IGNORECASE)
-KEYFRAME_PATTERN = re.compile(r"@keyframes\s+(?!wipe\b|wipe-out\b|grow\b|draw\b|feed\b|head\b|ecg-trace-loop\b|pulse-dot\b|shimmer-sweep\b)[\w-]+", re.IGNORECASE)
+KEYFRAME_PATTERN = re.compile(r"@keyframes\s+(?!wipe\b|wipe-out\b|grow\b|draw\b|feed\b|head\b)[\w-]+", re.IGNORECASE)
 INFINITE_PATTERN = re.compile(r"\binfinite\b", re.IGNORECASE)
 FORBIDDEN_FONTS = re.compile(r"\b(inter|roboto|courier|helvetica|arial|jetbrains)\b", re.IGNORECASE)
 CASE_SPACING_PATTERN = re.compile(r"\buppercase\b|letter-spacing(?!\s*:\s*['\"]?normal)|tracking-", re.IGNORECASE)
@@ -75,7 +75,6 @@ ANIMATION_ALLOWED_FILES = {
     "nav.css",
     "WelcomePage.tsx",
     "DataEntryPage.tsx",  # Predict transition overlay draw animation
-    "GeneratingView.tsx",  # Continuous ECG trace loop & pulse dot
 }
 
 # Allowlist of files permitted for IBM Plex Mono / var(--fm)
@@ -91,7 +90,6 @@ MONO_ALLOWED_FILES = {
     "DataTable.tsx",
     "TechnicalReportView.tsx",
     "PatientReportView.tsx",
-    "GeneratingView.tsx",
     "ResultsPage.tsx",
     "WelcomePage.tsx",
     "FieldAnatomy.tsx",
@@ -211,10 +209,9 @@ def check_style():
 
             # 5. Infinite animation
             if INFINITE_PATTERN.search(line):
-                if file_name not in ("GeneratingView.tsx",):
-                    violations.append(
-                        f"[infinite animation detected] at {rel_path}:{line_num}\n  Line: {line_str}"
-                    )
+                violations.append(
+                    f"[infinite animation detected] at {rel_path}:{line_num}\n  Line: {line_str}"
+                )
 
             # 6. Transitions check (Task 7.1)
             if "transition:" in line or "transition-duration:" in line or "transition-property:" in line:

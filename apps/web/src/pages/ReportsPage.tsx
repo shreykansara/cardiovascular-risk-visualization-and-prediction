@@ -1,24 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWizardStore } from '../store/useWizardStore';
-import { useReportGeneration } from '../hooks/useReportGeneration';
+import { useReports } from '../hooks/useReports';
 import { TechnicalReportView } from '../components/reports/TechnicalReportView';
 import { PatientReportView } from '../components/reports/PatientReportView';
-import { GeneratingView } from '../components/reports/GeneratingView';
 import { Button } from '../components/ui/Button';
 import { Tabs } from '../components/ui/Tabs';
 import { Panel } from '../components/ui/Panel';
 
 type ReportTab = 'technical' | 'patient';
-
-interface DiagnosticStatus {
-  last_status?: string;
-  model?: string;
-  key_present?: boolean;
-  key_is_placeholder?: boolean;
-  cooldown_s?: number | null;
-  groq_calls_last_hour?: number;
-}
 
 export const ReportsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -26,8 +16,6 @@ export const ReportsPage: React.FC = () => {
   const {
     inputs,
     prediction,
-    technicalReport,
-    patientReport,
     isStepUnlocked,
   } = useWizardStore();
 
@@ -44,47 +32,22 @@ export const ReportsPage: React.FC = () => {
   }, [isPaperFeed]);
 
   const [activeTab, setActiveTab] = useState<ReportTab>('technical');
-  const [diagnosticStatus, setDiagnosticStatus] = useState<DiagnosticStatus | null>(null);
 
-  // Single-call report generation hook (Tasks 4.1 & 4.2)
-  const {
-    status: genStatus,
-    currentStage,
-    retryInSeconds,
-    elapsedSeconds,
-    cooldownRemaining,
-    meta,
-    error: genError,
-    generate,
-  } = useReportGeneration(inputs);
-
-  // Guard: if no prediction exists yet, redirect to results
+  // Guard: if no prediction exists yet or step 4 not unlocked, redirect to welcome (not results)
   useEffect(() => {
     if (!isStepUnlocked(4) || !prediction) {
-      navigate('/results', { replace: true });
+      navigate('/welcome', { replace: true });
     }
   }, [isStepUnlocked, prediction, navigate]);
 
-  // Fetch zero-Groq configuration diagnostics on mount (Task 3.12)
-  useEffect(() => {
-    fetch('/api/v1/reports/status')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) {
-          setDiagnosticStatus(data);
-        }
-      })
-      .catch(() => {
-        setDiagnosticStatus({ last_status: 'network_error' });
-      });
-  }, []);
-
-  // Auto-generate on initial mount if neither report is present in store
-  useEffect(() => {
-    if (prediction && (!technicalReport || !patientReport) && genStatus === 'idle') {
-      generate();
-    }
-  }, [prediction, technicalReport, patientReport, genStatus, generate]);
+  // Hook for deterministic report fetching with client-side hashing
+  const {
+    status,
+    technicalReport,
+    patientReport,
+    preparedAt,
+    fetchReports,
+  } = useReports(inputs);
 
   const handlePrintOrDownloadPdf = () => {
     const origTitle = document.title;
@@ -104,46 +67,35 @@ export const ReportsPage: React.FC = () => {
     window.print();
   };
 
-  // Status line in metadata bar (Task 4.3)
-  const getStatusLine = () => {
-    const source = meta?.source || (technicalReport?.source === 'groq' ? 'groq' : 'template');
-    const model = meta?.model || diagnosticStatus?.model || 'llama-3.3-70b-versatile';
-    const elapsedSec = meta?.elapsed_ms ? (meta.elapsed_ms / 1000).toFixed(1) : null;
-    const effectiveCooldown = cooldownRemaining ?? meta?.cooldown_s ?? diagnosticStatus?.cooldown_s;
-
-    let baseText = '';
-    if (source === 'groq') {
-      baseText = `Synthesized by Groq (${model})${elapsedSec ? ` in ${elapsedSec}s` : ''}`;
-    } else if (source === 'mixed') {
-      const templateSections = Object.entries(meta?.section_sources || {})
-        .filter(([_, s]) => s === 'template')
-        .map(([sec]) => sec.split('.').pop());
-      baseText = `Synthesized by Groq with rule-based fallback for ${
-        templateSections.length > 0 ? templateSections.join(', ') : 'safety validation'
-      }`;
-    } else {
-      const errStatus = meta?.status || diagnosticStatus?.last_status || 'template';
-      baseText = `Synthesized from clinical rules and TreeSHAP values (Groq offline or rate limited: ${errStatus})`;
-    }
-
-    if (effectiveCooldown && effectiveCooldown > 0) {
-      baseText += ` • Next AI generation available in ${effectiveCooldown}s`;
-    }
-
-    return baseText;
-  };
-
   const tabs = [
     { id: 'technical', label: 'Clinician report' },
     { id: 'patient', label: 'Patient report' },
   ];
 
-  const isGenerating = genStatus === 'generating';
-  const hasReports = Boolean(technicalReport && patientReport);
-  const isRegenerateDisabled = isGenerating || Boolean(cooldownRemaining && cooldownRemaining > 0);
+  const isLoading = status === 'loading' || status === 'idle';
+  const isReady = status === 'ready' && technicalReport && patientReport;
+  const isError = status === 'error';
 
   return (
     <div className="w-full flex-1 flex flex-col pb-16">
+      {/* Visually hidden screen reader status region */}
+      <div
+        role="status"
+        aria-live="polite"
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        {isLoading ? 'Preparing the reports' : isReady ? 'Reports ready' : 'The reports could not be prepared.'}
+      </div>
 
       {/* Top band: tabs, buttons, status line */}
       <Panel
@@ -160,30 +112,19 @@ export const ReportsPage: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <Button
-              variant="secondary"
-              onClick={() => generate({ force: true })}
-              disabled={isRegenerateDisabled}
-              title={
-                cooldownRemaining && cooldownRemaining > 0
-                  ? `Next AI generation available in ${cooldownRemaining}s`
-                  : 'Regenerate reports'
-              }
-              style={{ height: '32px' }}
-            >
-              {isGenerating ? 'Generating...' : 'Regenerate'}
-            </Button>
-            <Button
+              id="download-pdf-button"
               variant="secondary"
               onClick={handlePrintOrDownloadPdf}
-              disabled={isGenerating || !hasReports}
+              disabled={!isReady}
               style={{ height: '32px' }}
             >
               Download PDF
             </Button>
             <Button
+              id="print-report-button"
               variant="secondary"
               onClick={handlePrintOrDownloadPdf}
-              disabled={isGenerating || !hasReports}
+              disabled={!isReady}
               style={{ height: '32px' }}
             >
               Print
@@ -191,71 +132,142 @@ export const ReportsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Status line (12px --mut, Sora) */}
-        <p
+        {/* Status line (12px, --ink): exactly one of loading, ready, error */}
+        <div
           style={{
             fontFamily: 'var(--fs)',
             fontSize: '12px',
-            color: 'var(--mut)',
-            margin: '2px 0 0',
-          }}
-        >
-          {getStatusLine()}
-        </p>
-      </Panel>
-
-      {/* Plain error line in --ink with small --high dot and "Try again" text link */}
-      {genError && (
-        <div
-          className="app-chrome no-print w-full flex items-center justify-center gap-2 py-2 mb-2"
-          style={{
-            fontFamily: 'var(--fs)',
-            fontSize: '13px',
             color: 'var(--ink)',
+            margin: '2px 0 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
           }}
         >
-          <span
-            style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--high)',
-              display: 'inline-block',
-            }}
-          />
-          <span>{genError}</span>
-          <button
-            type="button"
-            onClick={() => generate({ force: true })}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              fontFamily: 'var(--fs)',
-              fontSize: '13px',
-              color: 'var(--acc)',
-              textDecoration: 'underline',
-              cursor: 'pointer',
-              marginLeft: '4px',
-            }}
-          >
-            Try again
-          </button>
+          {isLoading && <span>Preparing the reports</span>}
+          {isReady && <span>Prepared at {preparedAt} from the entered values.</span>}
+          {isError && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>The reports could not be prepared.</span>
+              <button
+                type="button"
+                onClick={fetchReports}
+                style={{
+                  height: '32px',
+                  padding: '0 10px',
+                  background: 'transparent',
+                  border: '1px solid transparent',
+                  borderRadius: '3px',
+                  color: 'var(--ink)',
+                  fontFamily: 'var(--fs)',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                Try again
+              </button>
+            </div>
+          )}
         </div>
-      )}
+      </Panel>
 
       {/* Main printable report root */}
       <main id="print-root" className="w-full">
-        {isGenerating ? (
-          /* True System State Generating View (Task 4.2) */
-          <GeneratingView
-            currentStage={currentStage}
-            elapsedSeconds={elapsedSeconds}
-            retryInSeconds={retryInSeconds}
-            modelName={meta?.model || diagnosticStatus?.model || 'llama-3.3-70b-versatile'}
-          />
+        {isLoading ? (
+          /* Static Skeleton inside the sheet using ONLY sheet tokens (--s-skel on --s-bg) */
+          <div
+            className={`sheet-wrapper ${isPaperFeed ? 'feed-sheet' : 'wipe'}`}
+            style={{ position: 'relative', width: '100%', '--i': 1 } as React.CSSProperties}
+          >
+            {isPaperFeed && showPrintHead && (
+              <div
+                className="print-head-line no-print"
+                aria-hidden="true"
+                onAnimationEnd={() => setShowPrintHead(false)}
+              />
+            )}
+            <article
+              id="printable-report-sheet"
+              className="sheet w-full"
+              aria-busy="true"
+              style={{
+                backgroundColor: 'var(--s-bg)',
+                color: 'var(--s-ink)',
+                border: '1px solid var(--s-bd)',
+                borderRadius: '3px',
+                maxWidth: '720px',
+                margin: '16px auto',
+                padding: '24px 28px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+              }}
+            >
+              <div style={{ width: '60%', height: '24px', backgroundColor: 'var(--s-skel)', borderRadius: '3px' }} />
+              <div style={{ width: '35%', height: '14px', backgroundColor: 'var(--s-skel)', borderRadius: '3px' }} />
+              <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--s-bd)' }} />
+              <div style={{ width: '100%', height: '80px', backgroundColor: 'var(--s-skel)', borderRadius: '3px' }} />
+              <div style={{ width: '100%', height: '120px', backgroundColor: 'var(--s-skel)', borderRadius: '3px' }} />
+              <div style={{ width: '100%', height: '60px', backgroundColor: 'var(--s-skel)', borderRadius: '3px' }} />
+            </article>
+          </div>
+        ) : isError ? (
+          /* Error state inside the sheet: one line in --s-ink with a 7px --s-high dot */
+          <div
+            className="sheet-wrapper wipe"
+            style={{ position: 'relative', width: '100%', '--i': 1 } as React.CSSProperties}
+          >
+            <article
+              id="printable-report-sheet"
+              className="sheet w-full"
+              style={{
+                backgroundColor: 'var(--s-bg)',
+                color: 'var(--s-ink)',
+                border: '1px solid var(--s-bd)',
+                borderRadius: '3px',
+                maxWidth: '720px',
+                margin: '16px auto',
+                padding: '24px 28px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontFamily: 'var(--fs)',
+                fontSize: '13px',
+              }}
+            >
+              <span
+                style={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--s-high)',
+                  display: 'inline-block',
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ color: 'var(--s-ink)' }}>The reports could not be prepared.</span>
+              <button
+                type="button"
+                onClick={fetchReports}
+                style={{
+                  marginLeft: '8px',
+                  height: '32px',
+                  padding: '0 10px',
+                  fontFamily: 'var(--fs)',
+                  fontSize: '13px',
+                  color: 'var(--s-ink)',
+                  backgroundColor: 'transparent',
+                  border: '1px solid transparent',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                }}
+              >
+                Try again
+              </button>
+            </article>
+          </div>
         ) : (
-          /* Completed Reports View with 250ms Smooth Fade Transition (Task 4.3) */
+          /* Completed Reports View */
           <div
             className={`sheet-wrapper report-fade-in ${isPaperFeed ? 'feed-sheet' : 'wipe'}`}
             style={{ position: 'relative', width: '100%', '--i': 1 } as React.CSSProperties}

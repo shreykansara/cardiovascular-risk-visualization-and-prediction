@@ -2,7 +2,6 @@ export * from './Panel';
 export * from './Button';
 export * from './TextField';
 export * from './NumberField';
-export * from './Field';
 export * from './SegmentedChoice';
 export * from './Checkbox';
 export * from './Select';

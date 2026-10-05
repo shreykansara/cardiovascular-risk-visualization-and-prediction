@@ -288,73 +288,43 @@ def get_sample_patient(
 
 
 # ==============================================================================
-# Phase 3 & 5: Unified Single-Call Report Generation Endpoint (Task 3.11 & 3.12)
+# Deterministic Report Generation Endpoint (Task 1.4)
 # ==============================================================================
 
-from fastapi import Request
-from fastapi.responses import StreamingResponse
-from apps.api.app.schemas.report import ReportGenerateRequestSchema, LLMConfigStatusResponse
-from apps.api.app.services.llm_service import (
-    generate_unified_reports,
-    get_reports_status,
-)
-
-
-@api_router.get(
-    "/reports/status",
-    response_model=LLMConfigStatusResponse,
-    summary="Check Groq API Configuration Status (Zero Groq Calls)",
-    tags=["Reporting"],
-)
-def get_reports_status_endpoint() -> LLMConfigStatusResponse:
-    """Task 3.12: Returns configuration status facts only. Makes NO call to Groq."""
-    diagnostics = get_reports_status()
-    return LLMConfigStatusResponse(**diagnostics)
+from apps.api.app.schemas.report import ReportRequestSchema, ReportsResponseSchema
+from apps.api.app.services.report_templates import generate_reports
 
 
 @api_router.post(
-    "/reports/generate",
-    summary="Generate Unified Clinical & Patient Reports via Single Groq Call (Task 3.11)",
+    "/reports",
+    response_model=ReportsResponseSchema,
+    summary="Generate Deterministic Clinical & Patient Reports",
     tags=["Reporting"],
 )
-async def generate_reports_endpoint(
-    req: ReportGenerateRequestSchema,
-    request: Request,
+def create_reports_endpoint(
+    req: ReportRequestSchema,
     response: Response,
-) -> StreamingResponse:
+) -> ReportsResponseSchema:
     """
-    Task 3.11: Single endpoint executing one unified Groq chat completion returning
-    both clinician and patient report prose in a single JSON payload.
-    Streams progress stages and final reports as NDJSON (application/x-ndjson).
-    Guaranteed to end with exactly one 'result' event.
+    Evaluates patient clinical parameters and returns deterministic standardized
+    clinician (7 sections) and patient (8 sections) reports.
+    Zero LLM dependencies, 100% offline and deterministic.
     """
-    # Task 3.10c: Derive client IP only from header set by our proxy (X-Real-IP), falling back to request.client.host
-    client_ip = request.headers.get("x-real-ip")
-    if not client_ip:
-        client_ip = request.client.host if request.client else "127.0.0.1"
+    response.headers["X-Clinical-Disclaimer"] = "Decision-Support-Only"
 
-    # Compute fast multi-target predictions and TreeSHAP feature attributions
+    # Compute multi-target predictions and TreeSHAP feature attributions
     analysis = analyze_patient_complete(req.patient, response, top_k=6)
     preds = analysis.predictions.model_dump()
     exps = {k: v.model_dump() for k, v in analysis.explanations.items()}
 
-    generator = generate_unified_reports(
+    reports_data = generate_reports(
         patient_data=req.patient.model_dump(by_alias=True),
         predictions=preds,
         explanations=exps,
         model_metadata=model_service.metadata,
-        force=req.force,
-        client_ip=client_ip,
     )
 
-    return StreamingResponse(
-        generator,
-        media_type="application/x-ndjson",
-        headers={
-            "Cache-Control": "no-cache, no-transform",
-            "X-Accel-Buffering": "no",
-            "X-Clinical-Disclaimer": "Decision-Support-Only",
-        },
-    )
+    return ReportsResponseSchema(**reports_data)
+
 
 

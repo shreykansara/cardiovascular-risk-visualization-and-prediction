@@ -20,8 +20,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager: loads ML models into memory before accepting traffic."""
     logger.info("Initializing Cardiovascular Risk Inference Engine...")
     try:
-        from apps.api.app.services.llm_service import load_and_check_env
-        load_and_check_env()
         model_service.load_artifacts()
         logger.info("Startup complete: 4 prediction heads and TreeSHAP explainers ready.")
     except Exception as e:
