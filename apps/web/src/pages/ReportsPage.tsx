@@ -144,21 +144,6 @@ export const ReportsPage: React.FC = () => {
 
   return (
     <div className="w-full flex-1 flex flex-col pb-16">
-      <style>{`
-        .report-fade-in {
-          animation: reportFadeIn 250ms cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
-        }
-        @keyframes reportFadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
 
       {/* Top band: tabs, buttons, status line */}
       <Panel

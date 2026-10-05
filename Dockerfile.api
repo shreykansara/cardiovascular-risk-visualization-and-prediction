@@ -6,6 +6,7 @@ FROM python:3.11-slim AS runner
 
 ARG GIT_SHA
 LABEL org.opencontainers.image.revision=$GIT_SHA
+RUN echo -n "${GIT_SHA}" > /version.txt
 
 WORKDIR /app
 

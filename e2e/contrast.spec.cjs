@@ -128,7 +128,7 @@ const scanPageInBrowser = () => {
 
   elements.forEach((el) => {
     // Exclude 3D canvas container per Task 1.5 ("except the 3D canvas")
-    if (el.closest('canvas, .r3f-canvas, [data-canvas-container], .relative.w-full.h-full.bg-panel')) return;
+    if (el.closest('canvas, .r3f-canvas, [data-canvas-container], #viewer-cavity-container, .relative.w-full.h-full.bg-panel')) return;
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
     const cs = window.getComputedStyle(el);
@@ -282,9 +282,9 @@ async function runContrastSuite() {
     recordResults('/enter-data', themeName, rEnterData.items, rEnterData.disabledItems);
 
     // Load sample patient
-    const sampleSelect = page.locator('select').first();
+    const sampleSelect = page.locator('#sample-patient-select');
     if (await sampleSelect.isVisible()) {
-      await sampleSelect.selectOption({ index: 1 });
+      await sampleSelect.selectOption('high_risk_lad');
       await page.waitForTimeout(300);
     }
 

@@ -90,31 +90,23 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
           0%, 100% {
             transform: scale(1);
             opacity: 1;
-            box-shadow: 0 0 0 0 rgba(184, 58, 58, 0.5);
           }
           50% {
             transform: scale(1.15);
-            opacity: 0.85;
-            box-shadow: 0 0 0 6px rgba(184, 58, 58, 0);
+            opacity: 0.7;
           }
         }
         @keyframes shimmer-sweep {
-          0% {
-            background-position: -200% 0;
+          0%, 100% {
+            opacity: 0.45;
           }
-          100% {
-            background-position: 200% 0;
+          50% {
+            opacity: 0.9;
           }
         }
         .generating-shimmer {
-          background: linear-gradient(
-            90deg,
-            var(--bd) 0%,
-            var(--s-bg) 50%,
-            var(--bd) 100%
-          ) !important;
-          background-size: 200% 100% !important;
-          animation: shimmer-sweep 2.2s infinite linear !important;
+          background-color: var(--bd) !important;
+          animation: shimmer-sweep 1.8s infinite ease-in-out !important;
         }
       `}</style>
 
@@ -144,7 +136,7 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
         style={{
           backgroundColor: 'var(--s-bg)',
           border: '1px solid var(--s-bd)',
-          boxShadow: 'var(--p-sh, 0 4px 16px rgba(0,0,0,0.06))',
+          boxShadow: 'none',
         }}
       >
         {/* Header with Title and Live Timer (Task 4.2) */}
@@ -156,13 +148,13 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                backgroundColor: 'var(--acc, #B83A3A)',
+                backgroundColor: 'var(--acc)',
                 animation: 'pulse-dot 1.8s infinite ease-in-out',
               }}
             />
             <h2
               style={{
-                fontFamily: 'var(--fs, "Sora", sans-serif)',
+                fontFamily: 'var(--fs)',
                 fontSize: '15px',
                 fontWeight: 600,
                 color: 'var(--ink)',
@@ -176,15 +168,15 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
           <div
             className="flex items-center gap-1.5 px-2.5 py-1 rounded"
             style={{
-              backgroundColor: 'var(--p-bg)',
+              backgroundColor: 'var(--panel)',
               border: '1px solid var(--bd)',
-              fontFamily: 'var(--fm, "IBM Plex Mono", monospace)',
+              fontFamily: 'var(--fm)',
               fontSize: '12px',
               color: 'var(--ink)',
-              letterSpacing: '0.04em',
+              borderRadius: 'var(--radius)',
             }}
           >
-            <span style={{ color: 'var(--mut)', fontSize: '10px', textTransform: 'uppercase' }}>Elapsed</span>
+            <span style={{ color: 'var(--mut)', fontSize: '11px' }}>Elapsed</span>
             <span style={{ fontWeight: 600 }}>{timeFormatted}</span>
           </div>
         </div>
@@ -195,8 +187,8 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
           style={{
             position: 'relative',
             overflow: 'hidden',
-            backgroundColor: 'var(--p-bg)',
-            borderRadius: '4px',
+            backgroundColor: 'var(--panel)',
+            borderRadius: 'var(--radius)',
             border: '1px solid var(--bd)',
             height: '64px',
           }}
@@ -222,14 +214,13 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
                 470,30 475,28 480,30 490,30 495,34 500,8 505,52 510,26 515,30 525,30 535,22 545,30 600,30
               "
               fill="none"
-              stroke="var(--acc, #B83A3A)"
+              stroke="var(--acc)"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeDasharray="1200"
               style={{
                 animation: 'ecg-trace-loop 3.5s linear infinite',
-                filter: 'drop-shadow(0 0 3px rgba(184, 58, 58, 0.4))',
               }}
             />
           </svg>
@@ -253,17 +244,17 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
                       height: '20px',
                       flexShrink: 0,
                       backgroundColor: isCompleted
-                        ? 'var(--acc, #B83A3A)'
+                        ? 'var(--acc)'
                         : isActive
-                        ? 'var(--p-bg)'
+                        ? 'var(--panel)'
                         : 'transparent',
                       border: isCompleted
-                        ? '1px solid var(--acc, #B83A3A)'
+                        ? '1px solid var(--acc)'
                         : isActive
-                        ? '2px solid var(--acc, #B83A3A)'
-                        : '1.5px solid var(--bd)',
-                      boxShadow: isActive ? '0 0 8px rgba(184, 58, 58, 0.35)' : 'none',
-                      transition: 'all 0.25s ease-in-out',
+                        ? '2px solid var(--acc)'
+                        : '1px solid var(--bd)',
+                      boxShadow: 'none',
+                      transition: 'border-color 180ms ease, background-color 180ms ease',
                     }}
                   >
                     {isCompleted ? (
@@ -282,7 +273,7 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
                           width: '6px',
                           height: '6px',
                           borderRadius: '50%',
-                          backgroundColor: 'var(--acc, #B83A3A)',
+                          backgroundColor: 'var(--acc)',
                           animation: 'pulse-dot 1.4s infinite ease-in-out',
                         }}
                       />
@@ -293,7 +284,7 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
                   <div className="flex flex-col flex-1">
                     <span
                       style={{
-                        fontFamily: 'var(--fs, "Sora", sans-serif)',
+                        fontFamily: 'var(--fs)',
                         fontSize: '13px',
                         fontWeight: isActive ? 600 : isCompleted ? 500 : 400,
                         color: isActive
@@ -302,7 +293,7 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
                           ? 'var(--mut)'
                           : 'var(--mut)',
                         opacity: isPending ? 0.6 : 1,
-                        transition: 'color 0.2s ease',
+                        transition: 'color 180ms ease',
                       }}
                     >
                       {step.title}
@@ -320,11 +311,12 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
                   <div
                     className="ml-8 mt-1.5 px-3 py-1.5 rounded flex items-center gap-2"
                     style={{
-                      backgroundColor: 'rgba(192, 125, 43, 0.12)',
-                      border: '1px solid rgba(192, 125, 43, 0.3)',
-                      fontFamily: 'var(--fm, "IBM Plex Mono", monospace)',
+                      backgroundColor: 'var(--hov)',
+                      border: '1px solid var(--mod)',
+                      fontFamily: 'var(--fm)',
                       fontSize: '12px',
                       color: 'var(--ink)',
+                      borderRadius: 'var(--radius)',
                     }}
                   >
                     <span
@@ -332,7 +324,7 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
                         width: '6px',
                         height: '6px',
                         borderRadius: '50%',
-                        backgroundColor: '#C07D2B',
+                        backgroundColor: 'var(--mod)',
                         display: 'inline-block',
                       }}
                     />
@@ -373,8 +365,8 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
           {/* Table Skeletons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3">
             <div
-              className="p-3 rounded flex flex-col gap-2"
-              style={{ backgroundColor: 'var(--p-bg)', border: '1px solid var(--bd)' }}
+              className="p-3 flex flex-col gap-2"
+              style={{ backgroundColor: 'var(--panel)', border: '1px solid var(--bd)', borderRadius: 'var(--radius)' }}
             >
               <Skeleton height={16} width="50%" className="generating-shimmer" />
               <Skeleton height={12} width="100%" className="generating-shimmer" />
@@ -382,8 +374,8 @@ export const GeneratingView: React.FC<GeneratingViewProps> = ({
               <Skeleton height={12} width="94%" className="generating-shimmer" />
             </div>
             <div
-              className="p-3 rounded flex flex-col gap-2"
-              style={{ backgroundColor: 'var(--p-bg)', border: '1px solid var(--bd)' }}
+              className="p-3 flex flex-col gap-2"
+              style={{ backgroundColor: 'var(--panel)', border: '1px solid var(--bd)', borderRadius: 'var(--radius)' }}
             >
               <Skeleton height={16} width="50%" className="generating-shimmer" />
               <Skeleton height={12} width="100%" className="generating-shimmer" />
