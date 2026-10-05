@@ -10,7 +10,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
   return (
     <article
       id="printable-report-sheet"
-      className="sheet wipe w-full"
+      className="sheet w-full"
       style={{
         backgroundColor: 'var(--s-bg)',
         color: 'var(--s-ink)',
@@ -22,8 +22,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
         display: 'flex',
         flexDirection: 'column',
         gap: '20px',
-        '--i': 0,
-      } as React.CSSProperties}
+      }}
     >
       {/* Header: Title and Date */}
       <header style={{ borderBottom: '1px solid var(--s-bd)', paddingBottom: '12px' }}>

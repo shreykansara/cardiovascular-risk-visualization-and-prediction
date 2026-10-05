@@ -11,7 +11,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
   return (
     <article
       id="printable-report-sheet"
-      className="sheet wipe w-full"
+      className="sheet w-full"
       style={{
         backgroundColor: 'var(--s-bg)',
         color: 'var(--s-ink)',
@@ -23,8 +23,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
         display: 'flex',
         flexDirection: 'column',
         gap: '20px',
-        '--i': 0,
-      } as React.CSSProperties}
+      }}
     >
       {/* Header */}
       <header style={{ borderBottom: '1px solid var(--s-bd)', paddingBottom: '12px' }}>

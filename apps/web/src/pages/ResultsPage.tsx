@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWizardStore } from '../store/useWizardStore';
 import { usePatientStore } from '../store/usePatientStore';
@@ -18,6 +18,17 @@ export const ResultsPage: React.FC = () => {
     inputs,
     markStepCompleted,
   } = useWizardStore();
+
+  const [isLeaving, setIsLeaving] = useState(false);
+  const leaveTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (leaveTimerRef.current !== null) {
+        window.clearTimeout(leaveTimerRef.current);
+      }
+    };
+  }, []);
 
   // Two-way synchronization with 3D model
   const activeVesselFocus = usePatientStore((s) => s.activeVesselFocus);
@@ -81,12 +92,26 @@ export const ResultsPage: React.FC = () => {
   }, [shapResult, activeVesselFocus]);
 
   const handleCreateReports = () => {
+    if (isLeaving) return;
+    setIsLeaving(true);
     markStepCompleted(3);
-    navigate('/reports');
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      navigate('/reports', { state: { paperFeed: true } });
+      return;
+    }
+
+    leaveTimerRef.current = window.setTimeout(() => {
+      navigate('/reports', { state: { paperFeed: true } });
+    }, 300);
   };
 
   return (
-    <div className="w-full flex-1 pb-12">
+    <div className={`w-full flex-1 pb-12 ${isLeaving ? 'leaving' : ''}`}>
       {/* Two columns: grid-template-columns minmax(0,5fr) minmax(0,6fr), gap 14px, stacked under 768px */}
       <div
         className="grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-[14px] items-start"
@@ -95,9 +120,9 @@ export const ResultsPage: React.FC = () => {
           gap: '14px',
         }}
       >
-        {/* LEFT, one Panel (class wipe, --i 0) with EXISTING 3D canvas mounted unchanged */}
+        {/* LEFT, one Panel (class wipe results-panel-0, --i 0) with EXISTING 3D canvas mounted unchanged */}
         <Panel
-          className="wipe flex flex-col w-full"
+          className="wipe results-panel-0 flex flex-col w-full"
           style={{
             '--i': 0,
             padding: '12px 14px',
@@ -130,9 +155,9 @@ export const ResultsPage: React.FC = () => {
             width: '100%',
           }}
         >
-          {/* 1) Panel (wipe, --i 1): label "Coronary artery disease", CAD prob 40px/500 + RiskLabel, caption */}
+          {/* 1) Panel (wipe results-panel-1, --i 1): label "Coronary artery disease", CAD prob 40px/500 + RiskLabel, caption */}
           <Panel
-            className="wipe flex flex-col"
+            className="wipe results-panel-1 flex flex-col"
             style={{
               '--i': 1,
               padding: '12px 14px',
@@ -184,9 +209,9 @@ export const ResultsPage: React.FC = () => {
             </span>
           </Panel>
 
-          {/* 2) Panel (wipe, --i 2, padding 4px 2px) containing three vessel rows (LAD, LCX, RCA) */}
+          {/* 2) Panel (wipe results-panel-2, --i 2, padding 4px 2px) containing three vessel rows (LAD, LCX, RCA) */}
           <Panel
-            className="wipe flex flex-col"
+            className="wipe results-panel-2 flex flex-col"
             style={{
               '--i': 2,
               padding: '4px 2px',
@@ -221,9 +246,9 @@ export const ResultsPage: React.FC = () => {
             />
           </Panel>
 
-          {/* 3) Panel (wipe, --i 3): Factors influencing this result */}
+          {/* 3) Panel (wipe results-panel-3, --i 3): Factors influencing this result */}
           <Panel
-            className="wipe"
+            className="wipe results-panel-3"
             style={{
               '--i': 3,
               padding: '12px 14px',
@@ -244,6 +269,7 @@ export const ResultsPage: React.FC = () => {
             <Button
               id="create-reports-button"
               variant="primary"
+              disabled={isLeaving}
               onClick={handleCreateReports}
             >
               Create reports

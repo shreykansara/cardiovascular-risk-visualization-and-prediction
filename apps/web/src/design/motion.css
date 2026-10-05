@@ -31,6 +31,75 @@
   }
 }
 
+@keyframes wipe-out {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+@keyframes feed {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-16px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}
+
+@keyframes head {
+  from {
+    top: 0;
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Results page exit transition (Task 5.2) */
+.leaving .results-panel-0 {
+  animation: wipe-out 260ms var(--ease-wipe) forwards;
+  animation-delay: 0ms;
+}
+.leaving .results-panel-1 {
+  animation: wipe-out 260ms var(--ease-wipe) forwards;
+  animation-delay: 40ms;
+}
+.leaving .results-panel-2 {
+  animation: wipe-out 260ms var(--ease-wipe) forwards;
+  animation-delay: 80ms;
+}
+.leaving .results-panel-3 {
+  animation: wipe-out 260ms var(--ease-wipe) forwards;
+  animation-delay: 120ms;
+}
+
+/* Reports page sheet feed transition (Task 5.4) */
+.feed-sheet {
+  animation: feed 700ms var(--ease-wipe) 150ms backwards;
+}
+
+.print-head-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background-color: var(--s-acc);
+  pointer-events: none;
+  animation: head 700ms linear 150ms backwards;
+  opacity: 0;
+}
+
 /* Active only when an ancestor has class `play` */
 .play .wipe {
   animation: wipe 600ms var(--ease-wipe) backwards;
