@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Rotate3d, HelpCircle } from 'lucide-react';
+import { IconButton } from '../../ui/IconButton';
 
 interface ViewerHintProps {
   hasInteracted: boolean;
@@ -36,11 +37,12 @@ export const ViewerHint: React.FC<ViewerHintProps> = ({
 
   if (!showHint) {
     return (
-      <button
-        type="button"
+      <IconButton
         id="viewer-help-button"
         aria-label="Show 3D controls help"
         title="Show 3D controls help"
+        size="sm"
+        variant="secondary"
         onClick={() => {
           setForceShow(true);
           setUserDismissed(false);
@@ -49,20 +51,8 @@ export const ViewerHint: React.FC<ViewerHintProps> = ({
           position: 'absolute',
           bottom: '8px',
           left: '8px',
-          width: '28px',
-          height: '28px',
-          backgroundColor: 'var(--panel)',
-          border: '1px solid var(--bds)',
-          borderRadius: '3px',
-          color: 'var(--ink)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
           zIndex: 25,
-          padding: 0,
         }}
-        className="hover:bg-hover transition-colors"
       >
         <span
           style={{
@@ -74,7 +64,7 @@ export const ViewerHint: React.FC<ViewerHintProps> = ({
         >
           ?
         </span>
-      </button>
+      </IconButton>
     );
   }
 

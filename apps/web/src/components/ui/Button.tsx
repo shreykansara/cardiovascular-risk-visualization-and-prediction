@@ -29,7 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
     lineHeight: '1',
     textTransform: 'none',
     letterSpacing: 'normal',
-    transition: 'opacity 120ms',
+    transition: 'background-color 100ms, opacity 100ms',
     cursor: disabled || isLoading ? 'not-allowed' : 'pointer',
     opacity: disabled || isLoading ? 0.5 : 1,
     boxShadow: 'none',
@@ -39,18 +39,18 @@ export const Button: React.FC<ButtonProps> = ({
   let variantStyle: React.CSSProperties = {};
   if (isPrimary) {
     variantStyle = {
-      height: '36px',
+      height: 'var(--btn-md)',
       padding: '0 16px',
-      borderRadius: '3px',
+      borderRadius: 'var(--radius)',
       backgroundColor: 'var(--acc)',
-      border: '1px solid var(--acc)',
+      border: '1px solid transparent',
       color: 'var(--onacc)',
     };
   } else if (isSecondary) {
     variantStyle = {
-      height: '36px',
+      height: 'var(--btn-md)',
       padding: '0 16px',
-      borderRadius: '3px',
+      borderRadius: 'var(--radius)',
       backgroundColor: 'var(--panel)',
       border: '1px solid var(--bds)',
       color: 'var(--ink)',

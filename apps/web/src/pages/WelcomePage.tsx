@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWizardStore } from '../store/useWizardStore';
 import { Panel } from '../components/ui/Panel';
-import { Button } from '../components/ui/Button';
+import { PrimaryButton } from '../components/ui/PrimaryButton';
 
 export const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -267,14 +267,14 @@ export const WelcomePage: React.FC = () => {
               gap: '12px',
             }}
           >
-            <Button
+            <PrimaryButton
               id="start-assessment-btn"
-              variant="primary"
+              size="lg"
               disabled={!disclaimerAccepted}
               onClick={handleStart}
             >
               Start assessment
-            </Button>
+            </PrimaryButton>
             {!disclaimerAccepted && (
               <span
                 style={{

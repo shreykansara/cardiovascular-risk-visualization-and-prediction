@@ -7,7 +7,7 @@ import { ColorScaleLegend } from '../components/results/ColorScaleLegend';
 import { VesselCard } from '../components/results/VesselCard';
 import { FactorsList } from '../components/results/FactorsList';
 import { RiskLabel } from '../components/ui/RiskLabel';
-import { Button } from '../components/ui/Button';
+import { PrimaryButton } from '../components/ui/PrimaryButton';
 import { Panel } from '../components/ui/Panel';
 
 export const ResultsPage: React.FC = () => {
@@ -62,9 +62,9 @@ export const ResultsPage: React.FC = () => {
           >
             Please enter patient clinical measurements to generate the risk assessment.
           </p>
-          <Button variant="primary" onClick={() => navigate('/enter-data')}>
+          <PrimaryButton onClick={() => navigate('/enter-data')}>
             Enter clinical data
-          </Button>
+          </PrimaryButton>
         </Panel>
       </div>
     );
@@ -255,14 +255,14 @@ export const ResultsPage: React.FC = () => {
               justifyContent: 'flex-start',
             } as React.CSSProperties}
           >
-            <Button
+            <PrimaryButton
               id="create-reports-button"
-              variant="primary"
+              size="lg"
               disabled={isLeaving}
               onClick={handleCreateReports}
             >
               Create reports
-            </Button>
+            </PrimaryButton>
           </div>
         </div>
       </div>

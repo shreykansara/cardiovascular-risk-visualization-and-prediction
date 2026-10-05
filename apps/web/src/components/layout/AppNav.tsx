@@ -4,7 +4,9 @@ import { WIZARD_STEPS } from '../../types/wizard';
 import { useWizardStore } from '../../store/useWizardStore';
 import { useTheme } from '../../hooks/useTheme';
 import { Trace } from '../ui/Trace';
-import { Button } from '../ui/Button';
+import { PrimaryButton } from '../ui/PrimaryButton';
+import { SecondaryButton } from '../ui/SecondaryButton';
+import { QuietButton } from '../ui/QuietButton';
 
 export interface AppNavProps {
   // Optional override for design system preview
@@ -185,13 +187,13 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
 
           {/* b) New assessment text button (shown only on steps 2-4 and >=900px) */}
           {isWizardStep && currentStepNumber >= 2 && currentStepNumber <= 4 && (
-            <button
-              type="button"
+            <QuietButton
+              size="sm"
               className="nav-new-assessment-btn"
               onClick={() => dialogRef.current?.showModal()}
             >
               New assessment
-            </button>
+            </QuietButton>
           )}
         </div>
       </div>
@@ -221,20 +223,18 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
           This clears all entered values and results from this session.
         </p>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-          <Button
-            variant="secondary"
+          <SecondaryButton
+            size="sm"
             onClick={() => dialogRef.current?.close()}
-            style={{ height: '32px' }}
           >
             Cancel
-          </Button>
-          <Button
-            variant="primary"
+          </SecondaryButton>
+          <PrimaryButton
+            size="sm"
             onClick={handleConfirmNewAssessment}
-            style={{ height: '32px' }}
           >
             Clear and start over
-          </Button>
+          </PrimaryButton>
         </div>
       </dialog>
     </header>

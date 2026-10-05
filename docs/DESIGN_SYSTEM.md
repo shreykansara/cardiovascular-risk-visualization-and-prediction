@@ -173,3 +173,47 @@ Contrast computed according to WCAG 2.1 relative luminance algorithm:
   - `draw`: stroke dashoffset 1 to 0 for heartbeat traces.
 - Ancestor scope `.play`: runs once on page mount and new prediction render.
 - No looping animations, no infinite spins, no glows, no shadows.
+
+---
+
+## 6. Button Design System
+
+### 6.1 Component Hierarchy
+1. **`PrimaryButton`**: Used for the primary forward action on a view (e.g. "Start assessment", "Predict", "Create reports", "Print").
+   - Filled with `--acc`, text `--onacc`.
+   - Hover: `--acc-hover`, Press: `--acc-press`.
+   - Optional `isLoading` state displaying a solid non-spinning indicator.
+2. **`SecondaryButton`**: Supporting and navigational actions (e.g. "Back", "Download PDF", "Cancel").
+   - Background: `--panel`, Border: `1px solid var(--bds)`, Text: `--ink`.
+   - Hover/Press: `--hov`.
+3. **`QuietButton`**: Low-emphasis tertiary and utility actions (e.g. "Collapse all", "Clear form", "New assessment").
+   - Background: `transparent`, Border: `1px solid transparent`, Text: `--acc` or `--ink`.
+   - Hover: `--hov`.
+4. **`IconButton`**: Square 1:1 icon buttons for toolbars and chips (e.g. 3D zoom in/out/reset, help dialog, vessel clear chip).
+   - Sizes: `xs` (24px), `sm` (32px), `md` (40px), `lg` (48px).
+   - Variants: `primary`, `secondary`, `quiet`.
+5. **`SegmentedControl`**: Multi-state toggle groups (e.g. 3D camera angles Front / Left / Back / Right).
+   - Container: `--panel` with `1px solid var(--bds)`.
+   - Selected option: `--acc` background with `--onacc` text; unselected: transparent with `--ink`.
+6. **`InlineLink`**: In-body contextual action links with hover or always underline.
+
+### 6.2 Size Tokens and Responsive Touch Targets
+- Desktop:
+  - `--btn-sm`: `32px` (padding `0 12px`, font `12px/600`)
+  - `--btn-md`: `40px` (padding `0 16px`, font `13px/600`)
+  - `--btn-lg`: `48px` (padding `0 24px`, font `14px/600`)
+  - `xs`: `24px` (for vessel chips and compact badges)
+- Mobile Viewports (`<= 768px`):
+  - `--btn-sm` elevated to `44px`
+  - `--btn-md` elevated to `44px`
+  - Satisfies WCAG 2.5.5 / 2.5.8 minimum touch target requirements (>= 44px).
+
+### 6.3 Contrast & Interactive States
+| State | Paper (Light) | Monitor (Dark) | WCAG Target | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| Primary Default | `#1D3F8A` / `#FFFFFF` (9.86:1) | `#4CFF9A` / `#04120A` (14.67:1) | ≥ 4.5:1 | **PASS** |
+| Primary Hover | `#163273` / `#FFFFFF` (11.42:1) | `#7DFFB9` / `#04120A` (15.62:1) | ≥ 4.5:1 | **PASS** |
+| Primary Press | `#0F2556` / `#FFFFFF` (14.11:1) | `#A6FFD0` / `#04120A` (17.10:1) | ≥ 4.5:1 | **PASS** |
+| Secondary Default | `#241618` on `#FFFFFF` (17.46:1) | `#D8F5E4` on `#0C1A13` (15.43:1) | ≥ 4.5:1 | **PASS** |
+| Focus Outline | `2px solid var(--acc)` | `2px solid var(--acc)` | ≥ 3.0:1 non-text | **PASS** |
+

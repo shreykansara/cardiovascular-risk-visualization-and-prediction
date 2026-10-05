@@ -4,7 +4,8 @@ import { useWizardStore } from '../store/useWizardStore';
 import { useReports } from '../hooks/useReports';
 import { TechnicalReportView } from '../components/reports/TechnicalReportView';
 import { PatientReportView } from '../components/reports/PatientReportView';
-import { Button } from '../components/ui/Button';
+import { PrimaryButton } from '../components/ui/PrimaryButton';
+import { SecondaryButton } from '../components/ui/SecondaryButton';
 import { Tabs } from '../components/ui/Tabs';
 import { Panel } from '../components/ui/Panel';
 
@@ -111,24 +112,22 @@ export const ReportsPage: React.FC = () => {
           />
 
           <div className="flex items-center gap-2">
-            <Button
+            <SecondaryButton
               id="download-pdf-button"
-              variant="secondary"
+              size="sm"
               onClick={handlePrintOrDownloadPdf}
               disabled={!isReady}
-              style={{ height: '32px' }}
             >
               Download PDF
-            </Button>
-            <Button
+            </SecondaryButton>
+            <PrimaryButton
               id="print-report-button"
-              variant="secondary"
+              size="sm"
               onClick={handlePrintOrDownloadPdf}
               disabled={!isReady}
-              style={{ height: '32px' }}
             >
               Print
-            </Button>
+            </PrimaryButton>
           </div>
         </div>
 
@@ -149,24 +148,13 @@ export const ReportsPage: React.FC = () => {
           {isError && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>The reports could not be prepared.</span>
-              <button
+              <SecondaryButton
                 id="try-again-button"
-                type="button"
+                size="sm"
                 onClick={fetchReports}
-                style={{
-                  height: '32px',
-                  padding: '0 10px',
-                  background: 'transparent',
-                  border: '1px solid transparent',
-                  borderRadius: '3px',
-                  color: 'var(--ink)',
-                  fontFamily: 'var(--fs)',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                }}
               >
                 Try again
-              </button>
+              </SecondaryButton>
             </div>
           )}
         </div>

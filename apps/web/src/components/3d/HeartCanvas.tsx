@@ -10,6 +10,7 @@ import { usePatientStore } from '../../store/usePatientStore';
 import { VIEWER_BG } from '../canvas/viewerConfig';
 import { ViewerHint } from '../results/viewer/ViewerHint';
 import { ViewerToolbar, PresetView } from '../results/viewer/ViewerToolbar';
+import { IconButton } from '../ui/IconButton';
 import { isWebGLAvailable } from './webglUtils';
 
 // 3D Anchor positions for vessel labels
@@ -643,26 +644,15 @@ export const HeartCanvas: React.FC = () => {
             }}
           >
             <span>{selectedVesselName} artery</span>
-            <button
-              type="button"
+            <IconButton
+              size="xs"
+              variant="quiet"
               aria-label="Clear selection"
+              title="Clear selection"
               onClick={() => setVesselFocus('default')}
-              style={{
-                width: '24px',
-                height: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--ink)',
-                cursor: 'pointer',
-                padding: 0,
-                borderRadius: '2px',
-              }}
             >
               <X size={14} />
-            </button>
+            </IconButton>
           </div>
         )}
       </div>

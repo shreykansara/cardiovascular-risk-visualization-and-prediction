@@ -7,7 +7,10 @@ import {
 } from '../config/featureSchema';
 import { PATIENT_PROFILES } from '../store/usePatientStore';
 import { Panel } from '../components/ui/Panel';
-import { Button } from '../components/ui/Button';
+import { PrimaryButton } from '../components/ui/PrimaryButton';
+import { SecondaryButton } from '../components/ui/SecondaryButton';
+import { QuietButton } from '../components/ui/QuietButton';
+import { InlineLink } from '../components/ui/InlineLink';
 import { FieldAnatomy, getFieldErrorMessage } from '../components/forms/FieldAnatomy';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -392,19 +395,13 @@ export const DataEntryPage: React.FC = () => {
 
         {/* Right: Upload report disabled button + Sample patient select */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Button
-            variant="secondary"
+          <SecondaryButton
+            size="sm"
             disabled
             title="Available in a later version"
-            style={{
-              height: '32px',
-              color: 'var(--mut)',
-              border: '1px solid var(--bd)',
-              cursor: 'not-allowed',
-            }}
           >
             Upload report (coming soon)
-          </Button>
+          </SecondaryButton>
 
           <select
             id="sample-patient-select"
@@ -484,44 +481,24 @@ export const DataEntryPage: React.FC = () => {
           display: 'flex',
           justifyContent: 'flex-end',
           alignItems: 'center',
-          gap: '16px',
+          gap: '12px',
           marginBottom: '8px',
         }}
       >
-        <button
-          type="button"
+        <QuietButton
+          size="sm"
           onClick={handleToggleAll}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            fontFamily: 'var(--fs)',
-            fontSize: '13px',
-            color: 'var(--acc)',
-            cursor: 'pointer',
-            textDecoration: 'underline',
-          }}
         >
           {allExpanded ? 'Collapse all' : 'Expand all'}
-        </button>
-        <button
-          type="button"
+        </QuietButton>
+        <QuietButton
+          size="sm"
           id="clear-form-button"
           disabled={!isDirty}
           onClick={() => clearDialogRef.current?.showModal()}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            padding: 0,
-            fontFamily: 'var(--fs)',
-            fontSize: '13px',
-            color: isDirty ? 'var(--acc)' : 'var(--mut)',
-            cursor: isDirty ? 'pointer' : 'default',
-            textDecoration: isDirty ? 'underline' : 'none',
-          }}
         >
           Clear form
-        </button>
+        </QuietButton>
       </div>
 
       {/* Two-column layout: Sidebar 240px + Form column (1fr), gap 14px (Task 4.1) */}
@@ -848,43 +825,34 @@ export const DataEntryPage: React.FC = () => {
             {hasAttemptedPredict && metrics.invalidFields.length > 0 && (
               <>
                 <span>·</span>
-                <button
-                  type="button"
+                <InlineLink
                   onClick={focusFirstInvalid}
                   style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: 0,
                     fontFamily: 'var(--fm)',
                     fontSize: '12px',
-                    color: 'var(--acc)',
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
                   }}
                 >
                   {metrics.invalidFields.length} need attention
-                </button>
+                </InlineLink>
               </>
             )}
           </div>
 
           {/* Right group: Back + Predict */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Button
-              variant="secondary"
+            <SecondaryButton
+              size="md"
               onClick={() => navigate('/welcome')}
-              style={{ height: '36px' }}
             >
               Back
-            </Button>
-            <Button
+            </SecondaryButton>
+            <PrimaryButton
               id="predict-button"
-              variant="primary"
+              size="lg"
               onClick={handlePredictClick}
-              style={{ height: '36px' }}
             >
               Predict
-            </Button>
+            </PrimaryButton>
           </div>
         </div>
       </div>
@@ -914,20 +882,18 @@ export const DataEntryPage: React.FC = () => {
           This removes every value you entered.
         </p>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-          <Button
-            variant="secondary"
+          <SecondaryButton
+            size="sm"
             onClick={() => clearDialogRef.current?.close()}
-            style={{ height: '32px' }}
           >
             Cancel
-          </Button>
-          <Button
-            variant="primary"
+          </SecondaryButton>
+          <PrimaryButton
+            size="sm"
             onClick={handleConfirmClearForm}
-            style={{ height: '32px' }}
           >
             Clear values
-          </Button>
+          </PrimaryButton>
         </div>
       </dialog>
     </div>

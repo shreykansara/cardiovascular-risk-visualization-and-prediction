@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import {
   Panel,
   Button,
+  PrimaryButton,
+  SecondaryButton,
+  QuietButton,
+  IconButton,
+  SegmentedControl,
+  InlineLink,
   TextField,
   NumberField,
   SegmentedChoice,
@@ -16,6 +22,7 @@ import {
   Tabs,
   Skeleton,
 } from '../components/ui';
+import { ZoomIn, RotateCcw } from 'lucide-react';
 
 interface ShowcasePanelProps {
   title: string;
@@ -24,6 +31,7 @@ interface ShowcasePanelProps {
 
 const ShowcasePanel: React.FC<ShowcasePanelProps> = ({ title, themeScope }) => {
   const [activeTab, setActiveTab] = useState('one');
+  const [demoSeg, setDemoSeg] = useState<'A' | 'B' | 'C'>('A');
   const [sbp, setSbp] = useState('145');
   const [chol, setChol] = useState('180');
   const [choiceVal, setChoiceVal] = useState('Yes');
@@ -129,23 +137,102 @@ const ShowcasePanel: React.FC<ShowcasePanelProps> = ({ title, themeScope }) => {
         </Section>
       </Panel>
 
-      {/* 3. Base Components */}
+      {/* 3. Base Components: Button System */}
       <Panel>
-        <Section title="Buttons and tabs">
+        <Section title="Button design system">
           <div className="flex flex-col gap-4 pt-2">
-            <Tabs
-              tabs={[
-                { id: 'one', label: 'Clinician report' },
-                { id: 'two', label: 'Patient report' },
-              ]}
-              activeTab={activeTab}
-              onChange={setActiveTab}
-            />
-            <div className="flex flex-wrap items-center gap-3">
-              <Button variant="primary">Primary</Button>
-              <Button variant="secondary">Secondary</Button>
-              <Button variant="primary" disabled>Disabled</Button>
-              <Button variant="link">Link action</Button>
+            {/* Primary Buttons */}
+            <div className="flex flex-col gap-1.5">
+              <span className="type-caption font-semibold">Primary Button (sm 32px, md 40px, lg 48px, disabled, loading)</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <PrimaryButton size="sm">Primary sm</PrimaryButton>
+                <PrimaryButton size="md">Primary md</PrimaryButton>
+                <PrimaryButton size="lg">Primary lg</PrimaryButton>
+                <PrimaryButton size="md" disabled>Disabled</PrimaryButton>
+                <PrimaryButton size="md" isLoading>Loading</PrimaryButton>
+              </div>
+            </div>
+
+            {/* Secondary Buttons */}
+            <div className="flex flex-col gap-1.5">
+              <span className="type-caption font-semibold">Secondary Button (sm 32px, md 40px, lg 48px, disabled)</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <SecondaryButton size="sm">Secondary sm</SecondaryButton>
+                <SecondaryButton size="md">Secondary md</SecondaryButton>
+                <SecondaryButton size="lg">Secondary lg</SecondaryButton>
+                <SecondaryButton size="md" disabled>Disabled</SecondaryButton>
+              </div>
+            </div>
+
+            {/* Quiet Buttons */}
+            <div className="flex flex-col gap-1.5">
+              <span className="type-caption font-semibold">Quiet Button (sm, md, lg, disabled)</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <QuietButton size="sm">Quiet sm</QuietButton>
+                <QuietButton size="md">Quiet md</QuietButton>
+                <QuietButton size="lg">Quiet lg</QuietButton>
+                <QuietButton size="md" disabled>Quiet disabled</QuietButton>
+              </div>
+            </div>
+
+            {/* Icon Buttons */}
+            <div className="flex flex-col gap-1.5">
+              <span className="type-caption font-semibold">Icon Buttons (xs 24px, sm 32px, md 40px, lg 48px)</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <IconButton size="xs" variant="quiet" aria-label="Reset"><RotateCcw size={14} /></IconButton>
+                <IconButton size="sm" variant="secondary" aria-label="Zoom in"><ZoomIn size={16} /></IconButton>
+                <IconButton size="md" variant="primary" aria-label="Action"><RotateCcw size={18} /></IconButton>
+                <IconButton size="lg" variant="secondary" aria-label="Action"><ZoomIn size={20} /></IconButton>
+              </div>
+            </div>
+
+            {/* Segmented Control */}
+            <div className="flex flex-col gap-1.5">
+              <span className="type-caption font-semibold">Segmented Control (sm 32px, md 40px)</span>
+              <div className="flex flex-wrap items-center gap-4">
+                <SegmentedControl
+                  size="sm"
+                  value={demoSeg}
+                  onChange={setDemoSeg}
+                  options={[
+                    { id: 'A', label: 'Front' },
+                    { id: 'B', label: 'Left' },
+                    { id: 'C', label: 'Right' },
+                  ]}
+                />
+                <SegmentedControl
+                  size="md"
+                  value={demoSeg}
+                  onChange={setDemoSeg}
+                  options={[
+                    { id: 'A', label: 'Option A' },
+                    { id: 'B', label: 'Option B' },
+                    { id: 'C', label: 'Option C' },
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Inline Link */}
+            <div className="flex flex-col gap-1.5">
+              <span className="type-caption font-semibold">Inline Links</span>
+              <div className="flex flex-wrap items-center gap-4">
+                <InlineLink onClick={() => {}}>Standard inline action link</InlineLink>
+                <InlineLink underline="always" onClick={() => {}}>Always underlined action link</InlineLink>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex flex-col gap-1.5">
+              <span className="type-caption font-semibold">Tabs</span>
+              <Tabs
+                tabs={[
+                  { id: 'one', label: 'Clinician report' },
+                  { id: 'two', label: 'Patient report' },
+                ]}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+              />
             </div>
           </div>
         </Section>

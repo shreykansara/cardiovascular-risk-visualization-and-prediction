@@ -18,6 +18,19 @@
   --ease-wipe: cubic-bezier(.3,0,.2,1);
   --ease-draw: cubic-bezier(.4,0,.2,1);
   --stagger: 110ms;
+
+  /* Button sizing tokens (Task 4.2) */
+  --btn-sm: 32px;
+  --btn-md: 40px;
+  --btn-lg: 48px;
+}
+
+/* Touch targets on mobile screens <= 768px */
+@media (max-width: 768px) {
+  :root {
+    --btn-sm: 44px;
+    --btn-md: 44px;
+  }
 }
 
 /* Panel base class (Task 2.1) */
@@ -74,6 +87,8 @@
   --ink: #241618;
   --mut: #6A5558;
   --acc: #1D3F8A;
+  --acc-hover: #163273;
+  --acc-press: #0F2556;
   --onacc: #FFFFFF;
   --bd: #E3CFCC;
   --bds: #9F817E; /* Adjusted from #B99A96 to meet 3.55:1 against #FFFFFF and 3.21:1 against #FFF0F0 */
@@ -98,6 +113,8 @@
   --ink: #D8F5E4;
   --mut: #8FB5A0;
   --acc: #4CFF9A;
+  --acc-hover: #7DFFB9;
+  --acc-press: #A6FFD0;
   --onacc: #04120A;
   --bd: #1D3A2A;
   --bds: #477B64; /* Adjusted from #3A6350 to meet 3.65:1 against #0C1A13 and 3.32:1 against #11241B */
