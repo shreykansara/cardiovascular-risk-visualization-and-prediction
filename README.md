@@ -99,8 +99,8 @@ Perfusion3D integrates high-throughput machine learning with an interactive 3D W
      │    ├── 4 Calibrated Multi-Head Gradient Boosters (CAD, LAD, LCX, RCA)
      │    └── Sub-4ms TreeSHAP Local Explainer Pool
      │
-     └── POST /api/v1/reports/{technical,patient}
-          ├── Groq Llama 3.3 70B Versatile Adapter
+     └── POST /api/v1/reports/generate
+          ├── Single-Call Unified Groq Engine (Combined Clinician + Patient)
           ├── Strict Clinical Anti-Hallucination & Section Validator
           └── Zero-Downtime Deterministic Fallback Engine
 ```
@@ -134,13 +134,12 @@ Perfusion3D integrates high-throughput machine learning with an interactive 3D W
    - **TreeSHAP Waterfalls & Physiological Table**: Real-time breakdown of patient factors driving or mitigating ischemic risk.
    - **Model Performance Metrics**: Empirically validated cross-validation metrics (Accuracy, Precision, Recall, F1, ROC-AUC) across all 4 target heads.
 
-4. **Step 4: Clinical & Patient AI Report Synthesis (`/reports`)**
-   - **Technical Report (Clinician)**: Formatted clinical summary with 8 standardized sections, diagnostic codes, hemodynamic findings, and evidence references.
-   - **Patient Report (Plain Language)**: Educational summary at Grade 6-8 reading level, avoiding alarmist terminology and explaining what the numbers mean.
-   - **Groq Llama 3.3 70B Integration**: Ultra-fast synthesis with automated number validation against model predictions.
-   - **Deterministic Fallback**: Automatically synthesizes verified clinical reports from model context if Groq API key is unconfigured or rate-limited.
+4. **Step 4: Clinical & Patient AI Report Synthesis (/reports)**
+   - **Unified Single-Call Generation**: POST /api/v1/reports/generate streams NDJSON progress stages (preparing, requesting, checking, building) and returns both clinician (7 sections) and patient (8 sections) reports via a single Groq request.
+   - **Strict Rate-Limit Protection**: Enforces 4 calls / 10m per client IP, 30 / hr globally, single-flight request coalescing, and a 60m TTL cache.
+   - **Defensive Parsing & Validation**: Per-field validation with sentence counts, jargon checks, and strict number derivation from model context.
+   - **Deterministic Fallback**: Automatically synthesizes verified clinical reports from model context if Groq API key is unconfigured, rate-limited, or returns invalid output.
    - **Export Tools**: Instant Print and PDF generation.
-
 ---
 
 ## 5 Validated Clinical Test Cases

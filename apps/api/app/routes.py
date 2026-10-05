@@ -288,80 +288,73 @@ def get_sample_patient(
 
 
 # ==============================================================================
-# Phase 5: Structured Report Generation Endpoints
+# Phase 3 & 5: Unified Single-Call Report Generation Endpoint (Task 3.11 & 3.12)
 # ==============================================================================
 
-from apps.api.app.schemas.report import ReportRequestSchema, LLMConfigStatusResponse
+from fastapi import Request
+from fastapi.responses import StreamingResponse
+from apps.api.app.schemas.report import ReportGenerateRequestSchema, LLMConfigStatusResponse
 from apps.api.app.services.llm_service import (
-    get_groq_config,
-    get_groq_model_status,
-    get_reports_diagnostics,
-    build_report_context,
-    generate_report,
+    generate_unified_reports,
+    get_reports_status,
 )
 
 
 @api_router.get(
     "/reports/status",
     response_model=LLMConfigStatusResponse,
-    summary="Check Groq API Configuration Status",
+    summary="Check Groq API Configuration Status (Zero Groq Calls)",
     tags=["Reporting"],
 )
-def get_reports_status() -> LLMConfigStatusResponse:
-    diagnostics = get_reports_diagnostics()
+def get_reports_status_endpoint() -> LLMConfigStatusResponse:
+    """Task 3.12: Returns configuration status facts only. Makes NO call to Groq."""
+    diagnostics = get_reports_status()
     return LLMConfigStatusResponse(**diagnostics)
 
 
 @api_router.post(
-    "/reports/technical",
-    summary="Generate Structured Technical Report for Clinicians",
+    "/reports/generate",
+    summary="Generate Unified Clinical & Patient Reports via Single Groq Call (Task 3.11)",
     tags=["Reporting"],
 )
-def generate_technical_report_endpoint(
-    req: ReportRequestSchema,
+async def generate_reports_endpoint(
+    req: ReportGenerateRequestSchema,
+    request: Request,
     response: Response,
-) -> dict[str, Any]:
-    """Generates structured 8-section technical report for clinician review."""
-    response.headers["X-Clinical-Disclaimer"] = "Decision-Support-Only"
-    preds = req.predictions
-    exps = req.explanations
-    if not preds or not exps:
-        full_analysis = analyze_patient_complete(req.patient, response, top_k=6)
-        preds = full_analysis.predictions.model_dump()
-        exps = {k: v.model_dump() for k, v in full_analysis.explanations.items()}
+) -> StreamingResponse:
+    """
+    Task 3.11: Single endpoint executing one unified Groq chat completion returning
+    both clinician and patient report prose in a single JSON payload.
+    Streams progress stages and final reports as NDJSON (application/x-ndjson).
+    Guaranteed to end with exactly one 'result' event.
+    """
+    # Task 3.10c: Derive client IP only from header set by our proxy (X-Real-IP), falling back to request.client.host
+    client_ip = request.headers.get("x-real-ip")
+    if not client_ip:
+        client_ip = request.client.host if request.client else "127.0.0.1"
 
-    context = build_report_context(
+    # Compute fast multi-target predictions and TreeSHAP feature attributions
+    analysis = analyze_patient_complete(req.patient, response, top_k=6)
+    preds = analysis.predictions.model_dump()
+    exps = {k: v.model_dump() for k, v in analysis.explanations.items()}
+
+    generator = generate_unified_reports(
         patient_data=req.patient.model_dump(by_alias=True),
         predictions=preds,
         explanations=exps,
         model_metadata=model_service.metadata,
+        force=req.force,
+        client_ip=client_ip,
     )
-    return generate_report(report_type="technical", context=context)
 
-
-@api_router.post(
-    "/reports/patient",
-    summary="Generate Plain-Language Heart Health Summary for Patients",
-    tags=["Reporting"],
-)
-def generate_patient_report_endpoint(
-    req: ReportRequestSchema,
-    response: Response,
-) -> dict[str, Any]:
-    """Generates friendly, plain-language 8-section summary for patient comprehension."""
-    response.headers["X-Clinical-Disclaimer"] = "Decision-Support-Only"
-    preds = req.predictions
-    exps = req.explanations
-    if not preds or not exps:
-        full_analysis = analyze_patient_complete(req.patient, response, top_k=6)
-        preds = full_analysis.predictions.model_dump()
-        exps = {k: v.model_dump() for k, v in full_analysis.explanations.items()}
-
-    context = build_report_context(
-        patient_data=req.patient.model_dump(by_alias=True),
-        predictions=preds,
-        explanations=exps,
-        model_metadata=model_service.metadata,
+    return StreamingResponse(
+        generator,
+        media_type="application/x-ndjson",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+            "X-Clinical-Disclaimer": "Decision-Support-Only",
+        },
     )
-    return generate_report(report_type="patient", context=context)
+
 

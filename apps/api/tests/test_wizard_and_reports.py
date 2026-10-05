@@ -223,51 +223,45 @@ def test_deterministic_patient_report_compliance(sample_patient_dict):
 
 
 # ==============================================================================
-# 5. Integration Endpoints & Groq-Only Reporting Tests (Phase 1)
+# 5. Integration Endpoints & Configuration Tests
 # ==============================================================================
 
 import json
-import urllib.error
 from unittest.mock import patch, MagicMock
 from apps.api.app.services.llm_service import (
     get_groq_config,
-    perform_live_groq_check,
     get_reports_diagnostics,
-    generate_report,
-    validate_report_json,
     build_allowed_numbers,
     is_number_allowed,
 )
 
 
 def test_api_report_status_endpoint_shape(client):
-    """Verify GET /reports/status conforms to Task 1.7 diagnostic schema."""
+    """Verify GET /reports/status conforms to zero-Groq diagnostic schema."""
     status_res = client.get("/api/v1/reports/status")
     assert status_res.status_code == 200
     data = status_res.json()
-    assert "env_file_found" in data
-    assert "env_file_path" in data
     assert "key_present" in data
     assert "key_is_placeholder" in data
-    assert "key_prefix_ok" in data
+    assert "key_length" in data
     assert "model" in data
-    assert "model_listed_by_groq" in data
-    assert "last_error_code" in data
-    assert "last_error_message" in data
+    assert "cooldown_s" in data
+    assert "groq_calls_last_hour" in data
+    assert "last_status" in data
     # Ensure raw key is NOT present
     assert "api_key" not in data
     assert "groq_api_key" not in data
 
 
 def test_get_groq_config_whitespace_and_quotes(monkeypatch):
-    """Verify Groq config strips whitespace, \\r, \\n, BOM, and surrounding quotes (Tasks 1.3, 2.1)."""
+    """Verify Groq config strips whitespace, \\r, \\n, BOM, and surrounding quotes."""
     monkeypatch.setenv("GROQ_API_KEY", '\ufeff  "gsk_test123456789"\r\n  ')
     monkeypatch.setenv("GROQ_MODEL", " 'llama-3.3-70b-versatile'\r\n ")
     key, model = get_groq_config()
     assert key == "gsk_test123456789"
     assert model == "llama-3.3-70b-versatile"
 
-    # Placeholder rejection (Task 1.4)
+    # Placeholder rejection
     monkeypatch.setenv("GROQ_API_KEY", "PASTE_YOUR_GROQ_API_KEY_HERE")
     key, model = get_groq_config()
     assert key is None
@@ -276,81 +270,6 @@ def test_get_groq_config_whitespace_and_quotes(monkeypatch):
     key, model = get_groq_config()
     assert key is None
 
-
-def test_groq_mock_live_checks():
-    """Verify live check mappings for success, 401, 403 blocked, 403 denied, model not found, 429 (Tasks 2.3, 2.10)."""
-    import httpx
-
-    # 1. Success (model in list)
-    with patch("httpx.Client.get") as mock_get:
-        mock_get.return_value = httpx.Response(
-            status_code=200,
-            json={"data": [{"id": "llama-3.3-70b-versatile"}]},
-            request=httpx.Request("GET", "https://api.groq.com/openai/v1/models"),
-        )
-        listed, code, msg = perform_live_groq_check("gsk_valid", "llama-3.3-70b-versatile", force=True)
-        assert listed is True
-        assert code == "ok"
-        assert msg is None
-
-    # 2. Model not found in list
-    with patch("httpx.Client.get") as mock_get:
-        mock_get.return_value = httpx.Response(
-            status_code=200,
-            json={"data": [{"id": "other-model"}]},
-            request=httpx.Request("GET", "https://api.groq.com/openai/v1/models"),
-        )
-        listed, code, msg = perform_live_groq_check("gsk_valid", "llama-3.3-70b-versatile", force=True)
-        assert listed is False
-        assert code == "model_unavailable"
-
-    # 3. 401 Key Rejected
-    with patch("httpx.Client.get") as mock_get:
-        mock_get.return_value = httpx.Response(
-            status_code=401,
-            json={"error": {"code": "invalid_api_key", "type": "invalid_request_error"}},
-            request=httpx.Request("GET", "https://api.groq.com/openai/v1/models"),
-        )
-        listed, code, msg = perform_live_groq_check("gsk_bad", "llama-3.3-70b-versatile", force=True)
-        assert listed is False
-        assert code == "key_rejected"
-
-    # 4. 403 Request Blocked (Cloudflare / HTML)
-    with patch("httpx.Client.get") as mock_get:
-        mock_get.return_value = httpx.Response(
-            status_code=403,
-            content=b"<html><head><title>403 Forbidden</title></head><body>Cloudflare error</body></html>",
-            headers={"server": "cloudflare", "content-type": "text/html"},
-            request=httpx.Request("GET", "https://api.groq.com/openai/v1/models"),
-        )
-        listed, code, msg = perform_live_groq_check("gsk_valid", "llama-3.3-70b-versatile", force=True)
-        assert code == "request_blocked"
-
-    # 5. 403 Access Denied (JSON permission error)
-    with patch("httpx.Client.get") as mock_get:
-        mock_get.return_value = httpx.Response(
-            status_code=403,
-            json={"error": {"code": "permission_denied", "message": "Key has insufficient permissions"}},
-            headers={"content-type": "application/json"},
-            request=httpx.Request("GET", "https://api.groq.com/openai/v1/models"),
-        )
-        listed, code, msg = perform_live_groq_check("gsk_valid", "llama-3.3-70b-versatile", force=True)
-        assert code == "access_denied"
-
-    # 6. 429 Rate Limited
-    with patch("httpx.Client.get") as mock_get:
-        mock_get.return_value = httpx.Response(
-            status_code=429,
-            json={"error": {"code": "rate_limit_exceeded"}},
-            request=httpx.Request("GET", "https://api.groq.com/openai/v1/models"),
-        )
-        listed, code, msg = perform_live_groq_check("gsk_valid", "llama-3.3-70b-versatile", force=True)
-        assert code == "rate_limited"
-
-    # 7. Network Error
-    with patch("httpx.Client.get", side_effect=httpx.ConnectError("Connection refused")):
-        listed, code, msg = perform_live_groq_check("gsk_valid", "llama-3.3-70b-versatile", force=True)
-        assert code == "network_error"
 
 
 def test_shap_sanity_additive_property():
@@ -384,44 +303,8 @@ def test_shap_sanity_additive_property():
         assert diff < 1e-3, f"SHAP additive check failed for {target}: diff={diff}"
 
 
-def test_groq_report_generation_with_mock_success(sample_patient_dict):
-    """Verify report generation with mock Groq response succeeding (Task 1.12)."""
-    context = build_report_context(
-        patient_data=sample_patient_dict,
-        predictions={
-            "overall_cad": {"probability": 0.85, "stenosis_suspected": True},
-            "vessels": {
-                "lad": {"probability": 0.91, "display_name": "LAD", "stenosis_suspected": True},
-                "lcx": {"probability": 0.24, "display_name": "LCX", "stenosis_suspected": False},
-                "rca": {"probability": 0.22, "display_name": "RCA", "stenosis_suspected": False},
-            },
-        },
-        explanations={},
-    )
-    mock_report = generate_deterministic_technical_report(context)
-
-    with patch("apps.api.app.services.llm_service.get_groq_config", return_value=("gsk_mock", "llama-3.3-70b-versatile")), \
-         patch("apps.api.app.services.llm_service.call_groq", return_value=json.dumps(mock_report)):
-        res = generate_report("technical", context)
-        assert [k for k in res.keys() if k != "source"] == TECHNICAL_SECTIONS_ORDER
-        assert res["source"] in ("groq", "template")
-        assert res["disclaimer"] == MANDATORY_DISCLAIMER
-
-
-def test_groq_report_generation_with_mock_malformed_json(sample_patient_dict):
-    """Verify malformed JSON falls back gracefully (Task 1.12)."""
-    context = build_report_context(sample_patient_dict, {}, {})
-
-    with patch("apps.api.app.services.llm_service.get_groq_config", return_value=("gsk_mock", "llama-3.3-70b-versatile")), \
-         patch("apps.api.app.services.llm_service.call_groq", return_value="THIS IS NOT JSON"):
-        res = generate_report("technical", context)
-        assert [k for k in res.keys() if k != "source"] == TECHNICAL_SECTIONS_ORDER
-        assert res["source"] == "template"
-        assert res["disclaimer"] == MANDATORY_DISCLAIMER
-
-
 def test_groq_report_generation_with_banned_phrase(sample_patient_dict):
-    """Verify banned advisory phrase causes validation failure and retry/fallback (Task 1.12)."""
+    """Verify banned advisory phrase causes validation failure and fallback."""
     context = build_report_context(sample_patient_dict, {}, {})
     mock_report = generate_deterministic_technical_report(context)
     mock_report["methodological_notes"] = ["The patient should avoid stress and consult a doctor."]
@@ -432,7 +315,7 @@ def test_groq_report_generation_with_banned_phrase(sample_patient_dict):
 
 
 def test_number_format_variants_pass_validator():
-    """Verify format-tolerant number matching (36.0, 36, 0.36 as 36%, rounding) (Task 1.10a & 1.12)."""
+    """Verify format-tolerant number matching (36.0, 36, 0.36 as 36%, rounding)."""
     context = {
         "cad_summary": {"probability": 0.36, "probability_pct": 36.0},
         "patient_inputs": {"BP": 130, "Age": 58.2},
@@ -451,18 +334,21 @@ def test_number_format_variants_pass_validator():
     assert not is_number_allowed(999.7, allowed)
 
 
-def test_api_report_endpoints_deterministic_fallback(client, sample_patient_dict):
-    """Verify POST /reports/technical and POST /reports/patient fallback when Groq key is absent."""
-    tech_res = client.post("/api/v1/reports/technical", json={"patient": sample_patient_dict})
-    assert tech_res.status_code == 200
-    tech_data = tech_res.json()
-    assert [k for k in tech_data.keys() if k != "source"] == TECHNICAL_SECTIONS_ORDER
-    assert tech_data["source"] == "template"
-    assert tech_data["disclaimer"] == MANDATORY_DISCLAIMER
+def test_api_report_generate_endpoint_deterministic_fallback(client, sample_patient_dict):
+    """Verify POST /api/v1/reports/generate streams valid NDJSON and falls back gracefully."""
+    res = client.post("/api/v1/reports/generate", json={"patient": sample_patient_dict})
+    assert res.status_code == 200
+    lines = [json.loads(line) for line in res.text.strip().split("\n") if line.strip()]
+    assert len(lines) >= 2
+    assert lines[0]["event"] == "stage"
+    result_event = lines[-1]
+    assert result_event["event"] == "result"
+    assert "reports" in result_event
+    reports = result_event["reports"]
+    assert "clinician" in reports
+    assert "patient" in reports
+    assert [k for k in reports["clinician"].keys()] == TECHNICAL_SECTIONS_ORDER
+    assert [k for k in reports["patient"].keys()] == PATIENT_SECTIONS_ORDER
+    assert reports["clinician"]["disclaimer"] == MANDATORY_DISCLAIMER
+    assert reports["patient"]["disclaimer"] == MANDATORY_DISCLAIMER
 
-    pat_res = client.post("/api/v1/reports/patient", json={"patient": sample_patient_dict})
-    assert pat_res.status_code == 200
-    pat_data = pat_res.json()
-    assert [k for k in pat_data.keys() if k != "source"] == PATIENT_SECTIONS_ORDER
-    assert pat_data["source"] == "template"
-    assert pat_data["disclaimer"] == MANDATORY_DISCLAIMER
