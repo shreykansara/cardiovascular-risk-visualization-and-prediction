@@ -128,18 +128,7 @@ export const ResultsPage: React.FC = () => {
             padding: '12px 14px',
           } as React.CSSProperties}
         >
-          <div
-            style={{
-              width: '100%',
-              height: '480px',
-              backgroundColor: 'var(--panel)',
-              borderRadius: '3px',
-              overflow: 'hidden',
-              position: 'relative',
-            }}
-          >
-            <HeartCanvas />
-          </div>
+          <HeartCanvas />
 
           {/* 3-column legend: 3px bar in risk color above 11px --mut label */}
           <ColorScaleLegend />

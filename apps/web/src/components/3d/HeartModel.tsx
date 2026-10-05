@@ -14,10 +14,15 @@
 
 import React, { useRef, useMemo, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, Html } from '@react-three/drei';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { usePatientStore } from '../../store/usePatientStore';
+import { VesselLabel } from './VesselLabel';
+
+const LAD_NORMAL = new THREE.Vector3(-0.2, 0.1, 0.95).normalize();
+const LCX_NORMAL = new THREE.Vector3(0.85, 0.1, -0.4).normalize();
+const RCA_NORMAL = new THREE.Vector3(-0.85, 0.1, 0.45).normalize();
 
 interface HeartModelProps {
   onHoverVessel?: (vesselName: string | null) => void;
@@ -351,8 +356,18 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
   const lcxRiskText = `${(lcxProb * 100).toFixed(1)}%`;
   const rcaRiskText = `${(rcaProb * 100).toFixed(1)}%`;
 
-  // Dynamic 60fps frame loop: synchronized resting heartbeat pulse on critical vessels
-  useFrame(({ clock }) => {
+  const [labelVisuals, setLabelVisuals] = useState({
+    ladFacing: true,
+    lcxFacing: true,
+    rcaFacing: true,
+    ladNudge: 0,
+    lcxNudge: 0,
+    rcaNudge: 0,
+  });
+  const labelVisualsRef = useRef(labelVisuals);
+
+  // Dynamic 60fps frame loop: synchronized resting heartbeat pulse and label overlap detection
+  useFrame(({ clock, camera, size }) => {
     const elapsed = clock.getElapsedTime();
     const pulse = (Math.sin(elapsed * 7.54) + 1.0) * 0.5;
 
@@ -390,6 +405,101 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
       } else {
         rcaMatRef.current.emissiveIntensity = 0.25;
       }
+    }
+
+    // Facing direction and overlap avoidance calculation (Task 2.5)
+    myocardiumMesh.updateMatrixWorld(true);
+    const ladWorld = new THREE.Vector3(...ladBadgePos).applyMatrix4(myocardiumMesh.matrixWorld);
+    const lcxWorld = new THREE.Vector3(...lcxBadgePos).applyMatrix4(myocardiumMesh.matrixWorld);
+    const rcaWorld = new THREE.Vector3(...rcaBadgePos).applyMatrix4(myocardiumMesh.matrixWorld);
+
+    const ladDir = camera.position.clone().sub(ladWorld).normalize();
+    const lcxDir = camera.position.clone().sub(lcxWorld).normalize();
+    const rcaDir = camera.position.clone().sub(rcaWorld).normalize();
+
+    const ladNorm = LAD_NORMAL.clone().transformDirection(myocardiumMesh.matrixWorld);
+    const lcxNorm = LCX_NORMAL.clone().transformDirection(myocardiumMesh.matrixWorld);
+    const rcaNorm = RCA_NORMAL.clone().transformDirection(myocardiumMesh.matrixWorld);
+
+    const ladFacing = ladNorm.dot(ladDir) > -0.05;
+    const lcxFacing = lcxNorm.dot(lcxDir) > -0.05;
+    const rcaFacing = rcaNorm.dot(rcaDir) > -0.05;
+
+    const ladScreen = ladWorld.clone().project(camera);
+    const lcxScreen = lcxWorld.clone().project(camera);
+    const rcaScreen = rcaWorld.clone().project(camera);
+
+    const ladPx = { x: (ladScreen.x * 0.5 + 0.5) * size.width, y: (-ladScreen.y * 0.5 + 0.5) * size.height };
+    const lcxPx = { x: (lcxScreen.x * 0.5 + 0.5) * size.width, y: (-lcxScreen.y * 0.5 + 0.5) * size.height };
+    const rcaPx = { x: (rcaScreen.x * 0.5 + 0.5) * size.width, y: (-rcaScreen.y * 0.5 + 0.5) * size.height };
+
+    // Default projected boxes
+    let rcaBox = { x: rcaPx.x - 108, y: rcaPx.y - 11, w: 96, h: 22 };
+    let lcxBox = { x: lcxPx.x + 12, y: lcxPx.y - 11, w: 96, h: 22 };
+    let ladBox = { x: ladPx.x - 48, y: ladPx.y + 12, w: 96, h: 22 };
+
+    // If DOM elements are rendered, calibrate with true client bounding rects
+    if (typeof document !== 'undefined') {
+      const ladEl = document.getElementById('vessel-label-lad');
+      const lcxEl = document.getElementById('vessel-label-lcx');
+      const rcaEl = document.getElementById('vessel-label-rca');
+      if (ladEl && lcxEl && rcaEl) {
+        const lR = ladEl.getBoundingClientRect();
+        const cR = lcxEl.getBoundingClientRect();
+        const rR = rcaEl.getBoundingClientRect();
+        if (lR.width > 0 && cR.width > 0 && rR.width > 0) {
+          ladBox = { x: lR.x, y: lR.y - labelVisualsRef.current.ladNudge, w: lR.width, h: lR.height };
+          lcxBox = { x: cR.x, y: cR.y - labelVisualsRef.current.lcxNudge, w: cR.width, h: cR.height };
+          rcaBox = { x: rR.x, y: rR.y - labelVisualsRef.current.rcaNudge, w: rR.width, h: rR.height };
+        }
+      }
+    }
+
+    const checkOverlap = (b1: typeof ladBox, b2: typeof ladBox) => {
+      return (
+        b1.x < b2.x + b2.w &&
+        b1.x + b1.w > b2.x &&
+        b1.y < b2.y + b2.h &&
+        b1.y + b1.h > b2.y
+      );
+    };
+
+    let ladNudge = 0;
+    let lcxNudge = 0;
+    let rcaNudge = 0;
+
+    let iterations = 0;
+    while (iterations < 10) {
+      let hadOverlap = false;
+      if (checkOverlap(rcaBox, ladBox)) {
+        ladNudge += 26;
+        ladBox.y += 26;
+        hadOverlap = true;
+      }
+      if (checkOverlap(lcxBox, ladBox)) {
+        ladNudge += 26;
+        ladBox.y += 26;
+        hadOverlap = true;
+      }
+      if (checkOverlap(rcaBox, lcxBox)) {
+        lcxNudge += 26;
+        lcxBox.y += 26;
+        hadOverlap = true;
+      }
+      if (!hadOverlap) break;
+      iterations++;
+    }
+
+    if (
+      labelVisualsRef.current.ladFacing !== ladFacing ||
+      labelVisualsRef.current.lcxFacing !== lcxFacing ||
+      labelVisualsRef.current.rcaFacing !== rcaFacing ||
+      labelVisualsRef.current.ladNudge !== ladNudge ||
+      labelVisualsRef.current.lcxNudge !== lcxNudge ||
+      labelVisualsRef.current.rcaNudge !== rcaNudge
+    ) {
+      labelVisualsRef.current = { ladFacing, lcxFacing, rcaFacing, ladNudge, lcxNudge, rcaNudge };
+      setLabelVisuals({ ladFacing, lcxFacing, rcaFacing, ladNudge, lcxNudge, rcaNudge });
     }
   });
 
@@ -447,45 +557,21 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             transparent={false}
           />
 
-          {/* Step 3: Floating Drei <Html> Callout Badge for LAD */}
-          <Html
+          {/* Step 3: Callout Label for LAD (Task 2.5) */}
+          <VesselLabel
+            vesselKey="vessel_LAD"
+            code="LAD"
+            riskDotColor={ladColorHex}
+            riskText={ladRiskText}
             position={ladBadgePos}
-            center
-            distanceFactor={3.5}
-            style={{ pointerEvents: 'auto', userSelect: 'none' }}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectVessel('vessel_LAD');
-              }}
-              onMouseEnter={() => handlePointerOver('vessel_LAD')}
-              onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
-                isLadSelected
-                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
-                  : 'hover:border-cyan-400/80'
-              } ${
-                isLadCritical
-                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
-                  : isLadBorderline
-                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
-                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isLadCritical
-                    ? 'bg-rose-500 animate-ping'
-                    : isLadBorderline
-                    ? 'bg-amber-400'
-                    : 'bg-emerald-400'
-                }`}
-              />
-              <span className="tracking-wide">LAD · {ladRiskText}</span>
-            </button>
-          </Html>
+            placement="below"
+            isSelected={isLadSelected}
+            isFacingAway={!labelVisuals.ladFacing}
+            nudgeY={labelVisuals.ladNudge}
+            onSelect={() => handleSelectVessel('vessel_LAD')}
+            onPointerOver={() => handlePointerOver('vessel_LAD')}
+            onPointerOut={handlePointerOut}
+          />
         </mesh>
 
         {/* ======================= LCX ARTERY ======================= */}
@@ -519,45 +605,21 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             transparent={false}
           />
 
-          {/* Step 3: Floating Drei <Html> Callout Badge for LCX */}
-          <Html
+          {/* Step 3: Callout Label for LCX (Task 2.5) */}
+          <VesselLabel
+            vesselKey="vessel_LCX"
+            code="LCX"
+            riskDotColor={lcxColorHex}
+            riskText={lcxRiskText}
             position={lcxBadgePos}
-            center
-            distanceFactor={3.5}
-            style={{ pointerEvents: 'auto', userSelect: 'none' }}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectVessel('vessel_LCX');
-              }}
-              onMouseEnter={() => handlePointerOver('vessel_LCX')}
-              onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
-                isLcxSelected
-                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
-                  : 'hover:border-cyan-400/80'
-              } ${
-                isLcxCritical
-                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
-                  : isLcxBorderline
-                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
-                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isLcxCritical
-                    ? 'bg-rose-500 animate-ping'
-                    : isLcxBorderline
-                    ? 'bg-amber-400'
-                    : 'bg-emerald-400'
-                }`}
-              />
-              <span className="tracking-wide">LCX · {lcxRiskText}</span>
-            </button>
-          </Html>
+            placement="right"
+            isSelected={isLcxSelected}
+            isFacingAway={!labelVisuals.lcxFacing}
+            nudgeY={labelVisuals.lcxNudge}
+            onSelect={() => handleSelectVessel('vessel_LCX')}
+            onPointerOver={() => handlePointerOver('vessel_LCX')}
+            onPointerOut={handlePointerOut}
+          />
         </mesh>
 
         {/* ======================= RCA ARTERY ======================= */}
@@ -591,45 +653,21 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             transparent={false}
           />
 
-          {/* Step 3: Floating Drei <Html> Callout Badge for RCA */}
-          <Html
+          {/* Step 3: Callout Label for RCA (Task 2.5) */}
+          <VesselLabel
+            vesselKey="vessel_RCA"
+            code="RCA"
+            riskDotColor={rcaColorHex}
+            riskText={rcaRiskText}
             position={rcaBadgePos}
-            center
-            distanceFactor={3.5}
-            style={{ pointerEvents: 'auto', userSelect: 'none' }}
-          >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectVessel('vessel_RCA');
-              }}
-              onMouseEnter={() => handlePointerOver('vessel_RCA')}
-              onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
-                isRcaSelected
-                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
-                  : 'hover:border-cyan-400/80'
-              } ${
-                isRcaCritical
-                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
-                  : isRcaBorderline
-                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
-                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isRcaCritical
-                    ? 'bg-rose-500 animate-ping'
-                    : isRcaBorderline
-                    ? 'bg-amber-400'
-                    : 'bg-emerald-400'
-                }`}
-              />
-              <span className="tracking-wide">RCA · {rcaRiskText}</span>
-            </button>
-          </Html>
+            placement="left"
+            isSelected={isRcaSelected}
+            isFacingAway={!labelVisuals.rcaFacing}
+            nudgeY={labelVisuals.rcaNudge}
+            onSelect={() => handleSelectVessel('vessel_RCA')}
+            onPointerOver={() => handlePointerOver('vessel_RCA')}
+            onPointerOut={handlePointerOut}
+          />
         </mesh>
       </primitive>
     </group>
