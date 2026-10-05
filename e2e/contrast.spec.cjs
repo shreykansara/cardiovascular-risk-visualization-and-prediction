@@ -272,7 +272,7 @@ async function runContrastSuite() {
       await checkbox.check();
       await page.waitForTimeout(100);
     }
-    const startBtn = page.getByRole('button', { name: /start/i }).first();
+    const startBtn = page.locator('#start-assessment-btn, #start-wizard-button').first();
     await startBtn.click();
     await page.waitForURL('**/enter-data');
     await page.waitForTimeout(300);

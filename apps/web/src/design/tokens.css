@@ -74,7 +74,7 @@
   --acc: #1D3F8A;
   --onacc: #FFFFFF;
   --bd: #E3CFCC;
-  --bds: #A88C89; /* Adjusted from #B99A96 to meet 3.10:1 non-text contrast against #FFFFFF */
+  --bds: #9F817E; /* Adjusted from #B99A96 to meet 3.55:1 against #FFFFFF and 3.21:1 against #FFF0F0 */
   --hov: #F4F7FD;
   --low: #2E8B57;
   --mod: #B87700;
@@ -98,7 +98,7 @@
   --acc: #4CFF9A;
   --onacc: #04120A;
   --bd: #1D3A2A;
-  --bds: #406E59; /* Adjusted from #3A6350 to meet 3.06:1 non-text contrast against #0C1A13 */
+  --bds: #477B64; /* Adjusted from #3A6350 to meet 3.65:1 against #0C1A13 and 3.32:1 against #11241B */
   --hov: #12281D;
   --low: #3FD08A;
   --mod: #FFC24D;
