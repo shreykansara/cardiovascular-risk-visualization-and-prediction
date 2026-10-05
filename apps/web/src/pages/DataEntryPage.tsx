@@ -1,15 +1,29 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWizardStore } from '../store/useWizardStore';
 import {
   FEATURE_SCHEMA,
-  FEATURE_SECTIONS,
-  isWithinReferenceRange,
+  type FeatureDefinition,
 } from '../config/featureSchema';
-import { CollapsibleSection } from '../components/forms/CollapsibleSection';
+import { PATIENT_PROFILES } from '../store/usePatientStore';
 import { Panel } from '../components/ui/Panel';
 import { Button } from '../components/ui/Button';
-import { Select } from '../components/ui/Select';
+import { FieldAnatomy, getFieldErrorMessage } from '../components/forms/FieldAnatomy';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
+interface SectionConfig {
+  id: string;
+  name: string;
+  features: FeatureDefinition[];
+}
+
+const SECTIONS_CONFIG: { id: string; name: string; sectionKey: string }[] = [
+  { id: 'demographics', name: 'Demographics', sectionKey: 'Demographics' },
+  { id: 'clinical-examination', name: 'Clinical examination', sectionKey: 'Clinical Examination' },
+  { id: 'ecg', name: 'ECG', sectionKey: 'ECG' },
+  { id: 'laboratory', name: 'Laboratory', sectionKey: 'Laboratory' },
+  { id: 'echocardiography', name: 'Echocardiography', sectionKey: 'Echocardiography' },
+];
 
 export const DataEntryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,53 +36,197 @@ export const DataEntryPage: React.FC = () => {
     predictPatient,
   } = useWizardStore();
 
+  const [samplePatientLoaded, setSamplePatientLoaded] = useState(false);
+  const [selectedSampleKey, setSelectedSampleKey] = useState('');
+  const [showAllErrors, setShowAllErrors] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [predictError, setPredictError] = useState<string | null>(null);
+  const [activeSectionId, setActiveSectionId] = useState<string>('demographics');
+
+  // Track expanded state for each of the 5 sections (default: all expanded)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    demographics: true,
+    'clinical-examination': true,
+    ecg: true,
+    laboratory: true,
+    echocardiography: true,
+  });
 
   // Guard: Redirect to welcome if disclaimer not accepted
-  React.useEffect(() => {
+  useEffect(() => {
     if (!disclaimerAccepted) {
       navigate('/welcome', { replace: true });
     }
   }, [disclaimerAccepted, navigate]);
 
-  // Validation logic
-  const { missingFeatures, errorEntries, outOfRangeCount } = useMemo(() => {
-    const missing = FEATURE_SCHEMA.filter((f) => {
-      const v = inputs[f.key];
-      return f.required && (v === undefined || v === null || v === '');
+  // Group features by section
+  const sections: SectionConfig[] = useMemo(() => {
+    return SECTIONS_CONFIG.map(({ id, name, sectionKey }) => ({
+      id,
+      name,
+      features: FEATURE_SCHEMA.filter((f) => f.section === sectionKey),
+    }));
+  }, []);
+
+  // Compute metrics per Task 4.8:
+  // "entered" = fields with a value
+  // "outside typical range" = number fields outside LO..HI but within hard limits
+  // "need attention" = fields that are required and empty or invalid
+  const metrics = useMemo(() => {
+    let enteredTotal = 0;
+    let outsideTotal = 0;
+    const invalidFields: { key: string; sectionId: string; label: string }[] = [];
+
+    const sectionMetrics: Record<
+      string,
+      { entered: number; total: number; hasInvalid: boolean; hasOutOfRange: boolean }
+    > = {};
+
+    sections.forEach((sec) => {
+      let secEntered = 0;
+      let secHasInvalid = false;
+      let secHasOutOfRange = false;
+
+      sec.features.forEach((f) => {
+        const val = inputs[f.key];
+        const isEntered = val !== undefined && val !== null && val !== '';
+        if (isEntered) {
+          secEntered++;
+          enteredTotal++;
+        }
+
+        const errMsg = getFieldErrorMessage(f, val);
+        if (errMsg) {
+          secHasInvalid = true;
+          invalidFields.push({ key: String(f.key), sectionId: sec.id, label: f.label });
+        }
+
+        if (f.type === 'number' && f.refLow !== undefined && f.refHigh !== undefined && isEntered && !errMsg) {
+          const n = Number(val);
+          if (!isNaN(n) && (n < f.refLow || n > f.refHigh)) {
+            secHasOutOfRange = true;
+            outsideTotal++;
+          }
+        }
+      });
+
+      sectionMetrics[sec.id] = {
+        entered: secEntered,
+        total: sec.features.length,
+        hasInvalid: secHasInvalid,
+        hasOutOfRange: secHasOutOfRange,
+      };
     });
 
-    const errors = Object.entries(fieldMeta).filter(([_, m]) => Boolean(m?.error));
-
-    const outOfRange = FEATURE_SCHEMA.filter((f) => {
-      const v = inputs[f.key];
-      return isWithinReferenceRange(f, v) === false;
-    }).length;
-
     return {
-      missingFeatures: missing,
-      errorEntries: errors,
-      outOfRangeCount: outOfRange,
+      enteredTotal,
+      outsideTotal,
+      invalidFields,
+      sectionMetrics,
     };
-  }, [inputs, fieldMeta]);
+  }, [sections, inputs]);
 
-  // Determine first validation problem if any
-  let firstProblem: string | null = null;
-  if (errorEntries.length > 0) {
-    const [key, meta] = errorEntries[0];
-    const feat = FEATURE_SCHEMA.find((f) => f.key === key);
-    firstProblem = `${feat?.label || key}: ${meta.error}`;
-  } else if (missingFeatures.length > 0) {
-    firstProblem = `${missingFeatures[0].label} is required`;
-  }
+  // IntersectionObserver for tracking active section in sidebar
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries.filter((e) => e.isIntersecting);
+        if (visibleEntries.length > 0) {
+          // Sort by top position to pick most visible
+          visibleEntries.sort(
+            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
+          );
+          setActiveSectionId(visibleEntries[0].target.id.replace('section-', ''));
+        }
+      },
+      {
+        rootMargin: '-80px 0px -50% 0px',
+        threshold: [0, 0.2, 0.5],
+      }
+    );
 
-  const isFormValid = !firstProblem;
+    sections.forEach((sec) => {
+      const el = document.getElementById(`section-${sec.id}`);
+      if (el) observer.observe(el);
+    });
 
-  // Predict handler with ECG Transition Overlay
-  const handlePredict = async () => {
-    if (!isFormValid || isTransitioning) return;
-    setPredictError(null);
+    return () => observer.disconnect();
+  }, [sections]);
+
+  // Field change handler: editing removes "Sample patient" chip (Task 4.7)
+  const handleFieldChange = (key: any, val: any) => {
+    setSamplePatientLoaded(false);
+    setFieldValue(key, val);
+  };
+
+  // Sample patient selection (Task 4.2)
+  const handleSelectSample = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const key = e.target.value;
+    setSelectedSampleKey(key);
+    if (key) {
+      loadSamplePatient(key);
+      setSamplePatientLoaded(true);
+      setShowAllErrors(false);
+    }
+  };
+
+  // Toggle single section
+  const toggleSection = (id: string) => {
+    setExpandedSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Collapse all / Expand all toggle (Task 4.2)
+  const allExpanded = Object.values(expandedSections).every(Boolean);
+  const handleToggleAll = () => {
+    const nextState = !allExpanded;
+    const updated: Record<string, boolean> = {};
+    sections.forEach((s) => {
+      updated[s.id] = nextState;
+    });
+    setExpandedSections(updated);
+  };
+
+  // Scroll to section helper
+  const scrollToSection = (secId: string) => {
+    setExpandedSections((prev) => ({ ...prev, [secId]: true }));
+    const el = document.getElementById(`section-${secId}`);
+    if (el) {
+      const prefersReduced =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth' });
+      // Focus heading or button
+      const headerBtn = el.querySelector('button');
+      headerBtn?.focus();
+    }
+  };
+
+  // Focus first invalid field helper (Task 4.9)
+  const focusFirstInvalid = () => {
+    setShowAllErrors(true);
+    if (metrics.invalidFields.length > 0) {
+      const first = metrics.invalidFields[0];
+      setExpandedSections((prev) => ({ ...prev, [first.sectionId]: true }));
+      setTimeout(() => {
+        const inputEl = document.getElementById(`field-${first.key}`);
+        if (inputEl) {
+          const prefersReduced =
+            typeof window !== 'undefined' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          inputEl.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' });
+          inputEl.focus();
+        }
+      }, 50);
+    }
+  };
+
+  // Predict button click (Task 4.9: Predict is ALWAYS enabled)
+  const handlePredictClick = async () => {
+    if (metrics.invalidFields.length > 0) {
+      focusFirstInvalid();
+      return;
+    }
+
+    if (isTransitioning) return;
     setIsTransitioning(true);
 
     try {
@@ -87,36 +245,21 @@ export const DataEntryPage: React.FC = () => {
         navigate('/results');
       } else {
         setIsTransitioning(false);
-        setPredictError('Prediction failed to complete.');
       }
-    } catch (err: any) {
+    } catch (err) {
       setIsTransitioning(false);
-      setPredictError(err?.message || 'Prediction failed.');
     }
   };
 
-  const sampleOptions = [
-    { label: 'Load sample patient', value: '' },
-    { label: 'Sample patient: Low risk', value: 'normal' },
-    { label: 'Sample patient: High risk (LAD)', value: 'high_risk_lad' },
-    { label: 'Sample patient: Moderate risk (RCA)', value: 'rca_ischemia' },
-    { label: 'Sample patient: High risk (Multivessel)', value: 'triple_vessel' },
-  ];
-
-  // Out of range status message
-  const rangeStatusText =
-    outOfRangeCount === 0
-      ? 'All values within typical range'
-      : outOfRangeCount === 1
-      ? '1 value outside typical range'
-      : `${outOfRangeCount} values outside typical range`;
-
   return (
-    <div className="w-full relative flex-1 flex flex-col">
-      {/* Task 5.3 Predict Transition Full-Screen Overlay */}
+    <div
+      className="w-full flex-1 flex flex-col relative"
+      style={{ paddingBottom: '72px' }}
+    >
+      {/* Predict Transition Overlay */}
       {isTransitioning && (
         <div
-          className="ecg-grid fixed inset-0 z-50 flex flex-col items-center justify-center"
+          className="ecg-grid fixed inset-0 z-50 flex flex-col items-center justify-center no-print"
           style={{
             position: 'fixed',
             inset: 0,
@@ -161,185 +304,536 @@ export const DataEntryPage: React.FC = () => {
         </div>
       )}
 
-      {/* Task 5.2a: Wrap entire page body in ONE Panel with padding 18px 20px */}
+      {/* Task 4.2 Header Panel (full width, wipe --i: 0) */}
       <Panel
-        className="wipe w-full flex flex-col"
+        className="wipe w-full"
         style={{
-          padding: '18px 20px',
+          padding: '16px 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '14px',
           '--i': 0,
         } as React.CSSProperties}
       >
-        {/* Title row */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-          <div>
-            {/* Title "Clinical data" (20px/600, margin-bottom 2px) */}
+        {/* Left: Title + optional Sample Patient chip + caption */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h1
               style={{
                 fontFamily: 'var(--fs)',
                 fontSize: '20px',
                 fontWeight: 600,
                 color: 'var(--ink)',
-                marginBottom: '2px',
                 margin: 0,
               }}
             >
               Clinical data
             </h1>
-            {/* Helper line (13px --mut, margin-bottom 14px) */}
-            <p
-              style={{
-                fontFamily: 'var(--fs)',
-                fontSize: '13px',
-                color: 'var(--mut)',
-                marginBottom: '14px',
-                marginTop: '2px',
-              }}
-            >
-              Enter or check each measurement before predicting.
-            </p>
+            {samplePatientLoaded && (
+              <span
+                style={{
+                  fontFamily: 'var(--fs)',
+                  fontSize: '11px',
+                  border: '1px solid var(--bds)',
+                  borderRadius: '3px',
+                  padding: '2px 8px',
+                  color: 'var(--mut)',
+                  lineHeight: '1',
+                }}
+              >
+                Sample patient
+              </span>
+            )}
           </div>
-
-          {/* Right aligned on title row */}
-          <div className="flex items-center gap-3 self-start sm:self-auto">
-            <button
-              type="button"
-              disabled
-              style={{
-                background: 'transparent',
-                border: 'none',
-                fontFamily: 'var(--fs)',
-                fontSize: '13px',
-                color: 'var(--mut)',
-                opacity: 0.5,
-                cursor: 'not-allowed',
-                padding: 0,
-              }}
-            >
-              Upload report (coming soon)
-            </button>
-
-            <Select
-              options={sampleOptions}
-              value=""
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val) {
-                  loadSamplePatient(val);
-                  setPredictError(null);
-                }
-              }}
-            />
-          </div>
+          <p
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '13px',
+              color: 'var(--mut)',
+              margin: '2px 0 0 0',
+            }}
+          >
+            Enter or check each measurement before predicting.
+          </p>
         </div>
 
-        {/* Task 5.2c: Sections in this order: Demographics, Clinical examination, ECG, Laboratory, Echocardiography */}
-        <div className="flex flex-col gap-2">
-          {FEATURE_SECTIONS.map((section, idx) => {
-            const sectionFeatures = FEATURE_SCHEMA.filter((f) => f.section === section);
-            return (
-              <CollapsibleSection
-                key={section}
-                section={section}
-                features={sectionFeatures}
-                inputs={inputs}
-                fieldMeta={fieldMeta}
-                onFieldChange={setFieldValue}
-                defaultOpen={idx === 0 || idx === 1}
+        {/* Right: Upload report disabled button + Sample patient select */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Button
+            variant="secondary"
+            disabled
+            title="Available in a later version"
+            style={{
+              height: '32px',
+              color: 'var(--mut)',
+              border: '1px solid var(--bd)',
+              cursor: 'not-allowed',
+            }}
+          >
+            Upload report (coming soon)
+          </Button>
+
+          <select
+            value={selectedSampleKey}
+            onChange={handleSelectSample}
+            aria-label="Load sample patient"
+            style={{
+              height: '32px',
+              width: '200px',
+              fontFamily: 'var(--fs)',
+              fontSize: '12px',
+              backgroundColor: 'var(--panel)',
+              color: 'var(--ink)',
+              border: '1px solid var(--bds)',
+              borderRadius: 'var(--radius)',
+              padding: '0 8px',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <option value="">Load sample patient</option>
+            {Object.entries(PATIENT_PROFILES).map(([key, prof]) => (
+              <option key={key} value={key}>
+                Sample: {prof.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Panel>
+
+      {/* Task 4.4 Section strip for mobile/tablet <900px (sticky top 48px) */}
+      <Panel
+        className="section-strip-mobile app-chrome"
+        style={{
+          position: 'sticky',
+          top: '48px',
+          height: '44px',
+          overflowX: 'auto',
+          whiteSpace: 'nowrap',
+          padding: 0,
+          display: 'flex',
+          alignItems: 'center',
+          zIndex: 8,
+          marginBottom: '14px',
+        }}
+      >
+        {sections.map((sec) => {
+          const isActive = activeSectionId === sec.id;
+          return (
+            <button
+              key={sec.id}
+              type="button"
+              onClick={() => scrollToSection(sec.id)}
+              style={{
+                height: '44px',
+                padding: '0 12px',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: isActive ? '2px solid var(--acc)' : '2px solid transparent',
+                fontFamily: 'var(--fs)',
+                fontSize: '13px',
+                fontWeight: isActive ? 600 : 400,
+                color: isActive ? 'var(--ink)' : 'var(--mut)',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              {sec.name}
+            </button>
+          );
+        })}
+      </Panel>
+
+      {/* Collapse all / Expand all button placed above form column */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginBottom: '8px',
+        }}
+      >
+        <button
+          type="button"
+          onClick={handleToggleAll}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            fontFamily: 'var(--fs)',
+            fontSize: '13px',
+            color: 'var(--acc)',
+            cursor: 'pointer',
+            textDecoration: 'underline',
+          }}
+        >
+          {allExpanded ? 'Collapse all' : 'Expand all'}
+        </button>
+      </div>
+
+      {/* Two-column layout: Sidebar 240px + Form column (1fr), gap 14px (Task 4.1) */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '14px',
+          alignItems: 'flex-start',
+          width: '100%',
+        }}
+      >
+        {/* Task 4.3 Sidebar (>=900px, sticky top 72px, wipe --i: 1) */}
+        <Panel
+          className="sidebar-desktop wipe"
+          style={{
+            position: 'sticky',
+            top: '72px',
+            padding: '12px 0',
+            width: '240px',
+            flexShrink: 0,
+            '--i': 1,
+          } as React.CSSProperties}
+        >
+          {/* Heading */}
+          <div
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '12px',
+              color: 'var(--mut)',
+              padding: '0 14px 8px 14px',
+            }}
+          >
+            Sections
+          </div>
+
+          {/* 5 Row buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {sections.map((sec) => {
+              const isActive = activeSectionId === sec.id;
+              const secMet = metrics.sectionMetrics[sec.id] || {
+                entered: 0,
+                total: sec.features.length,
+                hasInvalid: false,
+                hasOutOfRange: false,
+              };
+
+              let dotColor = null;
+              if (secMet.hasInvalid) {
+                dotColor = 'var(--high)';
+              } else if (secMet.hasOutOfRange) {
+                dotColor = 'var(--mod)';
+              }
+
+              return (
+                <button
+                  key={sec.id}
+                  type="button"
+                  onClick={() => scrollToSection(sec.id)}
+                  style={{
+                    height: '40px',
+                    padding: '0 14px',
+                    border: 'none',
+                    borderLeft: isActive ? '3px solid var(--acc)' : '3px solid transparent',
+                    backgroundColor: isActive ? 'var(--hov)' : 'transparent',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    width: '100%',
+                    transition: 'background-color 120ms',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.backgroundColor = 'var(--hov)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: 'var(--fs)',
+                      fontSize: '13px',
+                      fontWeight: isActive ? 600 : 400,
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    {sec.name}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {dotColor && (
+                      <span
+                        style={{
+                          width: '7px',
+                          height: '7px',
+                          borderRadius: '50%',
+                          backgroundColor: dotColor,
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+                    <span
+                      style={{
+                        fontFamily: 'var(--fm)',
+                        fontSize: '12px',
+                        color: 'var(--mut)',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {secMet.entered} of {secMet.total}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 1px --bd divider with 8px vertical margin */}
+          <div
+            style={{
+              height: '1px',
+              backgroundColor: 'var(--bd)',
+              margin: '8px 0',
+            }}
+          />
+
+          {/* Overall block */}
+          <div style={{ padding: '0 14px 4px 14px' }}>
+            <div
+              style={{
+                fontFamily: 'var(--fs)',
+                fontSize: '12px',
+                color: 'var(--mut)',
+                marginBottom: '2px',
+              }}
+            >
+              Entered
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--fm)',
+                fontSize: '14px',
+                color: 'var(--ink)',
+                fontVariantNumeric: 'tabular-nums',
+                marginBottom: '6px',
+              }}
+            >
+              {metrics.enteredTotal} of 55
+            </div>
+            {/* 4px thin Bar */}
+            <div
+              style={{
+                height: '4px',
+                backgroundColor: 'var(--bd)',
+                borderRadius: '3px',
+                overflow: 'hidden',
+                width: '100%',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${Math.min(100, (metrics.enteredTotal / 55) * 100)}%`,
+                  backgroundColor: 'var(--acc)',
+                  transition: 'width 180ms var(--ease-wipe)',
+                }}
               />
+            </div>
+          </div>
+        </Panel>
+
+        {/* Form Column (1fr) */}
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+          }}
+        >
+          {sections.map((sec, secIdx) => {
+            const isExpanded = Boolean(expandedSections[sec.id]);
+            const secMet = metrics.sectionMetrics[sec.id] || {
+              entered: 0,
+              total: sec.features.length,
+            };
+
+            return (
+              <Panel
+                key={sec.id}
+                id={`section-${sec.id}`}
+                className="wipe w-full"
+                style={{
+                  padding: 0,
+                  scrollMarginTop: '80px',
+                  overflow: 'hidden',
+                  '--i': 2 + secIdx,
+                } as React.CSSProperties}
+              >
+                {/* Section Header Button */}
+                <button
+                  type="button"
+                  aria-expanded={isExpanded}
+                  onClick={() => toggleSection(sec.id)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: isExpanded ? '1px solid var(--bd)' : 'none',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: 'var(--fs)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    {sec.name}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--fm)',
+                        fontSize: '12px',
+                        color: 'var(--mut)',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {secMet.entered} of {secMet.total}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp size={16} color="var(--mut)" />
+                    ) : (
+                      <ChevronDown size={16} color="var(--mut)" />
+                    )}
+                  </div>
+                </button>
+
+                {/* Section Body */}
+                {isExpanded && (
+                  <div style={{ padding: '16px' }}>
+                    <div className="section-field-grid">
+                      {sec.features.map((feature) => (
+                        <FieldAnatomy
+                          key={feature.key}
+                          feature={feature}
+                          value={inputs[feature.key]}
+                          meta={fieldMeta[feature.key]}
+                          showAllErrors={showAllErrors}
+                          onChange={(val) => handleFieldChange(feature.key, val)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Panel>
             );
           })}
         </div>
+      </div>
 
-        {/* Task 5.2g: Sticky bottom bar (position sticky, bottom 0, background --panel, border-top 1px --bd, margin 16px -20px -18px, padding 10px 16px, flex space-between) */}
+      {/* Task 4.9 Sticky action bar at the bottom */}
+      <div
+        className="app-chrome"
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 5,
+          width: '100%',
+          backgroundColor: 'var(--panel)',
+          borderTop: '1px solid var(--bd)',
+          marginLeft: '-16px',
+          marginRight: '-16px',
+          paddingLeft: '16px',
+          paddingRight: '16px',
+        }}
+      >
         <div
           style={{
-            position: 'sticky',
-            bottom: 0,
-            backgroundColor: 'var(--panel)',
-            borderTop: '1px solid var(--bd)',
-            margin: '16px -20px -18px',
-            padding: '10px 16px',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '10px 0',
             display: 'flex',
-            alignItems: 'center',
             justifyContent: 'space-between',
-            zIndex: 10,
+            alignItems: 'center',
+            gap: '12px',
+            flexWrap: 'wrap',
           }}
         >
-          {/* Left status text */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {predictError ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span
-                  style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--high)',
-                    display: 'inline-block',
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: 'var(--fs)',
-                    fontSize: '12px',
-                    color: 'var(--ink)',
-                  }}
-                >
-                  {predictError}
-                </span>
+          {/* Left status group (mono 12px --mut, parts joined by " · ") */}
+          <div
+            style={{
+              fontFamily: 'var(--fm)',
+              fontSize: '12px',
+              color: 'var(--mut)',
+              fontVariantNumeric: 'tabular-nums',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <span>
+              {metrics.enteredTotal === 55 ? 'All 55 entered' : `${metrics.enteredTotal} of 55 entered`}
+            </span>
+            {metrics.outsideTotal > 0 && (
+              <>
+                <span>·</span>
+                <span>{metrics.outsideTotal} outside typical range</span>
+              </>
+            )}
+            {metrics.invalidFields.length > 0 && (
+              <>
+                <span>·</span>
                 <button
                   type="button"
-                  onClick={handlePredict}
+                  onClick={focusFirstInvalid}
                   style={{
                     background: 'transparent',
                     border: 'none',
                     padding: 0,
-                    fontFamily: 'var(--fs)',
+                    fontFamily: 'var(--fm)',
                     fontSize: '12px',
                     color: 'var(--acc)',
                     textDecoration: 'underline',
                     cursor: 'pointer',
                   }}
                 >
-                  Try again
+                  {metrics.invalidFields.length} need attention
                 </button>
-              </div>
-            ) : firstProblem ? (
-              <span
-                style={{
-                  fontFamily: 'var(--fm)',
-                  fontSize: '12px',
-                  color: 'var(--high)',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {firstProblem}
-              </span>
-            ) : (
-              <span
-                style={{
-                  fontFamily: 'var(--fm)',
-                  fontSize: '12px',
-                  color: 'var(--mut)',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {rangeStatusText}
-              </span>
+              </>
             )}
           </div>
 
-          {/* Right: primary Button "Predict" */}
-          <Button
-            id="predict-button"
-            variant="primary"
-            onClick={handlePredict}
-            disabled={!isFormValid || isTransitioning}
-          >
-            Predict
-          </Button>
+          {/* Right group: Back + Predict */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/welcome')}
+              style={{ height: '36px' }}
+            >
+              Back
+            </Button>
+            <Button
+              id="predict-button"
+              variant="primary"
+              onClick={handlePredictClick}
+              style={{ height: '36px' }}
+            >
+              Predict
+            </Button>
+          </div>
         </div>
-      </Panel>
+      </div>
     </div>
   );
 };
