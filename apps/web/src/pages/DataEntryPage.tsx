@@ -48,13 +48,25 @@ export const DataEntryPage: React.FC = () => {
 
   const clearDialogRef = useRef<HTMLDialogElement>(null);
 
-  // Track expanded state for each of the 5 sections (default: all expanded)
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    demographics: true,
-    'clinical-examination': true,
-    ecg: true,
-    laboratory: true,
-    echocardiography: true,
+  // Track expanded state for each of the 5 sections (Task 5.5: on mobile <600px, only first section expanded)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+    if (isMobile) {
+      return {
+        demographics: true,
+        'clinical-examination': false,
+        ecg: false,
+        laboratory: false,
+        echocardiography: false,
+      };
+    }
+    return {
+      demographics: true,
+      'clinical-examination': true,
+      ecg: true,
+      laboratory: true,
+      echocardiography: true,
+    };
   });
 
   // Guard: Redirect to welcome if disclaimer not accepted

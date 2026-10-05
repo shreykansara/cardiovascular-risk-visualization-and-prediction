@@ -56,3 +56,33 @@ html, body, * {
   scrollbar-color: var(--bds) var(--panel);
 }
 
+/* ==============================================================================
+ * Mobile Responsiveness & Touch Target Compliance (Goal 5 / Tasks 5.1 - 5.5)
+ * ============================================================================== */
+
+@media (max-width: 600px) {
+  /* Task 5.3: Minimum 16px font-size on all form inputs on mobile to prevent iOS Safari auto-zoom */
+  input,
+  select,
+  textarea,
+  input[type="text"],
+  input[type="number"] {
+    font-size: 16px !important;
+  }
+
+  /* Task 5.2: Minimum 44px touch targets on mobile */
+  button:not(.chip):not(.no-touch-min),
+  .button-primary,
+  .button-secondary,
+  input[type="checkbox"],
+  .touch-target {
+    min-height: 44px;
+  }
+
+  /* Task 5.4: Mobile safe area inset padding */
+  .sticky-action-bar {
+    padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+
