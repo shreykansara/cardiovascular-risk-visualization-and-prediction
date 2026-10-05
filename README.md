@@ -25,7 +25,11 @@ To run Perfusion3D with Docker Compose in 3 simple steps:
    ```
 2. **Build and Launch Containers**:
    ```bash
-   docker compose up --build
+   GIT_SHA=$(git rev-parse --short HEAD) docker compose up --build -d
+   ```
+   *For Windows PowerShell:*
+   ```powershell
+   $env:GIT_SHA = (git rev-parse --short HEAD); docker compose up --build -d
    ```
    > **Note on Environment Configuration**: `.env` must use LF line endings (no CRLF). After editing `.env`, run `docker compose up -d --force-recreate api`; a plain restart or `up` does not reload it.
 3. **Open the Web Interface**:

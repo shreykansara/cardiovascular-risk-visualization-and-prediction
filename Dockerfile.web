@@ -5,6 +5,7 @@
 # --- Stage 1: Build React 18 + Three.js WebGL Frontend ---
 FROM node:20-alpine AS builder
 
+ARG GIT_SHA
 WORKDIR /app
 
 # Copy root dependency manifests
@@ -22,11 +23,17 @@ RUN npm run build:web
 # --- Stage 2: Production Nginx Server ---
 FROM nginx:alpine AS runner
 
+ARG GIT_SHA
+LABEL org.opencontainers.image.revision=$GIT_SHA
+
 # Remove default nginx static html files
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy built assets from builder stage
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
+
+# Write GIT_SHA build stamp to version.txt
+RUN echo -n "${GIT_SHA}" > /usr/share/nginx/html/version.txt
 
 # Copy custom Nginx configuration with /api reverse proxy and SPA routing
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf

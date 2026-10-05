@@ -4,6 +4,9 @@
 
 FROM python:3.11-slim AS runner
 
+ARG GIT_SHA
+LABEL org.opencontainers.image.revision=$GIT_SHA
+
 WORKDIR /app
 
 # Install system dependencies:
@@ -22,10 +25,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 
-# Copy model artifacts, API source, and processed reference data
+# Copy model artifacts, API source, processed data, metrics, and prompts
 COPY --chown=appuser:appuser models ./models
 COPY --chown=appuser:appuser apps/api ./apps/api
 COPY --chown=appuser:appuser data/processed ./data/processed
+COPY --chown=appuser:appuser reports ./reports
+COPY --chown=appuser:appuser src/prompts ./src/prompts
 
 USER appuser
 

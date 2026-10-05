@@ -27,6 +27,7 @@ apps/web/dist
 docs/screenshots
 docs/
 reports
+!reports/validation_metrics.json
 
 # System files
 .DS_Store

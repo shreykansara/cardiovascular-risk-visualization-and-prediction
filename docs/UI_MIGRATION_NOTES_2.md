@@ -56,5 +56,28 @@ Base Branch: `feature/ecg-paper-ui`
   - It does NOT use any client-side canvas-rasterization or DOM-rendering libraries (such as `html2canvas`, `jspdf`, or `pdfmake`).
   - The browser's native print engine handles PDF rendering and hardware printing via CSS `@media print` rules.
 - **Round 2 Enhancement**:
-  - Both "Download PDF" and "Print" will share the exact same print execution flow via `window.print()`.
+  - Both "Download PDF" and "Print" share the exact same print execution flow via `window.print()`.
   - Before calling `window.print()`, `document.title` is dynamically set to `"Perfusion3D clinician report YYYY-MM-DD"` or `"Perfusion3D patient report YYYY-MM-DD"`, and reverted immediately in `afterprint` (or finally block), ensuring default saved PDF filenames are semantic and clean.
+
+---
+
+## 2. Docker Setup Audit & Verification (Task 8.1 & 8.2)
+
+### Inspection Results
+1. `Dockerfile.web`:
+   - **Status Before**: Stale build stamping (missing `ARG GIT_SHA`, `/usr/share/nginx/html/version.txt`, and image revision label).
+   - **Resolution**: Multi-stage build updated with `ARG GIT_SHA`, writing `version.txt` and setting `LABEL org.opencontainers.image.revision=$GIT_SHA`. Verified self-contained font files (Sora and IBM Plex Mono) without any external Google Fonts dependencies.
+2. `Dockerfile.api`:
+   - **Status Before**: Missing `ARG GIT_SHA`, missing `LABEL org.opencontainers.image.revision`, missing `src/prompts/` (required for Groq report generation prompt templates), and missing `reports/validation_metrics.json`.
+   - **Resolution**: Added `ARG GIT_SHA`, revision label, non-root user `appuser`, `HEALTHCHECK` probe against `/api/v1/health`, pinned `httpx==0.28.1` and `python-dotenv>=1.0.1` in `requirements.txt`, and copied `src/prompts` and `reports`.
+3. `docker-compose.yml`:
+   - **Status Before**: Build definitions lacked build arguments for `GIT_SHA`.
+   - **Resolution**: Added `args: GIT_SHA: ${GIT_SHA:-dev}` to both `api` and `web` services. Verified `env_file: .env` for API, health-based `depends_on`, and port mappings (8080:80, 8000:8000).
+4. `docker-compose.dev.yml`:
+   - **Status**: Up to date. Hot reload mounts for `apps/api`, `models`, and `nginx.conf` verified.
+5. `apps/web/nginx.conf`:
+   - **Status**: Up to date. Verified SPA fallback (`try_files $uri $uri/ /index.html`), reverse proxy `/api/` -> `http://api:8000`, and asset caching headers.
+6. `.dockerignore`:
+   - **Status Before**: Ignored entire `reports` directory, blocking required validation metrics.
+   - **Resolution**: Added whitelist exception `!reports/validation_metrics.json`. Verified `.env` is excluded from all image layers.
+

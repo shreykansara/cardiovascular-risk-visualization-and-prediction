@@ -8,6 +8,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
     image: perfusion3d-api:latest
     container_name: perfusion3d_api
     ports:
@@ -28,6 +30,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
     image: perfusion3d-web:latest
     container_name: perfusion3d_web
     ports:

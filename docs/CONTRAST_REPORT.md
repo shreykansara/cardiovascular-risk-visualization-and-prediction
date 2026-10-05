@@ -1,7 +1,7 @@
 # Automated WCAG 2.1 Contrast Scanner Report (Task 1.5)
 
-Generated: 2026-10-05T06:26:13.684Z
-Scanner: Playwright system browser engine against `http://localhost:5173`
+Generated: 2026-10-05T06:34:51.333Z
+Scanner: Playwright system browser engine against `http://localhost:8080`
 
 ## Summary
 - **Total Elements Audited**: 1532
@@ -353,10 +353,10 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (clinician tab) | Paper (Light) | `span` ("Download PDF") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Print") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `p` ("Generated with Groq (qwen/qwen3.8-27b)") | 6.88:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `p` ("Groq rate limit reached. Using standard ") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `h1` ("Perfusion3D Hemodynamic & Coronary Ische") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Model version: Perfusion3D v1.0.0") | 8.10:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `span` ("Date: 2026-10-05 11:56:05 UTC") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("Date: 2026-10-05 06:34:42 UTC") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Patient: 58 years, Male") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `h2` ("1. Model output summary") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `th` ("Target") | 8.10:1 | 4.5:1 | **PASS** |
@@ -592,7 +592,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (patient tab) | Paper (Light) | `span` ("Print") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `p` ("Groq rate limit reached. Using standard ") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h1` ("Your Heart Health Summary") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Paper (Light) | `p` ("Date: 2026-10-05 11:56:06 UTC") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Paper (Light) | `p` ("Date: 2026-10-05 06:34:43 UTC") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h2` ("1. What this summary is") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `p` ("This summary describes the numbers you e") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h2` ("2. Overall picture") | 17.46:1 | 4.5:1 | **PASS** |
@@ -1125,7 +1125,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (clinician tab) | Monitor (Dark) | `p` ("Groq rate limit reached. Using standard ") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `h1` ("Perfusion3D Hemodynamic & Coronary Ische") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Model version: Perfusion3D v1.0.0") | 8.10:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Monitor (Dark) | `span` ("Date: 2026-10-05 11:56:05 UTC") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Monitor (Dark) | `span` ("Date: 2026-10-05 06:34:42 UTC") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Patient: 58 years, Male") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `h2` ("1. Model output summary") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `th` ("Target") | 8.10:1 | 4.5:1 | **PASS** |
@@ -1361,7 +1361,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (patient tab) | Monitor (Dark) | `span` ("Print") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `p` ("Groq rate limit reached. Using standard ") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h1` ("Your Heart Health Summary") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Monitor (Dark) | `p` ("Date: 2026-10-05 11:56:06 UTC") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Monitor (Dark) | `p` ("Date: 2026-10-05 06:34:43 UTC") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h2` ("1. What this summary is") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `p` ("This summary describes the numbers you e") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h2` ("2. Overall picture") | 17.46:1 | 4.5:1 | **PASS** |
