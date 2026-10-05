@@ -73,7 +73,8 @@ async function run() {
   console.log('  -> [PASS] Both tabs visible on /reports');
 
   // 2. Verify status line reads "Prepared at {HH:MM} from the entered values."
-  const statusLineText = await page.textContent('.app-chrome.no-print p, .app-chrome.no-print div:has-text("Prepared at")');
+  await page.locator('#reports-status-line').getByText('Prepared at').waitFor({ state: 'visible', timeout: 15000 });
+  const statusLineText = await page.textContent('#reports-status-line');
   console.log(`  -> Status line text: "${statusLineText.trim()}"`);
   if (!/Prepared at \d{2}:\d{2} from the entered values\./.test(statusLineText)) {
     throw new Error(`Status line "${statusLineText}" does not match required format "Prepared at {HH:MM} from the entered values."`);

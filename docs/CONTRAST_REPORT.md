@@ -1,10 +1,10 @@
 # Automated WCAG 2.1 Contrast Scanner Report (Task 1.5)
 
-Generated: 2026-10-05T17:50:26.745Z
+Generated: 2026-10-05T18:55:25.743Z
 Scanner: Playwright system browser engine against `http://localhost:5173`
 
 ## Summary
-- **Total Elements Audited**: 1548
+- **Total Elements Audited**: 1542
 - **Total Failures**: 0
 - **Verdict**: **PASSED (Zero Failures)**
 
@@ -40,11 +40,11 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /enter-data | Paper (Light) | `span` ("Welcome") | 17.46:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `label.theme-label` ("Theme") | 6.88:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `select#nav-theme-select.theme-select-control` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
-| /enter-data | Paper (Light) | `button.nav-new-assessment-btn` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
+| /enter-data | Paper (Light) | `span` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `h1` ("Clinical data") | 17.46:1 | 3.0:1 | **PASS** |
 | /enter-data | Paper (Light) | `p` ("Enter each measurement, or load a sample") | 6.88:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `select#sample-patient-select` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
-| /enter-data | Paper (Light) | `button` ("Collapse all") | 9.27:1 | 4.5:1 | **PASS** |
+| /enter-data | Paper (Light) | `span` ("Collapse all") | 9.27:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `div` ("Sections") | 6.88:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("Demographics") | 16.27:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("0 of 5") | 6.41:1 | 4.5:1 | **PASS** |
@@ -271,7 +271,6 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /enter-data | Paper (Light) | `span` ("0 of 55 entered") | 6.88:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("Back") | 17.46:1 | 4.5:1 | **PASS** |
-| /enter-data | Paper (Light) | `button#predict-button.inline-flex.items-center` ("button border") | 9.86:1 | 3.0:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("Predict") | 9.86:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /enter-data | Paper (Light) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
@@ -283,14 +282,14 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /results | Paper (Light) | `span` ("Clinical data") | 17.46:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `label.theme-label` ("Theme") | 6.88:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `select#nav-theme-select.theme-select-control` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
-| /results | Paper (Light) | `button.nav-new-assessment-btn` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
-| /results | Paper (Light) | `button#view-preset-front.hover:bg-hover.transition-colors` ("Front") | 9.86:1 | 4.5:1 | **PASS** |
-| /results | Paper (Light) | `button#view-preset-left.hover:bg-hover.transition-colors` ("Left") | 17.46:1 | 4.5:1 | **PASS** |
-| /results | Paper (Light) | `button#view-preset-back.hover:bg-hover.transition-colors` ("Back") | 17.46:1 | 4.5:1 | **PASS** |
-| /results | Paper (Light) | `button#view-preset-right.hover:bg-hover.transition-colors` ("Right") | 17.46:1 | 4.5:1 | **PASS** |
-| /results | Paper (Light) | `button#viewer-zoom-out.hover:bg-hover.transition-colors` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
-| /results | Paper (Light) | `button#viewer-zoom-in.hover:bg-hover.transition-colors` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
-| /results | Paper (Light) | `button#viewer-reset-view.hover:bg-hover.transition-colors` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
+| /results | Paper (Light) | `span` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
+| /results | Paper (Light) | `span` ("Front") | 9.86:1 | 4.5:1 | **PASS** |
+| /results | Paper (Light) | `span` ("Left") | 17.46:1 | 4.5:1 | **PASS** |
+| /results | Paper (Light) | `span` ("Back") | 17.46:1 | 4.5:1 | **PASS** |
+| /results | Paper (Light) | `span` ("Right") | 17.46:1 | 4.5:1 | **PASS** |
+| /results | Paper (Light) | `button#viewer-zoom-out.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
+| /results | Paper (Light) | `button#viewer-zoom-in.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
+| /results | Paper (Light) | `button#viewer-reset-view.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
 | /results | Paper (Light) | `span` ("Low, under 40%") | 6.88:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `span` ("Moderate, 40 to 70%") | 6.88:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `span` ("High, over 70%") | 6.88:1 | 4.5:1 | **PASS** |
@@ -325,7 +324,6 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /results | Paper (Light) | `div` ("raises probability") | 6.88:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `div` ("Patient Age : 47.0 years") | 17.46:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `div` ("lowers probability") | 6.88:1 | 4.5:1 | **PASS** |
-| /results | Paper (Light) | `button#create-reports-button.inline-flex.items-center` ("button border") | 9.27:1 | 3.0:1 | **PASS** |
 | /results | Paper (Light) | `span` ("Create reports") | 9.86:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
 | /results | Paper (Light) | `a` ("Model information") | 9.86:1 | 4.5:1 | **PASS** |
@@ -339,12 +337,13 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (error state) | Paper (Light) | `span` ("Results") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `label.theme-label` ("Theme") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `select#nav-theme-select.theme-select-control` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
-| /reports (error state) | Paper (Light) | `button.nav-new-assessment-btn` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (error state) | Paper (Light) | `span` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `div` ("The reports could not be prepared.") | 16.41:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `button#tab-technical` ("Clinician report") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `button#tab-patient` ("Patient report") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `span` ("The reports could not be prepared.") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (error state) | Paper (Light) | `button#try-again-button` ("Try again") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (error state) | Paper (Light) | `button#try-again-button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
+| /reports (error state) | Paper (Light) | `span` ("Try again") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `risk-dot` ("Risk Dot") | 6.85:1 | 3.0:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `span` ("The reports could not be prepared.") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Paper (Light) | `span` ("DECISION SUPPORT ONLY: This system is an") | 6.88:1 | 4.5:1 | **PASS** |
@@ -359,7 +358,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (loading state) | Paper (Light) | `span` ("Results") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Paper (Light) | `label.theme-label` ("Theme") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Paper (Light) | `select#nav-theme-select.theme-select-control` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
-| /reports (loading state) | Paper (Light) | `button.nav-new-assessment-btn` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (loading state) | Paper (Light) | `span` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Paper (Light) | `div` ("Preparing the reports") | 16.41:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Paper (Light) | `button#tab-technical` ("Clinician report") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Paper (Light) | `button#tab-patient` ("Patient report") | 6.88:1 | 4.5:1 | **PASS** |
@@ -376,18 +375,17 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (clinician tab) | Paper (Light) | `span` ("Results") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `label.theme-label` ("Theme") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `select#nav-theme-select.theme-select-control` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `button.nav-new-assessment-btn` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `div` ("Reports ready") | 16.41:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `button#tab-technical` ("Clinician report") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `button#tab-patient` ("Patient report") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `button#download-pdf-button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Download PDF") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `button#print-report-button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `span` ("Print") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `span` ("Prepared at 23:20 from the entered value") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("Print") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("Prepared at 00:25 from the entered value") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `h1` ("Perfusion3D Hemodynamic & Coronary Ische") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Model version: Perfusion3D v1.0.0") | 8.10:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Paper (Light) | `span` ("Date: 2026-10-05T23:20:13.652993") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Paper (Light) | `span` ("Date: 2026-10-06T00:25:12.013075") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `span` ("Patient: 47 years, Female") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `h2` ("1. Model output summary") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Paper (Light) | `th` ("Target") | 8.10:1 | 4.5:1 | **PASS** |
@@ -593,17 +591,16 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (patient tab) | Paper (Light) | `span` ("Results") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `label.theme-label` ("Theme") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `select#nav-theme-select.theme-select-control` ("select border") | 3.55:1 | 3.0:1 | **PASS** |
-| /reports (patient tab) | Paper (Light) | `button.nav-new-assessment-btn` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Paper (Light) | `span` ("New assessment") | 9.86:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `div` ("Reports ready") | 16.41:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `button#tab-technical` ("Clinician report") | 6.88:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `button#tab-patient` ("Patient report") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `button#download-pdf-button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `span` ("Download PDF") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Paper (Light) | `button#print-report-button.inline-flex.items-center` ("button border") | 3.55:1 | 3.0:1 | **PASS** |
-| /reports (patient tab) | Paper (Light) | `span` ("Print") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Paper (Light) | `span` ("Prepared at 23:20 from the entered value") | 17.46:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Paper (Light) | `span` ("Print") | 9.86:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Paper (Light) | `span` ("Prepared at 00:25 from the entered value") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h1` ("Your Heart Health Summary") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Paper (Light) | `p` ("Date: 2026-10-05") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Paper (Light) | `p` ("Date: 2026-10-06") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h2` ("1. What this summary is") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `p` ("This summary describes the numbers you e") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Paper (Light) | `h2` ("2. Overall picture") | 17.46:1 | 4.5:1 | **PASS** |
@@ -814,11 +811,11 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /enter-data | Monitor (Dark) | `span` ("Welcome") | 15.43:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `label.theme-label` ("Theme") | 7.92:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `select#nav-theme-select.theme-select-control` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `button.nav-new-assessment-btn` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `span` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `h1` ("Clinical data") | 15.43:1 | 3.0:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `p` ("Enter each measurement, or load a sample") | 7.92:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `select#sample-patient-select` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `button` ("Collapse all") | 14.79:1 | 4.5:1 | **PASS** |
+| /enter-data | Monitor (Dark) | `span` ("Collapse all") | 14.79:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `div` ("Sections") | 7.92:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("Demographics") | 13.44:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("0 of 5") | 6.89:1 | 4.5:1 | **PASS** |
@@ -1045,7 +1042,6 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /enter-data | Monitor (Dark) | `span` ("0 of 55 entered") | 7.92:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `button.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("Back") | 15.43:1 | 4.5:1 | **PASS** |
-| /enter-data | Monitor (Dark) | `button#predict-button.inline-flex.items-center` ("button border") | 13.71:1 | 3.0:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("Predict") | 14.67:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `span` ("DECISION SUPPORT ONLY: This system is an") | 7.92:1 | 4.5:1 | **PASS** |
 | /enter-data | Monitor (Dark) | `a` ("Model information") | 13.71:1 | 4.5:1 | **PASS** |
@@ -1057,14 +1053,14 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /results | Monitor (Dark) | `span` ("Clinical data") | 15.43:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `label.theme-label` ("Theme") | 7.92:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `select#nav-theme-select.theme-select-control` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
-| /results | Monitor (Dark) | `button.nav-new-assessment-btn` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
-| /results | Monitor (Dark) | `button#view-preset-front.hover:bg-hover.transition-colors` ("Front") | 14.67:1 | 4.5:1 | **PASS** |
-| /results | Monitor (Dark) | `button#view-preset-left.hover:bg-hover.transition-colors` ("Left") | 15.43:1 | 4.5:1 | **PASS** |
-| /results | Monitor (Dark) | `button#view-preset-back.hover:bg-hover.transition-colors` ("Back") | 15.43:1 | 4.5:1 | **PASS** |
-| /results | Monitor (Dark) | `button#view-preset-right.hover:bg-hover.transition-colors` ("Right") | 15.43:1 | 4.5:1 | **PASS** |
-| /results | Monitor (Dark) | `button#viewer-zoom-out.hover:bg-hover.transition-colors` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
-| /results | Monitor (Dark) | `button#viewer-zoom-in.hover:bg-hover.transition-colors` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
-| /results | Monitor (Dark) | `button#viewer-reset-view.hover:bg-hover.transition-colors` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
+| /results | Monitor (Dark) | `span` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
+| /results | Monitor (Dark) | `span` ("Front") | 14.67:1 | 4.5:1 | **PASS** |
+| /results | Monitor (Dark) | `span` ("Left") | 15.43:1 | 4.5:1 | **PASS** |
+| /results | Monitor (Dark) | `span` ("Back") | 15.43:1 | 4.5:1 | **PASS** |
+| /results | Monitor (Dark) | `span` ("Right") | 15.43:1 | 4.5:1 | **PASS** |
+| /results | Monitor (Dark) | `button#viewer-zoom-out.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
+| /results | Monitor (Dark) | `button#viewer-zoom-in.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
+| /results | Monitor (Dark) | `button#viewer-reset-view.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
 | /results | Monitor (Dark) | `span` ("Low, under 40%") | 7.92:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `span` ("Moderate, 40 to 70%") | 7.92:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `span` ("High, over 70%") | 7.92:1 | 4.5:1 | **PASS** |
@@ -1099,7 +1095,6 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /results | Monitor (Dark) | `div` ("raises probability") | 7.92:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `div` ("Patient Age : 47.0 years") | 15.43:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `div` ("lowers probability") | 7.92:1 | 4.5:1 | **PASS** |
-| /results | Monitor (Dark) | `button#create-reports-button.inline-flex.items-center` ("button border") | 14.79:1 | 3.0:1 | **PASS** |
 | /results | Monitor (Dark) | `span` ("Create reports") | 14.67:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `span` ("DECISION SUPPORT ONLY: This system is an") | 7.92:1 | 4.5:1 | **PASS** |
 | /results | Monitor (Dark) | `a` ("Model information") | 13.71:1 | 4.5:1 | **PASS** |
@@ -1113,12 +1108,13 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (error state) | Monitor (Dark) | `span` ("Results") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `label.theme-label` ("Theme") | 7.92:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `select#nav-theme-select.theme-select-control` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
-| /reports (error state) | Monitor (Dark) | `button.nav-new-assessment-btn` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
+| /reports (error state) | Monitor (Dark) | `span` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `div` ("The reports could not be prepared.") | 16.65:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `button#tab-technical` ("Clinician report") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `button#tab-patient` ("Patient report") | 7.92:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `span` ("The reports could not be prepared.") | 15.43:1 | 4.5:1 | **PASS** |
-| /reports (error state) | Monitor (Dark) | `button#try-again-button` ("Try again") | 15.43:1 | 4.5:1 | **PASS** |
+| /reports (error state) | Monitor (Dark) | `button#try-again-button.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
+| /reports (error state) | Monitor (Dark) | `span` ("Try again") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `risk-dot` ("Risk Dot") | 6.85:1 | 3.0:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `span` ("The reports could not be prepared.") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (error state) | Monitor (Dark) | `span` ("DECISION SUPPORT ONLY: This system is an") | 7.92:1 | 4.5:1 | **PASS** |
@@ -1133,7 +1129,7 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (loading state) | Monitor (Dark) | `span` ("Results") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Monitor (Dark) | `label.theme-label` ("Theme") | 7.92:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Monitor (Dark) | `select#nav-theme-select.theme-select-control` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
-| /reports (loading state) | Monitor (Dark) | `button.nav-new-assessment-btn` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
+| /reports (loading state) | Monitor (Dark) | `span` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Monitor (Dark) | `div` ("Preparing the reports") | 16.65:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Monitor (Dark) | `button#tab-technical` ("Clinician report") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (loading state) | Monitor (Dark) | `button#tab-patient` ("Patient report") | 7.92:1 | 4.5:1 | **PASS** |
@@ -1150,18 +1146,17 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Results") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `label.theme-label` ("Theme") | 7.92:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `select#nav-theme-select.theme-select-control` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
-| /reports (clinician tab) | Monitor (Dark) | `button.nav-new-assessment-btn` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Monitor (Dark) | `span` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `div` ("Reports ready") | 16.65:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `button#tab-technical` ("Clinician report") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `button#tab-patient` ("Patient report") | 7.92:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `button#download-pdf-button.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Download PDF") | 15.43:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Monitor (Dark) | `button#print-report-button.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
-| /reports (clinician tab) | Monitor (Dark) | `span` ("Print") | 15.43:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Monitor (Dark) | `span` ("Prepared at 23:20 from the entered value") | 15.43:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Monitor (Dark) | `span` ("Print") | 14.67:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Monitor (Dark) | `span` ("Prepared at 00:25 from the entered value") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `h1` ("Perfusion3D Hemodynamic & Coronary Ische") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Model version: Perfusion3D v1.0.0") | 8.10:1 | 4.5:1 | **PASS** |
-| /reports (clinician tab) | Monitor (Dark) | `span` ("Date: 2026-10-05T23:20:24.973017") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (clinician tab) | Monitor (Dark) | `span` ("Date: 2026-10-06T00:25:24.013251") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `span` ("Patient: 47 years, Female") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `h2` ("1. Model output summary") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (clinician tab) | Monitor (Dark) | `th` ("Target") | 8.10:1 | 4.5:1 | **PASS** |
@@ -1367,17 +1362,16 @@ Scanner: Playwright system browser engine against `http://localhost:5173`
 | /reports (patient tab) | Monitor (Dark) | `span` ("Results") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `label.theme-label` ("Theme") | 7.92:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `select#nav-theme-select.theme-select-control` ("select border") | 3.65:1 | 3.0:1 | **PASS** |
-| /reports (patient tab) | Monitor (Dark) | `button.nav-new-assessment-btn` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Monitor (Dark) | `span` ("New assessment") | 13.71:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `div` ("Reports ready") | 16.65:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `button#tab-technical` ("Clinician report") | 7.92:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `button#tab-patient` ("Patient report") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `button#download-pdf-button.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `span` ("Download PDF") | 15.43:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Monitor (Dark) | `button#print-report-button.inline-flex.items-center` ("button border") | 3.65:1 | 3.0:1 | **PASS** |
-| /reports (patient tab) | Monitor (Dark) | `span` ("Print") | 15.43:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Monitor (Dark) | `span` ("Prepared at 23:20 from the entered value") | 15.43:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Monitor (Dark) | `span` ("Print") | 14.67:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Monitor (Dark) | `span` ("Prepared at 00:25 from the entered value") | 15.43:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h1` ("Your Heart Health Summary") | 17.46:1 | 4.5:1 | **PASS** |
-| /reports (patient tab) | Monitor (Dark) | `p` ("Date: 2026-10-05") | 8.10:1 | 4.5:1 | **PASS** |
+| /reports (patient tab) | Monitor (Dark) | `p` ("Date: 2026-10-06") | 8.10:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h2` ("1. What this summary is") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `p` ("This summary describes the numbers you e") | 17.46:1 | 4.5:1 | **PASS** |
 | /reports (patient tab) | Monitor (Dark) | `h2` ("2. Overall picture") | 17.46:1 | 4.5:1 | **PASS** |
@@ -1598,6 +1592,7 @@ Reports |
 | /enter-data | Paper (Light) | `<button>` | Upload report (coming soon) |
 | /enter-data | Paper (Light) | `<span>` | Upload report (coming soon) |
 | /enter-data | Paper (Light) | `<button>` | Clear form |
+| /enter-data | Paper (Light) | `<span>` | Clear form |
 | /results | Paper (Light) | `<button>` | 3
 Results |
 | /results | Paper (Light) | `<span>` | 3 |
@@ -1679,6 +1674,7 @@ Reports |
 | /enter-data | Monitor (Dark) | `<button>` | Upload report (coming soon) |
 | /enter-data | Monitor (Dark) | `<span>` | Upload report (coming soon) |
 | /enter-data | Monitor (Dark) | `<button>` | Clear form |
+| /enter-data | Monitor (Dark) | `<span>` | Clear form |
 | /results | Monitor (Dark) | `<button>` | 3
 Results |
 | /results | Monitor (Dark) | `<span>` | 3 |

@@ -139,6 +139,7 @@ async function runThemeFlow(browser, themeKey, themeName, screenshotDir) {
   const prInput = page.locator('#field-PR');
   await prInput.focus();
 
+  const fieldAge = page.locator('#field-Age');
   await fieldAge.fill('80');
   await fieldAge.blur();
 
@@ -180,7 +181,7 @@ async function runThemeFlow(browser, themeKey, themeName, screenshotDir) {
   console.log(`  -> Screenshots saved: confirm_dialog (1440, 768, 375)`);
 
   // Cancel dialog
-  const cancelDialogBtn = page.locator('dialog.nav-confirm-dialog button', { hasText: 'Cancel' });
+  const cancelDialogBtn = page.locator('header dialog.nav-confirm-dialog button', { hasText: 'Cancel' });
   await cancelDialogBtn.click();
   await page.waitForTimeout(200);
 
@@ -346,11 +347,25 @@ async function runReducedMotionFlow(browser) {
 
   // Create reports under reduced motion: transition delay MUST be 0
   const createReportsBtn = page.locator('#create-reports-button');
+  await createReportsBtn.waitFor({ state: 'visible', timeout: 15000 });
+  await page.evaluate(() => {
+    window.__transitionStartTime = null;
+    const btn = document.getElementById('create-reports-button');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        window.__transitionStartTime = performance.now();
+      }, { capture: true });
+    }
+  });
+
   const t0 = Date.now();
   await createReportsBtn.click();
   await page.waitForFunction(() => window.location.pathname.includes('/reports'), { timeout: 10000 });
-  const elapsed = Date.now() - t0;
-  console.log(`  -> Reduced motion reports navigation elapsed: ${elapsed}ms`);
+  const inBrowserElapsed = await page.evaluate(() => {
+    return window.__transitionStartTime ? Math.round(performance.now() - window.__transitionStartTime) : null;
+  });
+  const elapsed = inBrowserElapsed !== null ? inBrowserElapsed : (Date.now() - t0);
+  console.log(`  -> Reduced motion reports navigation elapsed: ${elapsed}ms (in-browser: ${inBrowserElapsed}ms)`);
 
   // Under reduced motion, navigate is called immediately with no 300ms setTimeout
   if (elapsed >= 250) {

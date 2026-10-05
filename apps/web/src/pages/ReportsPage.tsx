@@ -133,6 +133,7 @@ export const ReportsPage: React.FC = () => {
 
         {/* Status line (12px, --ink): exactly one of loading, ready, error */}
         <div
+          id="reports-status-line"
           style={{
             fontFamily: 'var(--fs)',
             fontSize: '12px',
