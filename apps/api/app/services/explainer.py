@@ -3,7 +3,15 @@ Explainability Service: TreeSHAP Attributions & Clinical Feature Mapping
 Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
 """
 
+import warnings
 import numpy as np
+
+# Task 2.9: Suppress targeted LightGBM binary classifier TreeExplainer warning
+warnings.filterwarnings(
+    "ignore",
+    message=r".*LightGBM binary classifier with TreeExplainer shap values output has changed to a list of ndarray.*",
+    category=UserWarning,
+)
 
 from apps.api.app.schemas.patient import PatientInputSchema
 from apps.api.app.schemas.xai import (

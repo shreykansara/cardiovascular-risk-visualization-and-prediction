@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 
 EXACT_FORBIDDEN = {"cad", "lad", "lcx", "rca"}
 SUBSTRING_FORBIDDEN = {"cath", "stenosis", "target", "ground_truth"}
+FORBIDDEN_LEAKAGE_COLUMNS = EXACT_FORBIDDEN | SUBSTRING_FORBIDDEN
 
 
 def audit_request_for_leakage(payload: dict[str, Any]) -> None:

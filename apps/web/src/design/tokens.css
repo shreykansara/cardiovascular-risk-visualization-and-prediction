@@ -1,0 +1,239 @@
+/* ECG Paper Design Tokens
+ * Light ("Paper") & Dark ("Monitor") themes
+ * Strictly adheres to ECG Paper specification
+ */
+
+:root {
+  /* Fonts */
+  --fs: 'Sora', system-ui, sans-serif;
+  --fm: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Theme-independent layout & focus tokens */
+  --radius: 3px;
+  --focus: 2px solid var(--acc);
+  --focus-offset: 1px;
+  --s-black: #000000;
+
+  /* Motion tokens */
+  --ease-wipe: cubic-bezier(.3,0,.2,1);
+  --ease-draw: cubic-bezier(.4,0,.2,1);
+  --stagger: 110ms;
+}
+
+/* Panel base class (Task 2.1) */
+.pn {
+  background: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: 3px;
+  padding: 12px 14px;
+  box-shadow: none;
+}
+
+/* Field Grid responsive columns (Task 5.2d) */
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  gap: 10px;
+}
+
+@media (min-width: 600px) {
+  .field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .field-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Theme-independent sheet-scoped tokens (Task 1.2) */
+.sheet,
+#print-root {
+  --s-ink: #241618;
+  --s-mut: #5E4B4E;
+  --s-bg: #FFFFFF;
+  --s-bd: #D9C3C0;
+  --s-low: #1F6F45;
+  --s-mod: #8A5A00;
+  --s-high: #B3152F;
+  --s-acc: #1D3F8A;
+}
+
+/* LIGHT ("Paper") */
+:root[data-theme="light"],
+:root:not([data-theme="dark"]),
+[data-theme="light"] {
+  color-scheme: light;
+  --page: #FFF6F4;
+  --gmin: #F8E3DF;
+  --gmaj: #EFC2BA;
+  --panel: #FFFFFF;
+  --ink: #241618;
+  --mut: #6A5558;
+  --acc: #1D3F8A;
+  --onacc: #FFFFFF;
+  --bd: #E3CFCC;
+  --bds: #9F817E; /* Adjusted from #B99A96 to meet 3.55:1 against #FFFFFF and 3.21:1 against #FFF0F0 */
+  --hov: #F4F7FD;
+  --low: #2E8B57;
+  --mod: #B87700;
+  --high: #C81D3A;
+  --sheet: #FFFFFF;
+  --sheetink: #241618;
+  --sheetmut: #6A5558;
+  --sbd: #E3CFCC;
+}
+
+/* DARK ("Monitor") */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #06100C;
+  --gmin: #0B1C14;
+  --gmaj: #153024;
+  --panel: #0C1A13;
+  --ink: #D8F5E4;
+  --mut: #8FB5A0;
+  --acc: #4CFF9A;
+  --onacc: #04120A;
+  --bd: #1D3A2A;
+  --bds: #477B64; /* Adjusted from #3A6350 to meet 3.65:1 against #0C1A13 and 3.32:1 against #11241B */
+  --hov: #12281D;
+  --low: #3FD08A;
+  --mod: #FFC24D;
+  --high: #FF6B7A;
+  --sheet: #FFFFFF;
+  --sheetink: #241618;
+  --sheetmut: #6A5558;
+  --sbd: #E3CFCC;
+}
+
+/* Print and PDF forced light token overrides (Task 5.5e) */
+@media print {
+  :root,
+  :root[data-theme="dark"],
+  [data-theme="dark"],
+  :root[data-theme="light"],
+  [data-theme="light"] {
+    color-scheme: light !important;
+    --page: #FFFFFF !important;
+    --panel: #FFFFFF !important;
+    --ink: #241618 !important;
+    --mut: #6A5558 !important;
+    --acc: #1D3F8A !important;
+    --onacc: #FFFFFF !important;
+    --bd: #E3CFCC !important;
+    --bds: #B99A96 !important;
+    --sheet: #FFFFFF !important;
+    --sheetink: #241618 !important;
+    --sheetmut: #6A5558 !important;
+    --sbd: #E3CFCC !important;
+  }
+}
+
+/* Type scale classes (Task 1.4) */
+/* Sora unless noted */
+.type-body {
+  font-family: var(--fs);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.type-page-title {
+  font-family: var(--fs);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.type-report-title {
+  font-family: var(--fs);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sheetink);
+}
+
+.type-section-heading {
+  font-family: var(--fs);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.type-report-subheading {
+  font-family: var(--fs);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sheetink);
+}
+
+.type-label {
+  font-family: var(--fs);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--mut);
+}
+
+.type-caption {
+  font-family: var(--fs);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--mut);
+}
+
+.type-button {
+  font-family: var(--fs);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.type-brand {
+  font-family: var(--fs);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Mono (IBM Plex Mono, font-variant-numeric: tabular-nums) */
+.type-result-num {
+  font-family: var(--fm);
+  font-size: 40px;
+  line-height: 1.05;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.type-vessel-num {
+  font-family: var(--fm);
+  font-size: 20px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.type-input-val {
+  font-family: var(--fm);
+  font-size: 14px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.type-unit-count {
+  font-family: var(--fm);
+  font-size: 12px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--mut);
+}
+
+.type-table-num {
+  font-family: var(--fm);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,15 @@
+/* ECG Grid background
+ * Dual-density ECG graph paper grid (40px major / 8px minor)
+ * This is the ONLY place in the app where gradients are permitted (except Bar tick overlay).
+ */
+
+.ecg-grid {
+  min-height: 100vh;
+  background-color: var(--page);
+  background-image:
+    linear-gradient(var(--gmaj) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gmaj) 1px, transparent 1px),
+    linear-gradient(var(--gmin) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gmin) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px, 8px 8px, 8px 8px;
+}

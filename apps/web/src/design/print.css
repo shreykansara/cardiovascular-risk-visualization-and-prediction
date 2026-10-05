@@ -1,0 +1,71 @@
+/* ECG Paper Print Stylesheet (Phase 6)
+ * Strictly ensures only the report sheet is printed with no navbar or page chrome
+ */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  .app-chrome,
+  .no-print,
+  dialog {
+    display: none !important;
+  }
+
+  html,
+  body,
+  #root,
+  .ecg-grid,
+  main#main-content {
+    background: none !important;
+    background-image: none !important;
+    background-color: transparent !important;
+    color: var(--s-black) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+  }
+
+  #print-root,
+  .sheet,
+  .sheet-wrapper {
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+    clip-path: none !important;
+    transform: none !important;
+  }
+
+  h4,
+  h3 {
+    break-after: avoid;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  table {
+    break-inside: auto;
+  }
+
+  .risk-dot,
+  .bar-fill,
+  .bar-track,
+  span,
+  div,
+  article,
+  td,
+  th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

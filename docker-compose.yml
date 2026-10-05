@@ -1,19 +1,42 @@
+# ==============================================================================
+# Docker Compose: Perfusion3D Multi-Service Architecture (Task D4)
+# Web (Nginx SPA proxy) on :8080 | API (FastAPI ML Inference) on :8000
+# ==============================================================================
+
 services:
-  perfusion3d-app:
+  api:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: perfusion3d-app:latest
-    container_name: perfusion3d_platform
+      dockerfile: Dockerfile.api
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
+    image: perfusion3d-api:latest
+    container_name: perfusion3d_api
     ports:
       - "8000:8000"
+    env_file: .env
     environment:
       - PORT=8000
       - PYTHONUNBUFFERED=1
-    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
       start_period: 15s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
+    image: perfusion3d-web:latest
+    container_name: perfusion3d_web
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped

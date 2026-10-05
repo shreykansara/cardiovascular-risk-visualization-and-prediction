@@ -1,0 +1,293 @@
+/* AppNav and StepSummary styles (Phase 2)
+ * Strictly conforms to ECG Paper design language
+ */
+
+.app-chrome {
+  box-shadow: none;
+}
+
+/* Visually-hidden Skip to Content link (Task 2.1) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  font-family: var(--fs);
+  font-size: 13px;
+  text-decoration: none;
+  background-color: var(--panel);
+  color: var(--acc);
+  border: 1px solid var(--bds);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  left: 16px;
+  top: 10px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  outline: var(--focus);
+  outline-offset: var(--focus-offset);
+}
+
+/* App Header Container (Task 2.1) */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 56px;
+  background-color: var(--panel);
+  border-bottom: 1px solid var(--bd);
+  box-shadow: none;
+}
+
+.app-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .app-header-inner {
+    padding: 0 24px;
+  }
+}
+
+/* Tablet and mobile <900px rules (Task 2.5) */
+@media (max-width: 899px) {
+  .app-header {
+    height: 48px !important;
+  }
+  .nav-center-zone {
+    display: none !important;
+  }
+  .nav-new-assessment-btn {
+    display: none !important;
+  }
+  .theme-select-control {
+    width: 104px !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .step-summary-bar {
+    display: none !important;
+  }
+}
+
+/* Theme label visible only at >=1100px (Task 2.4a) */
+@media (max-width: 1099px) {
+  .theme-label {
+    display: none !important;
+  }
+}
+
+/* Center Zone Nav items (Task 2.3) */
+.nav-step-item-btn {
+  height: 56px;
+  min-width: 128px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  background: transparent;
+  border: none;
+  font-family: var(--fs);
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 120ms;
+}
+
+.nav-step-item-btn:focus-visible {
+  outline: var(--focus);
+  outline-offset: var(--focus-offset);
+}
+
+.nav-step-item-btn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  transform-origin: left center;
+}
+
+/* Completed State */
+.nav-step-item-btn.completed {
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 400;
+}
+.nav-step-item-btn.completed:hover {
+  background-color: var(--hov);
+}
+.nav-step-item-btn.completed .nav-step-num {
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background-color: transparent;
+}
+.nav-step-item-btn.completed::after {
+  background-color: var(--ink);
+}
+
+/* Current State */
+.nav-step-item-btn.current {
+  cursor: default;
+  color: var(--ink);
+  font-weight: 600;
+}
+.nav-step-item-btn.current .nav-step-num {
+  border: 1px solid var(--acc);
+  color: var(--onacc);
+  background-color: var(--acc);
+}
+.nav-step-item-btn.current::after {
+  background-color: var(--acc);
+}
+
+/* Upcoming State */
+.nav-step-item-btn.upcoming {
+  cursor: not-allowed;
+  color: var(--mut);
+  font-weight: 400;
+}
+.nav-step-item-btn.upcoming .nav-step-num {
+  border: 1px solid var(--bd);
+  color: var(--mut);
+  background-color: transparent;
+}
+.nav-step-item-btn.upcoming::after {
+  background-color: var(--bd);
+}
+
+/* Step Bar Forward Animations (Task 2.3) */
+.nav-step-item-btn.bar-grow::after {
+  animation: grow 400ms linear forwards;
+}
+
+.nav-step-item-btn.bar-grow-delayed::after {
+  animation: grow 400ms linear 200ms backwards;
+}
+
+.nav-step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius);
+  font-family: var(--fm);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* New assessment text button (Task 2.4b) */
+.nav-new-assessment-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--fs);
+  font-size: 13px;
+  color: var(--acc);
+  cursor: pointer;
+  text-decoration: none;
+}
+.nav-new-assessment-btn:hover {
+  text-decoration: underline;
+}
+
+/* Native dialog styling (Task 2.4b) */
+dialog.nav-confirm-dialog {
+  background-color: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: var(--radius);
+  padding: 20px;
+  max-width: 400px;
+  width: calc(100% - 32px);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+dialog.nav-confirm-dialog::backdrop {
+  background-color: color-mix(in srgb, var(--ink) 40%, transparent);
+}
+
+/* StepSummary bar for <900px (Task 2.5) */
+.step-summary-bar {
+  background-color: var(--panel);
+  border-bottom: 1px solid var(--bd);
+  padding: 6px 16px;
+  box-shadow: none;
+}
+
+.step-summary-segments {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.step-summary-segment {
+  height: 3px;
+}
+
+/* Phase 4: Step 2 Clinical Data Layout Styles */
+.section-field-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 14px 12px;
+}
+
+@media (min-width: 600px) {
+  .section-field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .section-field-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .section-strip-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .sidebar-desktop {
+    display: none !important;
+  }
+}
+
+/* Welcome ECG strip band (Task 3.2) */
+.ecg-strip-band {
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+}
+@media (max-width: 599px) {
+  .ecg-strip-band {
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+  }
+}
+

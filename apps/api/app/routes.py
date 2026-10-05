@@ -4,7 +4,7 @@ Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Pred
 """
 
 import time
-from typing import Literal
+from typing import Any, Dict, List, Literal, Optional
 from fastapi import APIRouter, Query, Response, status
 
 from apps.api.app.config import settings
@@ -285,3 +285,83 @@ def get_sample_patient(
             Neut=67.0,
             PLT=201.0,
         )
+
+
+# ==============================================================================
+# Phase 5: Structured Report Generation Endpoints
+# ==============================================================================
+
+from apps.api.app.schemas.report import ReportRequestSchema, LLMConfigStatusResponse
+from apps.api.app.services.llm_service import (
+    get_groq_config,
+    get_groq_model_status,
+    get_reports_diagnostics,
+    build_report_context,
+    generate_report,
+)
+
+
+@api_router.get(
+    "/reports/status",
+    response_model=LLMConfigStatusResponse,
+    summary="Check Groq API Configuration Status",
+    tags=["Reporting"],
+)
+def get_reports_status() -> LLMConfigStatusResponse:
+    diagnostics = get_reports_diagnostics()
+    return LLMConfigStatusResponse(**diagnostics)
+
+
+@api_router.post(
+    "/reports/technical",
+    summary="Generate Structured Technical Report for Clinicians",
+    tags=["Reporting"],
+)
+def generate_technical_report_endpoint(
+    req: ReportRequestSchema,
+    response: Response,
+) -> dict[str, Any]:
+    """Generates structured 8-section technical report for clinician review."""
+    response.headers["X-Clinical-Disclaimer"] = "Decision-Support-Only"
+    preds = req.predictions
+    exps = req.explanations
+    if not preds or not exps:
+        full_analysis = analyze_patient_complete(req.patient, response, top_k=6)
+        preds = full_analysis.predictions.model_dump()
+        exps = {k: v.model_dump() for k, v in full_analysis.explanations.items()}
+
+    context = build_report_context(
+        patient_data=req.patient.model_dump(by_alias=True),
+        predictions=preds,
+        explanations=exps,
+        model_metadata=model_service.metadata,
+    )
+    return generate_report(report_type="technical", context=context)
+
+
+@api_router.post(
+    "/reports/patient",
+    summary="Generate Plain-Language Heart Health Summary for Patients",
+    tags=["Reporting"],
+)
+def generate_patient_report_endpoint(
+    req: ReportRequestSchema,
+    response: Response,
+) -> dict[str, Any]:
+    """Generates friendly, plain-language 8-section summary for patient comprehension."""
+    response.headers["X-Clinical-Disclaimer"] = "Decision-Support-Only"
+    preds = req.predictions
+    exps = req.explanations
+    if not preds or not exps:
+        full_analysis = analyze_patient_complete(req.patient, response, top_k=6)
+        preds = full_analysis.predictions.model_dump()
+        exps = {k: v.model_dump() for k, v in full_analysis.explanations.items()}
+
+    context = build_report_context(
+        patient_data=req.patient.model_dump(by_alias=True),
+        predictions=preds,
+        explanations=exps,
+        model_metadata=model_service.metadata,
+    )
+    return generate_report(report_type="patient", context=context)
+

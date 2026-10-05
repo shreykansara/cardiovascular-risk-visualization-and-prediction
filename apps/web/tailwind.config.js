@@ -11,47 +11,38 @@ export default {
     path.resolve(__dirname, 'src/**/*.{js,ts,jsx,tsx}'),
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./apps/web/index.html",
-    "./apps/web/src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Perfusion3D Surface Elevation System
-        surface: {
-          0: '#05070B', // Deep Obsidian Canvas Void
-          1: '#0A0F1A', // Slate Obsidian Panels
-          2: '#131C2E', // Deep Navy Cards
-          3: '#1E293B', // Polished Obsidian Modals
-        },
-        // Clinical Risk Semantic Palette
-        risk: {
-          optimal: '#10B981',   // Normal / Unobstructed (Emerald)
-          warning: '#F59E0B',   // Borderline / Moderate Stenosis (Amber)
-          critical: '#EF4444',  // Critical Stenosis / Ischemia (Crimson)
-        },
-        // Telemetry & Diagnostic Accents
-        telemetry: {
-          cyan: '#06B6D4',
-          blue: '#3B82F6',
-          purple: '#8B5CF6',
-        },
+        page: 'var(--page)',
+        gmin: 'var(--gmin)',
+        gmaj: 'var(--gmaj)',
+        panel: 'var(--panel)',
+        ink: 'var(--ink)',
+        mut: 'var(--mut)',
+        acc: 'var(--acc)',
+        onacc: 'var(--onacc)',
+        bd: 'var(--bd)',
+        bds: 'var(--bds)',
+        hov: 'var(--hov)',
+        low: 'var(--low)',
+        mod: 'var(--mod)',
+        high: 'var(--high)',
+        sheet: 'var(--sheet)',
+        sheetink: 'var(--sheetink)',
+        sheetmut: 'var(--sheetmut)',
+        sbd: 'var(--sbd)',
       },
       fontFamily: {
-        sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['ui-monospace', 'SFMono-Regular', 'Roboto Mono', 'Menlo', 'monospace'],
+        sans: ['var(--fs)'],
+        mono: ['var(--fm)'],
       },
-      boxShadow: {
-        'glow-optimal': '0 0 20px -5px rgba(16, 185, 129, 0.4)',
-        'glow-warning': '0 0 20px -5px rgba(245, 158, 11, 0.4)',
-        'glow-critical': '0 0 25px -5px rgba(239, 68, 68, 0.5)',
-        'glow-cyan': '0 0 20px -5px rgba(6, 182, 212, 0.4)',
-        'glass-panel': '0 8px 32px 0 rgba(0, 0, 0, 0.45)',
-      },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      borderRadius: {
+        DEFAULT: 'var(--radius)',
+        sm: 'var(--radius)',
+        md: 'var(--radius)',
+        lg: 'var(--radius)',
       },
     },
   },
