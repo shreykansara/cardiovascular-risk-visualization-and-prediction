@@ -150,6 +150,7 @@ export const ReportsPage: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>The reports could not be prepared.</span>
               <button
+                id="try-again-button"
                 type="button"
                 onClick={fetchReports}
                 style={{
@@ -246,24 +247,6 @@ export const ReportsPage: React.FC = () => {
                 }}
               />
               <span style={{ color: 'var(--s-ink)' }}>The reports could not be prepared.</span>
-              <button
-                type="button"
-                onClick={fetchReports}
-                style={{
-                  marginLeft: '8px',
-                  height: '32px',
-                  padding: '0 10px',
-                  fontFamily: 'var(--fs)',
-                  fontSize: '13px',
-                  color: 'var(--s-ink)',
-                  backgroundColor: 'transparent',
-                  border: '1px solid transparent',
-                  borderRadius: '3px',
-                  cursor: 'pointer',
-                }}
-              >
-                Try again
-              </button>
             </article>
           </div>
         ) : (

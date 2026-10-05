@@ -200,7 +200,7 @@ const scanPageInBrowser = () => {
       if (borderWidth > 0 && cs.borderStyle !== 'none') {
         const borderColor = parseColor(cs.borderColor);
         const { effectiveBg } = getEffectiveBg(el.parentElement);
-        if (borderColor && effectiveBg) {
+        if (borderColor && borderColor.a > 0.05 && effectiveBg) {
           items.push({
             type: 'non-text-border',
             selector: `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${el.className && typeof el.className === 'string' ? '.' + el.className.split(' ').slice(0, 2).join('.') : ''}`,
@@ -244,15 +244,14 @@ async function runContrastSuite() {
     browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--no-sandbox'] });
   }
 
-  const context = await browser.newContext();
-  const page = await context.newPage();
-
   const themes = ['light', 'dark'];
   const reportRows = [];
   const allDisabled = [];
   let totalFailures = 0;
 
   for (const theme of themes) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await context.newPage();
     const themeName = theme === 'light' ? 'Paper (Light)' : 'Monitor (Dark)';
     console.log(`\nScanning theme: ${themeName}...`);
 
@@ -298,18 +297,47 @@ async function runContrastSuite() {
     const rResults = await page.evaluate(scanPageInBrowser);
     recordResults('/results', themeName, rResults.items, rResults.disabledItems);
 
-    // Create reports & wait
+    // Intercept reports call to test error state first
+    await page.route('**/api/v1/reports', async (route) => {
+      await route.fulfill({ status: 500, body: 'Server Error' });
+    });
+
+    // Create reports & wait for error state
     const reportsBtn = page.getByRole('button', { name: /create reports/i }).first();
     await reportsBtn.click();
-    await page.waitForFunction(() => window.location.pathname.includes('/reports'), { timeout: 15000 });
-    await page.waitForTimeout(600);
+    await page.waitForURL('**/reports', { timeout: 15000 });
+    await page.waitForSelector('.sheet:has-text("The reports could not be prepared.")', { timeout: 15000 });
+    await page.waitForTimeout(300);
 
-    // 4. /reports (clinician tab)
+    // 4a. /reports (error state)
+    const rReportsError = await page.evaluate(scanPageInBrowser);
+    recordResults('/reports (error state)', themeName, rReportsError.items, rReportsError.disabledItems);
+
+    // Delay response to test loading state via "Try again"
+    await page.unroute('**/api/v1/reports');
+    await page.route('**/api/v1/reports', async (route) => {
+      await new Promise(r => setTimeout(r, 2500));
+      await route.continue();
+    });
+
+    await page.click('#try-again-button');
+    await page.waitForSelector('.sheet[aria-busy="true"]', { timeout: 5000 });
+
+    // 4b. /reports (loading state)
+    const rReportsLoading = await page.evaluate(scanPageInBrowser);
+    recordResults('/reports (loading state)', themeName, rReportsLoading.items, rReportsLoading.disabledItems);
+
+    // Wait for ready clinician state
+    await page.waitForSelector('#printable-report-sheet h1', { timeout: 15000 });
+    await page.unroute('**/api/v1/reports');
+    await page.waitForTimeout(400);
+
+    // 4c. /reports (clinician tab)
     const rReportsClinician = await page.evaluate(scanPageInBrowser);
     recordResults('/reports (clinician tab)', themeName, rReportsClinician.items, rReportsClinician.disabledItems);
 
     // Switch to patient tab
-    const patientTab = page.locator('button[role="tab"]', { hasText: /patient/i }).first();
+    const patientTab = page.locator('#tab-patient, button[role="tab"]:has-text("Patient report")').first();
     await patientTab.click();
     await page.waitForTimeout(400);
 
@@ -326,6 +354,8 @@ async function runContrastSuite() {
     await page.waitForTimeout(300);
     const rModelInfo = await page.evaluate(scanPageInBrowser);
     recordResults('/model-info', themeName, rModelInfo.items, rModelInfo.disabledItems);
+
+    await context.close();
   }
 
   function recordResults(screen, theme, items, disabled) {

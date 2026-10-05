@@ -51,11 +51,12 @@ export function useReports(patientData: PatientData): UseReportsReturn {
   );
 
   const inFlightRef = useRef(false);
-  const lastFetchedHashRef = useRef<string | null>(isMatch ? currentHash : null);
+  const attemptedHashRef = useRef<string | null>(isMatch ? currentHash : null);
 
   const fetchReports = useCallback(async () => {
     if (inFlightRef.current) return;
     inFlightRef.current = true;
+    attemptedHashRef.current = currentHash;
     setStatus('loading');
 
     try {
@@ -74,7 +75,6 @@ export function useReports(patientData: PatientData): UseReportsReturn {
       const data = await res.json();
       const preparedAt = formatCurrentTime();
       setReports(data.clinician, data.patient, currentHash, preparedAt);
-      lastFetchedHashRef.current = currentHash;
       setStatus('ready');
     } catch (err) {
       console.error('Failed to prepare reports:', err);
@@ -93,7 +93,7 @@ export function useReports(patientData: PatientData): UseReportsReturn {
       return;
     }
 
-    if (lastFetchedHashRef.current === currentHash && status === 'ready') {
+    if (attemptedHashRef.current === currentHash) {
       return;
     }
 
