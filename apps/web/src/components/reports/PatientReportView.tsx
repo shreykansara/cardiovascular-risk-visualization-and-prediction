@@ -10,11 +10,11 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
   return (
     <article
       id="printable-report-sheet"
-      className="wipe w-full"
+      className="sheet wipe w-full"
       style={{
-        backgroundColor: 'var(--sheet)',
-        color: 'var(--sheetink)',
-        border: '1px solid var(--bd)',
+        backgroundColor: 'var(--s-bg)',
+        color: 'var(--s-ink)',
+        border: '1px solid var(--s-bd)',
         borderRadius: '3px',
         maxWidth: '720px',
         margin: '16px auto',
@@ -26,14 +26,14 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
       } as React.CSSProperties}
     >
       {/* Header: Title and Date */}
-      <header style={{ borderBottom: '1px solid var(--sbd)', paddingBottom: '12px' }}>
+      <header style={{ borderBottom: '1px solid var(--s-bd)', paddingBottom: '12px' }}>
         {/* Title 18px/600 */}
         <h1
           style={{
             fontFamily: 'var(--fs)',
             fontSize: '18px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: 0,
           }}
         >
@@ -43,7 +43,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
           style={{
             fontFamily: 'var(--fs)',
             fontSize: '11px',
-            color: 'var(--sheetmut)',
+            color: 'var(--s-mut)',
             marginTop: '6px',
             margin: '6px 0 0',
           }}
@@ -59,7 +59,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -70,7 +70,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '13px',
             lineHeight: '1.45',
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '4px 0',
           }}
         >
@@ -85,7 +85,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -96,7 +96,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '13px',
             lineHeight: '1.45',
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '4px 0',
           }}
         >
@@ -111,7 +111,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -127,7 +127,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
               key={key}
               style={{
                 padding: '8px 0',
-                borderBottom: '1px solid var(--sbd)',
+                borderBottom: '1px solid var(--s-bd)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -136,7 +136,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
                     fontFamily: 'var(--fs)',
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: 'var(--sheetink)',
+                    color: 'var(--s-ink)',
                   }}
                 >
                   {vessel.name || defaultName}
@@ -147,13 +147,13 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
                       fontFamily: 'var(--fm)',
                       fontSize: '13px',
                       fontWeight: 500,
-                      color: 'var(--sheetink)',
+                      color: 'var(--s-ink)',
                       fontVariantNumeric: 'tabular-nums',
                     }}
                   >
                     {Math.round(vessel.probability_pct)}%
                   </span>
-                  <RiskLabel band={vessel.category} />
+                  <RiskLabel band={vessel.category} variant="sheet" />
                 </div>
               </div>
               <p
@@ -161,7 +161,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
                   fontFamily: 'var(--fs)',
                   fontSize: '12px',
                   lineHeight: '1.4',
-                  color: 'var(--sheetmut)',
+                  color: 'var(--s-mut)',
                   margin: '2px 0 0',
                 }}
               >
@@ -179,7 +179,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -192,7 +192,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
                 fontFamily: 'var(--fs)',
                 fontSize: '13px',
                 fontWeight: 600,
-                color: 'var(--sheetmut)',
+                color: 'var(--s-mut)',
                 margin: '8px 0 4px',
               }}
             >
@@ -200,20 +200,20 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             </h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--sbd)' }}>
-                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left' }}>Measurement</th>
-                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'right' }}>Your value</th>
-                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'right' }}>Typical range</th>
-                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Status</th>
+                <tr style={{ borderBottom: '1px solid var(--s-bd)' }}>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left' }}>Measurement</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'right' }}>Your value</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'right' }}>Typical range</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {grp.items.map((item) => (
-                  <tr key={item.plain_name} style={{ borderBottom: '1px solid var(--sbd)' }}>
-                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetink)' }}>{item.plain_name}</td>
-                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetink)' }}>{item.your_value}</td>
-                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetmut)' }}>{item.typical_range}</td>
-                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 12px', color: 'var(--sheetmut)' }}>{item.status}</td>
+                  <tr key={item.plain_name} style={{ borderBottom: '1px solid var(--s-bd)' }}>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--s-ink)' }}>{item.plain_name}</td>
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--s-ink)' }}>{item.your_value}</td>
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--s-mut)' }}>{item.typical_range}</td>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 12px', color: 'var(--s-mut)' }}>{item.status}</td>
                   </tr>
                 ))}
               </tbody>
@@ -229,7 +229,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -243,7 +243,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
                 fontFamily: 'var(--fs)',
                 fontSize: '13px',
                 lineHeight: '1.45',
-                color: 'var(--sheetink)',
+                color: 'var(--s-ink)',
                 margin: '4px 0',
               }}
             >
@@ -260,7 +260,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -271,7 +271,7 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
             fontFamily: 'var(--fs)',
             fontSize: '13px',
             lineHeight: '1.45',
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '4px 0',
           }}
         >
@@ -280,13 +280,13 @@ export const PatientReportView: React.FC<PatientReportViewProps> = ({ report }) 
       </section>
 
       {/* 7. Mandatory Disclaimer */}
-      <section style={{ borderTop: '1px solid var(--sbd)', paddingTop: '12px' }}>
+      <section style={{ borderTop: '1px solid var(--s-bd)', paddingTop: '12px' }}>
         <p
           style={{
             fontFamily: 'var(--fs)',
             fontSize: '11px',
             lineHeight: '1.4',
-            color: 'var(--sheetmut)',
+            color: 'var(--s-mut)',
             margin: '4px 0',
           }}
         >

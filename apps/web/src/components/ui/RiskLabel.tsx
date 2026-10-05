@@ -5,6 +5,7 @@ export interface RiskLabelProps {
   band?: RiskBand | string;
   probability?: number;
   afterNumber?: boolean;
+  variant?: 'app' | 'sheet';
   className?: string;
   style?: React.CSSProperties;
 }
@@ -13,6 +14,7 @@ export const RiskLabel: React.FC<RiskLabelProps> = ({
   band,
   probability,
   afterNumber = false,
+  variant = 'app',
   className = '',
   style,
 }) => {
@@ -22,16 +24,19 @@ export const RiskLabel: React.FC<RiskLabelProps> = ({
     ? riskLabel(probability)
     : 'Low';
 
-  let dotColor = 'var(--low)';
+  const isSheet = variant === 'sheet';
+  let dotColor = isSheet ? 'var(--s-low)' : 'var(--low)';
   if (resolvedBand === 'Moderate') {
-    dotColor = 'var(--mod)';
+    dotColor = isSheet ? 'var(--s-mod)' : 'var(--mod)';
   } else if (resolvedBand === 'High') {
-    dotColor = 'var(--high)';
+    dotColor = isSheet ? 'var(--s-high)' : 'var(--high)';
   }
+
+  const textColor = isSheet ? 'var(--s-ink)' : 'var(--ink)';
 
   return (
     <span
-      className={`inline-flex items-center ${className}`}
+      className={`inline-flex items-center ${isSheet ? 'risk-label-sheet' : ''} ${className}`}
       style={{
         gap: '6px',
         marginLeft: afterNumber ? '10px' : undefined,
@@ -41,6 +46,7 @@ export const RiskLabel: React.FC<RiskLabelProps> = ({
     >
       {/* 8px round dot */}
       <span
+        className={`risk-dot risk-dot-${resolvedBand.toLowerCase()}`}
         style={{
           width: '8px',
           height: '8px',
@@ -50,13 +56,14 @@ export const RiskLabel: React.FC<RiskLabelProps> = ({
           display: 'inline-block',
         }}
       />
-      {/* The word ("Low", "Moderate", "High") in Sora 12px/600, color --ink */}
+      {/* The word ("Low", "Moderate", "High") in Sora 12px/600 */}
       <span
+        className="risk-label-text"
         style={{
           fontFamily: 'var(--fs)',
           fontSize: '12px',
           fontWeight: 600,
-          color: 'var(--ink)',
+          color: textColor,
           lineHeight: '1',
         }}
       >

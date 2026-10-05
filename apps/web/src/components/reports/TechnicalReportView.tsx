@@ -11,11 +11,11 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
   return (
     <article
       id="printable-report-sheet"
-      className="wipe w-full"
+      className="sheet wipe w-full"
       style={{
-        backgroundColor: 'var(--sheet)',
-        color: 'var(--sheetink)',
-        border: '1px solid var(--bd)',
+        backgroundColor: 'var(--s-bg)',
+        color: 'var(--s-ink)',
+        border: '1px solid var(--s-bd)',
         borderRadius: '3px',
         maxWidth: '720px',
         margin: '16px auto',
@@ -27,14 +27,14 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
       } as React.CSSProperties}
     >
       {/* Header */}
-      <header style={{ borderBottom: '1px solid var(--sbd)', paddingBottom: '12px' }}>
+      <header style={{ borderBottom: '1px solid var(--s-bd)', paddingBottom: '12px' }}>
         {/* Title 18px/600 */}
         <h1
           style={{
             fontFamily: 'var(--fs)',
             fontSize: '18px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: 0,
           }}
         >
@@ -47,7 +47,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
             justifyContent: 'space-between',
             fontFamily: 'var(--fs)',
             fontSize: '11px',
-            color: 'var(--sheetmut)',
+            color: 'var(--s-mut)',
             marginTop: '6px',
             gap: '8px',
           }}
@@ -65,7 +65,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -73,12 +73,12 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
         </h2>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--sbd)' }}>
-              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left' }}>Target</th>
-              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left' }}>Vessel / condition</th>
-              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'right' }}>Probability</th>
-              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Model classification</th>
-              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Risk band</th>
+            <tr style={{ borderBottom: '1px solid var(--s-bd)' }}>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left' }}>Target</th>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left' }}>Vessel / condition</th>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'right' }}>Probability</th>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Model classification</th>
+              <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left', paddingLeft: '12px' }}>Risk band</th>
             </tr>
           </thead>
           <tbody>
@@ -89,15 +89,15 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
               const band = tgt.risk_band || tgt.category || riskLabel(probFraction);
 
               return (
-                <tr key={tgt.target} style={{ borderBottom: '1px solid var(--sbd)' }}>
-                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetink)', fontWeight: 500 }}>{tgt.target}</td>
-                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetmut)' }}>{tgt.display_name}</td>
-                  <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetink)' }}>
+                <tr key={tgt.target} style={{ borderBottom: '1px solid var(--s-bd)' }}>
+                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--s-ink)', fontWeight: 500 }}>{tgt.target}</td>
+                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--s-mut)' }}>{tgt.display_name}</td>
+                  <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--s-ink)' }}>
                     {probPct.toFixed(1)}%
                   </td>
-                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 12px', color: 'var(--sheetink)' }}>{classification}</td>
+                  <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 12px', color: 'var(--s-ink)' }}>{classification}</td>
                   <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 12px' }}>
-                    <RiskLabel band={band} />
+                    <RiskLabel band={band} variant="sheet" />
                   </td>
                 </tr>
               );
@@ -113,7 +113,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -126,7 +126,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
                 fontFamily: 'var(--fs)',
                 fontSize: '13px',
                 fontWeight: 600,
-                color: 'var(--sheetmut)',
+                color: 'var(--s-mut)',
                 margin: '8px 0 4px',
               }}
             >
@@ -135,12 +135,12 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <tbody>
                 {grp.parameters.map((p) => (
-                  <tr key={p.name} style={{ borderBottom: '1px solid var(--sbd)' }}>
-                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetink)' }}>{p.name}</td>
-                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetink)' }}>
+                  <tr key={p.name} style={{ borderBottom: '1px solid var(--s-bd)' }}>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--s-ink)' }}>{p.name}</td>
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--s-ink)' }}>
                       {p.value} {p.unit}
                     </td>
-                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetmut)' }}>
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--s-mut)' }}>
                       {p.reference_range}
                     </td>
                   </tr>
@@ -158,7 +158,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -173,7 +173,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
                   fontFamily: 'var(--fs)',
                   fontSize: '13px',
                   lineHeight: '1.45',
-                  color: 'var(--sheetink)',
+                  color: 'var(--s-ink)',
                   margin: '4px 0',
                 }}
               >
@@ -187,7 +187,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
               fontFamily: 'var(--fs)',
               fontSize: '13px',
               lineHeight: '1.45',
-              color: 'var(--sheetmut)',
+              color: 'var(--s-mut)',
               margin: '4px 0',
             }}
           >
@@ -203,7 +203,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -216,7 +216,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
                 fontFamily: 'var(--fs)',
                 fontSize: '13px',
                 fontWeight: 600,
-                color: 'var(--sheetmut)',
+                color: 'var(--s-mut)',
                 margin: '8px 0 4px',
               }}
             >
@@ -224,22 +224,22 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
             </h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--sbd)' }}>
-                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left' }}>Factor</th>
-                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '8px' }}>Patient value</th>
-                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'left', paddingLeft: '8px' }}>Effect on probability</th>
-                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--sheetmut)', padding: '5px 0', textAlign: 'right' }}>SHAP value</th>
+                <tr style={{ borderBottom: '1px solid var(--s-bd)' }}>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left' }}>Factor</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left', paddingLeft: '8px' }}>Patient value</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'left', paddingLeft: '8px' }}>Effect on probability</th>
+                  <th style={{ fontFamily: 'var(--fs)', fontWeight: 500, color: 'var(--s-mut)', padding: '5px 0', textAlign: 'right' }}>SHAP value</th>
                 </tr>
               </thead>
               <tbody>
                 {tgt.top_features.map((f, fIdx) => (
-                  <tr key={fIdx} style={{ borderBottom: '1px solid var(--sbd)' }}>
-                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--sheetink)', fontWeight: 500 }}>{f.feature}</td>
-                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--sheetmut)' }}>{f.patient_value ?? f.input_value ?? '—'}</td>
-                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--sheetink)' }}>
+                  <tr key={fIdx} style={{ borderBottom: '1px solid var(--s-bd)' }}>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--s-ink)', fontWeight: 500 }}>{f.feature}</td>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--s-mut)' }}>{f.patient_value ?? f.input_value ?? '—'}</td>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--s-ink)' }}>
                       {f.direction === 'INCREASES_RISK' ? 'Raises probability' : 'Lowers probability'}
                     </td>
-                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--sheetink)' }}>
+                    <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--s-ink)' }}>
                       {f.shap_value.toFixed(4)}
                     </td>
                   </tr>
@@ -257,7 +257,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
             fontFamily: 'var(--fs)',
             fontSize: '15px',
             fontWeight: 600,
-            color: 'var(--sheetink)',
+            color: 'var(--s-ink)',
             margin: '16px 0 6px',
           }}
         >
@@ -271,7 +271,7 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
                 fontFamily: 'var(--fs)',
                 fontSize: '13px',
                 lineHeight: '1.45',
-                color: 'var(--sheetmut)',
+                color: 'var(--s-mut)',
                 margin: '4px 0',
               }}
             >
@@ -282,13 +282,13 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
       </section>
 
       {/* 6. Mandatory Disclaimer */}
-      <section style={{ borderTop: '1px solid var(--sbd)', paddingTop: '12px' }}>
+      <section style={{ borderTop: '1px solid var(--s-bd)', paddingTop: '12px' }}>
         <p
           style={{
             fontFamily: 'var(--fs)',
             fontSize: '11px',
             lineHeight: '1.4',
-            color: 'var(--sheetmut)',
+            color: 'var(--s-mut)',
             margin: '4px 0',
           }}
         >

@@ -256,14 +256,14 @@ export const ReportsPage: React.FC = () => {
       {/* Loading state: Static Skeletons (no spinners!) */}
       {isLoading ? (
         <article
+          className="sheet w-full"
           style={{
-            backgroundColor: 'var(--sheet)',
-            border: '1px solid var(--bd)',
+            backgroundColor: 'var(--s-bg)',
+            border: '1px solid var(--s-bd)',
             borderRadius: '3px',
             maxWidth: '720px',
             margin: '16px auto',
             padding: '24px 28px',
-            width: '100%',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',

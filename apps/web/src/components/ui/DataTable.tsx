@@ -22,8 +22,8 @@ export function DataTable<T>({
   className = '',
   isSheet = false,
 }: DataTableProps<T>) {
-  const borderColor = isSheet ? 'var(--sbd)' : 'var(--bd)';
-  const thColor = isSheet ? 'var(--sheetmut)' : 'var(--mut)';
+  const borderColor = isSheet ? 'var(--s-bd)' : 'var(--bd)';
+  const thColor = isSheet ? 'var(--s-mut)' : 'var(--mut)';
 
   return (
     <div className={`w-full overflow-x-auto ${className}`}>
@@ -78,7 +78,7 @@ export function DataTable<T>({
                     style={{
                       fontFamily: isFirstCol && !col.isNumeric ? 'var(--fs)' : 'var(--fm)',
                       fontSize: '12px',
-                      color: isSheet ? 'var(--sheetink)' : 'var(--ink)',
+                      color: isSheet ? 'var(--s-ink)' : 'var(--ink)',
                       padding: '6px 0',
                       textAlign: col.isNumeric ? 'right' : 'left',
                       fontVariantNumeric: 'tabular-nums',

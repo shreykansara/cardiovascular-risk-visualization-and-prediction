@@ -47,6 +47,19 @@
   }
 }
 
+/* Theme-independent sheet-scoped tokens (Task 1.2) */
+.sheet,
+#print-root {
+  --s-ink: #241618;
+  --s-mut: #5E4B4E;
+  --s-bg: #FFFFFF;
+  --s-bd: #D9C3C0;
+  --s-low: #1F6F45;
+  --s-mod: #8A5A00;
+  --s-high: #B3152F;
+  --s-acc: #1D3F8A;
+}
+
 /* LIGHT ("Paper") */
 :root[data-theme="light"],
 :root:not([data-theme="dark"]),
@@ -61,7 +74,7 @@
   --acc: #1D3F8A;
   --onacc: #FFFFFF;
   --bd: #E3CFCC;
-  --bds: #B99A96;
+  --bds: #A88C89; /* Adjusted from #B99A96 to meet 3.10:1 non-text contrast against #FFFFFF */
   --hov: #F4F7FD;
   --low: #2E8B57;
   --mod: #B87700;
@@ -85,7 +98,7 @@
   --acc: #4CFF9A;
   --onacc: #04120A;
   --bd: #1D3A2A;
-  --bds: #3A6350;
+  --bds: #406E59; /* Adjusted from #3A6350 to meet 3.06:1 non-text contrast against #0C1A13 */
   --hov: #12281D;
   --low: #3FD08A;
   --mod: #FFC24D;

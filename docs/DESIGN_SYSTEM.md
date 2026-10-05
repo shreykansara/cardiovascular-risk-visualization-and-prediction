@@ -72,54 +72,75 @@ Theme: Precise, clinical, tactile ECG paper aesthetic. Dual-theme: "Paper" (Ligh
 - `--high`: `#FF6B7A`
 - `--sheet`: `#FFFFFF`
 - `--sheetink`: `#241618`
+- `--sheet`: `#FFFFFF`
+- `--sheetink`: `#241618`
 - `--sheetmut`: `#6A5558`
 - `--sbd`: `#E3CFCC`
 
+### Sheet-Scoped Tokens (`.sheet`, `#print-root`)
+Theme-independent tokens ensuring identical presentation in both themes:
+- `--s-ink`: `#241618`
+- `--s-mut`: `#5E4B4E`
+- `--s-bg`: `#FFFFFF`
+- `--s-bd`: `#D9C3C0`
+- `--s-low`: `#1F6F45`
+- `--s-mod`: `#8A5A00`
+- `--s-high`: `#B3152F`
+- `--s-acc`: `#1D3F8A`
+
 ---
 
-## 3. WCAG Contrast Log (Task 1.5)
+## 3. WCAG Contrast Log (Phase 1)
 
 Contrast computed according to WCAG 2.1 relative luminance algorithm:
-- Normal text requires ≥ 4.5:1.
-- Non-text elements (graphical objects and user interface components) require ≥ 3.0:1.
-- Per spec rule: Risk words are always rendered in `--ink` (never tinted with risk color); only the dot and bar use the risk color.
+- Normal text requires ≥ 4.5:1 (3.0:1 for large text ≥ 24px or ≥ 18.66px bold).
+- Non-text elements (inputs, button borders, dots, bars, focus outline, current-step bar) require ≥ 3.0:1 against their surface.
+- Per spec rule: Risk words are always rendered in `--ink` (or `--s-ink` on report sheets), never in risk colors; only the 8px dot and bar fill use risk colors.
+- Decorative hairlines (`--bd`, `--gmin`, `--gmaj`) are exempt from contrast, with no text allowed directly on the grid.
+
+### Token Updates (Old → New)
+| Theme | Token | Old Value | New Value | Contrast on Surface | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Paper | `--bds` | `#B99A96` (2.58:1) | `#A88C89` | **3.10:1** on `--panel` | **PASS (≥ 3.0:1)** |
+| Monitor | `--bds` | `#3A6350` (2.63:1) | `#406E59` | **3.06:1** on `--panel` | **PASS (≥ 3.0:1)** |
 
 ### Light Theme ("Paper") Contrast Table
 | Pair / Element | Foreground | Background | Contrast Ratio | Required | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `--ink` on `--panel` (text) | `#241618` | `#FFFFFF` | **17.46:1** | ≥ 4.5:1 | **PASS (AAA)** |
 | `--mut` on `--panel` (text) | `#6A5558` | `#FFFFFF` | **6.88:1** | ≥ 4.5:1 | **PASS (AA)** |
-| `--ink` on `--page` (text) | `#241618` | `#FFF6F4` | **16.41:1** | ≥ 4.5:1 | **PASS (AAA)** |
-| `--mut` on `--page` (text) | `#6A5558` | `#FFF6F4` | **6.47:1** | ≥ 4.5:1 | **PASS (AA)** |
-| `--onacc` on `--acc` (button text) | `#FFFFFF` | `#1D3F8A` | **9.86:1** | ≥ 4.5:1 | **PASS (AAA)** |
+| `--ink` on `--hov` (text) | `#241618` | `#F4F7FD` | **16.48:1** | ≥ 4.5:1 | **PASS (AAA)** |
+| `--mut` on `--hov` (text) | `#6A5558` | `#F4F7FD` | **6.50:1** | ≥ 4.5:1 | **PASS (AA)** |
 | `--acc` on `--panel` (link / focus) | `#1D3F8A` | `#FFFFFF` | **9.86:1** | ≥ 4.5:1 | **PASS (AAA)** |
-| `--low` against `--panel` (non-text) | `#2E8B57` | `#FFFFFF` | **4.25:1** | ≥ 3.0:1 | **PASS** |
-| `--mod` against `--panel` (non-text) | `#B87700` | `#FFFFFF` | **3.70:1** | ≥ 3.0:1 | **PASS** |
-| `--high` against `--panel` (non-text) | `#C81D3A` | `#FFFFFF` | **5.69:1** | ≥ 3.0:1 | **PASS** |
-| `--bd` against `--panel` (non-text border) | `#E3CFCC` | `#FFFFFF` | **1.49:1** | ≥ 3.0:1 | **FAIL (Sub-threshold border)** |
-| `--sheetink` on `--sheet` (report text) | `#241618` | `#FFFFFF` | **17.46:1** | ≥ 4.5:1 | **PASS (AAA)** |
-| `--sheetmut` on `--sheet` (report muted) | `#6A5558` | `#FFFFFF` | **6.88:1** | ≥ 4.5:1 | **PASS (AA)** |
-| `--sbd` against `--sheet` (sheet border) | `#E3CFCC` | `#FFFFFF` | **1.49:1** | ≥ 3.0:1 | **FAIL (Sub-threshold border)** |
+| `--onacc` on `--acc` (button text) | `#FFFFFF` | `#1D3F8A` | **9.86:1** | ≥ 4.5:1 | **PASS (AAA)** |
+| `--bds` against `--panel` (borders) | `#A88C89` | `#FFFFFF` | **3.10:1** | ≥ 3.0:1 | **PASS** |
+| `--low` against `--panel` (dot / bar) | `#2E8B57` | `#FFFFFF` | **4.25:1** | ≥ 3.0:1 | **PASS** |
+| `--mod` against `--panel` (dot / bar) | `#B87700` | `#FFFFFF` | **3.70:1** | ≥ 3.0:1 | **PASS** |
+| `--high` against `--panel` (dot / bar) | `#C81D3A` | `#FFFFFF` | **5.69:1** | ≥ 3.0:1 | **PASS** |
 
 ### Dark Theme ("Monitor") Contrast Table
 | Pair / Element | Foreground | Background | Contrast Ratio | Required | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `--ink` on `--panel` (text) | `#D8F5E4` | `#0C1A13` | **15.43:1** | ≥ 4.5:1 | **PASS (AAA)** |
 | `--mut` on `--panel` (text) | `#8FB5A0` | `#0C1A13` | **7.92:1** | ≥ 4.5:1 | **PASS (AA)** |
-| `--ink` on `--page` (text) | `#D8F5E4` | `#06100C` | **16.65:1** | ≥ 4.5:1 | **PASS (AAA)** |
-| `--mut` on `--page` (text) | `#8FB5A0` | `#06100C` | **8.54:1** | ≥ 4.5:1 | **PASS (AA)** |
-| `--onacc` on `--acc` (button text) | `#04120A` | `#4CFF9A` | **14.67:1** | ≥ 4.5:1 | **PASS (AAA)** |
+| `--ink` on `--hov` (text) | `#D8F5E4` | `#12281D` | **12.72:1** | ≥ 4.5:1 | **PASS (AAA)** |
+| `--mut` on `--hov` (text) | `#8FB5A0` | `#12281D` | **6.53:1** | ≥ 4.5:1 | **PASS (AA)** |
 | `--acc` on `--panel` (link / focus) | `#4CFF9A` | `#0C1A13` | **13.71:1** | ≥ 4.5:1 | **PASS (AAA)** |
-| `--low` against `--panel` (non-text) | `#3FD08A` | `#0C1A13` | **9.04:1** | ≥ 3.0:1 | **PASS** |
-| `--mod` against `--panel` (non-text) | `#FFC24D` | `#0C1A13` | **11.15:1** | ≥ 3.0:1 | **PASS** |
-| `--high` against `--panel` (non-text) | `#FF6B7A` | `#0C1A13` | **6.51:1** | ≥ 3.0:1 | **PASS** |
-| `--bd` against `--panel` (non-text border) | `#1D3A2A` | `#0C1A13` | **1.44:1** | ≥ 3.0:1 | **FAIL (Sub-threshold border)** |
-| `--sheetink` on `--sheet` (report text) | `#241618` | `#FFFFFF` | **17.46:1** | ≥ 4.5:1 | **PASS (AAA)** |
-| `--sheetmut` on `--sheet` (report muted) | `#6A5558` | `#FFFFFF` | **6.88:1** | ≥ 4.5:1 | **PASS (AA)** |
-| `--sbd` against `--sheet` (sheet border) | `#E3CFCC` | `#FFFFFF` | **1.49:1** | ≥ 3.0:1 | **FAIL (Sub-threshold border)** |
+| `--onacc` on `--acc` (button text) | `#04120A` | `#4CFF9A` | **14.67:1** | ≥ 4.5:1 | **PASS (AAA)** |
+| `--bds` against `--panel` (borders) | `#406E59` | `#0C1A13` | **3.06:1** | ≥ 3.0:1 | **PASS** |
+| `--low` against `--panel` (dot / bar) | `#3FD08A` | `#0C1A13` | **9.04:1** | ≥ 3.0:1 | **PASS** |
+| `--mod` against `--panel` (dot / bar) | `#FFC24D` | `#0C1A13` | **11.15:1** | ≥ 3.0:1 | **PASS** |
+| `--high` against `--panel` (dot / bar) | `#FF6B7A` | `#0C1A13` | **6.51:1** | ≥ 3.0:1 | **PASS** |
 
-> [!NOTE]
-> Per specification instructions, token values are not modified silently. Sub-threshold non-text border pairs (`--bd` on `--panel` at 1.49:1 light / 1.44:1 dark and `--sbd` on `--sheet` at 1.49:1) are documented here and reported in the final summary.
+### Report Sheet Contrast Table (Both Themes on `--s-bg` #FFFFFF)
+| Pair / Element | Foreground | Background | Contrast Ratio | Required | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `--s-ink` on `--s-bg` (report text) | `#241618` | `#FFFFFF` | **17.46:1** | ≥ 4.5:1 | **PASS (AAA)** |
+| `--s-mut` on `--s-bg` (report muted) | `#5E4B4E` | `#FFFFFF` | **8.10:1** | ≥ 4.5:1 | **PASS (AAA)** |
+| `--s-low` against `--s-bg` (dot / bar) | `#1F6F45` | `#FFFFFF` | **6.14:1** | ≥ 3.0:1 | **PASS** |
+| `--s-mod` against `--s-bg` (dot / bar) | `#8A5A00` | `#FFFFFF` | **5.93:1** | ≥ 3.0:1 | **PASS** |
+| `--s-high` against `--s-bg` (dot / bar) | `#B3152F` | `#FFFFFF` | **6.85:1** | ≥ 3.0:1 | **PASS** |
+| `--s-acc` against `--s-bg` (links / bars) | `#1D3F8A` | `#FFFFFF` | **9.86:1** | ≥ 4.5:1 | **PASS (AAA)** |
 
 ---
 

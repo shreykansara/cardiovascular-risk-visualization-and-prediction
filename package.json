@@ -15,6 +15,7 @@
     "test:style": "python scripts/check_style.py",
     "test:e2e": "node e2e/full_flow.spec.cjs",
     "test:conformance": "node e2e/design_conformance.spec.cjs",
+    "test:contrast": "node e2e/contrast.spec.cjs",
     "optimize:mesh": "node scripts/optimize_mesh.mjs",
     "preprocess:data": "python scripts/preprocess.py --strict-leakage-check",
     "train:models": "python scripts/train.py --cv-folds 5 --calibrate isotonic"
