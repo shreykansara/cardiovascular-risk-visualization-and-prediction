@@ -1,9 +1,0 @@
-/* Cavity vignette overlay (allowed gradient exception in Phase 6) */
-.cavity-vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse at 50% 45%, transparent 50%, #0F0809 100%);
-  opacity: 0.6;
-  z-index: 10;
-}

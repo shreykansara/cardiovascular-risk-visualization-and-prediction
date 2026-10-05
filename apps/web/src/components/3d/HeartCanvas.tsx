@@ -2,15 +2,25 @@ import React, { useRef, useState, useEffect, useCallback, Suspense } from 'react
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
+import { X } from 'lucide-react';
 import { HeartModel } from './HeartModel';
 import { CameraRig } from './CameraRig';
+import { VesselLabel } from './VesselLabel';
 import { usePatientStore } from '../../store/usePatientStore';
-import { CAVITY_EDGE, CAVITY_LIGHTS } from '../canvas/cavityConfig';
-import { CavityBackdrop } from '../canvas/CavityBackdrop';
+import { VIEWER_BG } from '../canvas/viewerConfig';
 import { ViewerHint } from '../results/viewer/ViewerHint';
 import { ViewerToolbar, PresetView } from '../results/viewer/ViewerToolbar';
 import { isWebGLAvailable } from './webglUtils';
-import '../canvas/cavity.css';
+
+// 3D Anchor positions for vessel labels
+const LAD_POS = [-0.04, -0.15, 0.52] as const;
+const LCX_POS = [0.43, -0.02, -0.05] as const;
+const RCA_POS = [-0.56, -0.05, 0.02] as const;
+
+// Anatomical surface normals for facing detection
+const LAD_NORM = new THREE.Vector3(-0.2, 0.1, 0.95).normalize();
+const LCX_NORM = new THREE.Vector3(0.85, 0.1, -0.4).normalize();
+const RCA_NORM = new THREE.Vector3(-0.85, 0.1, 0.45).normalize();
 
 // Approximate wipe easing cubic-bezier(0.2, 0.8, 0.2, 1.0)
 function wipeEase(t: number): number {
@@ -50,43 +60,86 @@ const LoaderChip: React.FC = () => {
   );
 };
 
-// Scene environment setup: dark plum-brown fog & background
-const CavitySceneSetup: React.FC = () => {
-  const { scene, camera } = useThree();
+// Module-level stable configurations to prevent WebGL context recreation
+const GL_CONFIG = { antialias: true, alpha: false, powerPreference: 'high-performance' as const };
+const CAMERA_CONFIG = { position: [0.0, 0.0, 3.1] as [number, number, number], fov: 40 };
+const DPR_CONFIG: [number, number] = [1, 2];
 
-  useEffect(() => {
-    scene.background = new THREE.Color(CAVITY_EDGE);
-    const initialDist = camera.position.length();
-    scene.fog = new THREE.Fog(CAVITY_EDGE, initialDist * 1.2, initialDist * 3.2);
-  }, [scene, camera]);
+// Synchronizes label 2D positions and hysteresis facing visibility directly via DOM refs
+interface LabelSyncTrackerProps {
+  ladRef: React.RefObject<HTMLDivElement>;
+  lcxRef: React.RefObject<HTMLDivElement>;
+  rcaRef: React.RefObject<HTMLDivElement>;
+}
 
-  useFrame(() => {
-    const dist = camera.position.length();
-    if (scene.fog instanceof THREE.Fog) {
-      scene.fog.near = dist * 1.2;
-      scene.fog.far = dist * 3.2;
+const LabelSyncTracker: React.FC<LabelSyncTrackerProps> = ({ ladRef, lcxRef, rcaRef }) => {
+  const tempVec = useRef(new THREE.Vector3());
+  const facingVisRef = useRef({ lad: true, lcx: true, rca: true });
+
+  useFrame(({ camera, size }) => {
+    const camPos = camera.position;
+    const camDir = camPos.clone().normalize();
+    const v = tempVec.current;
+
+    // 1. LAD
+    v.set(LAD_POS[0], LAD_POS[1], LAD_POS[2]).project(camera);
+    const ladX = (v.x * 0.5 + 0.5) * size.width;
+    const ladY = (-v.y * 0.5 + 0.5) * size.height;
+    const ladFacing = LAD_NORM.dot(camDir);
+    // Hysteresis: hide below -0.1, show above 0.1
+    if (ladFacing > 0.1) facingVisRef.current.lad = true;
+    else if (ladFacing < -0.1) facingVisRef.current.lad = false;
+
+    if (ladRef.current) {
+      ladRef.current.style.transform = `translate3d(${Math.round(ladX)}px, ${Math.round(ladY)}px, 0)`;
+      ladRef.current.style.opacity = facingVisRef.current.lad ? '1' : '0';
+      ladRef.current.style.pointerEvents = facingVisRef.current.lad ? 'auto' : 'none';
+    }
+
+    // 2. LCX
+    v.set(LCX_POS[0], LCX_POS[1], LCX_POS[2]).project(camera);
+    const lcxX = (v.x * 0.5 + 0.5) * size.width;
+    const lcxY = (-v.y * 0.5 + 0.5) * size.height;
+    const lcxFacing = LCX_NORM.dot(camDir);
+    if (lcxFacing > 0.1) facingVisRef.current.lcx = true;
+    else if (lcxFacing < -0.1) facingVisRef.current.lcx = false;
+
+    if (lcxRef.current) {
+      lcxRef.current.style.transform = `translate3d(${Math.round(lcxX)}px, ${Math.round(lcxY)}px, 0)`;
+      lcxRef.current.style.opacity = facingVisRef.current.lcx ? '1' : '0';
+      lcxRef.current.style.pointerEvents = facingVisRef.current.lcx ? 'auto' : 'none';
+    }
+
+    // 3. RCA
+    v.set(RCA_POS[0], RCA_POS[1], RCA_POS[2]).project(camera);
+    const rcaX = (v.x * 0.5 + 0.5) * size.width;
+    const rcaY = (-v.y * 0.5 + 0.5) * size.height;
+    const rcaFacing = RCA_NORM.dot(camDir);
+    if (rcaFacing > 0.1) facingVisRef.current.rca = true;
+    else if (rcaFacing < -0.1) facingVisRef.current.rca = false;
+
+    if (rcaRef.current) {
+      rcaRef.current.style.transform = `translate3d(${Math.round(rcaX)}px, ${Math.round(rcaY)}px, 0)`;
+      rcaRef.current.style.opacity = facingVisRef.current.rca ? '1' : '0';
+      rcaRef.current.style.pointerEvents = facingVisRef.current.rca ? 'auto' : 'none';
     }
   });
 
   return null;
 };
 
-// Controller managing camera orientation, toolbar animations, and sway
-interface CavityCameraControllerProps {
+// Controller managing camera orientation and toolbar animations
+interface CameraControllerProps {
   controlsRef: React.RefObject<any>;
   animTarget: { azimuth: number; distance: number; duration: number; startTime: number } | null;
   onAnimComplete: () => void;
-  isSwaying: boolean;
-  swayProgress: number; // 0 to 1
   onCameraUpdate: (azimuth: number, distance: number) => void;
 }
 
-const CavityCameraController: React.FC<CavityCameraControllerProps> = ({
+const CameraController: React.FC<CameraControllerProps> = ({
   controlsRef,
   animTarget,
   onAnimComplete,
-  isSwaying,
-  swayProgress,
   onCameraUpdate,
 }) => {
   const { camera } = useThree();
@@ -94,8 +147,9 @@ const CavityCameraController: React.FC<CavityCameraControllerProps> = ({
   const startDistanceRef = useRef(3.1);
   const deltaAzimuthRef = useRef(0);
   const prevAnimTarget = useRef(animTarget);
+  const lastReportedAz = useRef<number | null>(null);
+  const lastReportedDist = useRef<number | null>(null);
 
-  // Initialize start parameters when animTarget changes
   useEffect(() => {
     if (animTarget && animTarget !== prevAnimTarget.current) {
       prevAnimTarget.current = animTarget;
@@ -113,7 +167,7 @@ const CavityCameraController: React.FC<CavityCameraControllerProps> = ({
     }
   }, [animTarget, camera, controlsRef]);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     const controls = controlsRef.current;
     const target = controls?.target || new THREE.Vector3(0, 0, 0);
 
@@ -137,26 +191,19 @@ const CavityCameraController: React.FC<CavityCameraControllerProps> = ({
       if (t >= 1.0) {
         onAnimComplete();
       }
-    } else if (isSwaying) {
-      // Intro sway: +10 deg -> -10 deg -> 0 deg over 2400ms
-      const swayAngleRad = (10 * Math.PI / 180) * Math.sin(2 * Math.PI * swayProgress);
-      const dist = camera.position.distanceTo(target);
-      camera.position.x = target.x + dist * Math.sin(swayAngleRad);
-      camera.position.z = target.z + dist * Math.cos(swayAngleRad);
-      camera.lookAt(target);
-      if (controls) {
-        controls.update();
-      }
     }
 
-    // Always report current camera azimuth and distance
     const curDx = camera.position.x - target.x;
     const curDz = camera.position.z - target.z;
     const curAzRad = Math.atan2(curDx, curDz);
-    const curAzDeg = (curAzRad * 180) / Math.PI;
-    const curDist = camera.position.distanceTo(target);
+    const curAzDeg = Math.round((curAzRad * 180) / Math.PI);
+    const curDist = Math.round(camera.position.distanceTo(target) * 100) / 100;
 
-    onCameraUpdate(curAzDeg, curDist);
+    if (lastReportedAz.current !== curAzDeg || lastReportedDist.current !== curDist) {
+      lastReportedAz.current = curAzDeg;
+      lastReportedDist.current = curDist;
+      onCameraUpdate(curAzDeg, curDist);
+    }
   });
 
   return null;
@@ -193,7 +240,7 @@ class CanvasErrorBoundary extends React.Component<
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            backgroundColor: CAVITY_EDGE,
+            backgroundColor: VIEWER_BG,
             color: 'var(--ink)',
             fontFamily: 'var(--fs)',
             fontSize: '13px',
@@ -227,19 +274,29 @@ class CanvasErrorBoundary extends React.Component<
   }
 }
 
+// Test hook exposing Three scene and camera for automated test audits
+const SceneTestHook: React.FC = () => {
+  const { scene, camera } = useThree();
+  useEffect(() => {
+    (window as any).__THREE_SCENE__ = scene;
+    (window as any).__THREE_CAMERA__ = camera;
+  }, [scene, camera]);
+  return null;
+};
+
 export const HeartCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<any>(null);
+
+  const ladLabelRef = useRef<HTMLDivElement>(null);
+  const lcxLabelRef = useRef<HTMLDivElement>(null);
+  const rcaLabelRef = useRef<HTMLDivElement>(null);
 
   const [hoveredVessel, setHoveredVessel] = useState<string | null>(null);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-
-  // Performance guards: visible canvas and visible tab
-  const [isCanvasVisible, setIsCanvasVisible] = useState(true);
-  const [isTabActive, setIsTabActive] = useState(true);
 
   // Camera angles & test hooks
   const [currentAzimuth, setCurrentAzimuth] = useState(0);
@@ -253,99 +310,37 @@ export const HeartCanvas: React.FC = () => {
     startTime: number;
   } | null>(null);
 
-  // Intro sway state
-  const [isSwaying, setIsSwaying] = useState(false);
-  const [swayProgress, setSwayProgress] = useState(0);
-  const swayStartTimeRef = useRef<number | null>(null);
-  const swayRafRef = useRef<number | null>(null);
-
-  const [modelLoaded, setModelLoaded] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
-  const { activeVesselFocus, setVesselFocus } = usePatientStore();
+  const { analysis, activeVesselFocus, setVesselFocus } = usePatientStore();
+
+  // Vessel data extraction for labels
+  const vesselsPred = analysis?.predictions?.vessels;
+  const ladPred = vesselsPred?.lad;
+  const ladProb = ladPred?.probability ?? 0.142;
+  const ladColorHex = ladPred?.color_hex ?? '#10B981';
+  const ladRiskText = `${(ladProb * 100).toFixed(1)}%`;
+  const isLadSelected = activeVesselFocus === 'vessel_LAD';
+
+  const lcxPred = vesselsPred?.lcx;
+  const lcxProb = lcxPred?.probability ?? 0.114;
+  const lcxColorHex = lcxPred?.color_hex ?? '#10B981';
+  const lcxRiskText = `${(lcxProb * 100).toFixed(1)}%`;
+  const isLcxSelected = activeVesselFocus === 'vessel_LCX';
+
+  const rcaPred = vesselsPred?.rca;
+  const rcaProb = rcaPred?.probability ?? 0.127;
+  const rcaColorHex = rcaPred?.color_hex ?? '#10B981';
+  const rcaRiskText = `${(rcaProb * 100).toFixed(1)}%`;
+  const isRcaSelected = activeVesselFocus === 'vessel_RCA';
 
   // WebGL availability check
   const webGLSupported = isWebGLAvailable();
 
-  // Visibility and tab monitoring (Task 2.8)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleVisibility = () => {
-      setIsTabActive(document.visibilityState === 'visible');
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    let observer: IntersectionObserver | null = null;
-    if (containerRef.current && window.IntersectionObserver) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0]) {
-            setIsCanvasVisible(entries[0].isIntersecting);
-          }
-        },
-        { threshold: 0.1 }
-      );
-      observer.observe(containerRef.current);
-    }
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibility);
-      observer?.disconnect();
-    };
-  }, []);
-
-  // One-shot intro sway (Task 2.7 e)
-  const cancelSway = useCallback(() => {
-    if (isSwaying) {
-      setIsSwaying(false);
-      if (swayRafRef.current !== null) {
-        cancelAnimationFrame(swayRafRef.current);
-        swayRafRef.current = null;
-      }
-    }
-  }, [isSwaying]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const hasSwayed = sessionStorage.getItem('perfusion3d-sway');
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (!hasSwayed && !prefersReducedMotion && isCanvasVisible && isTabActive) {
-      sessionStorage.setItem('perfusion3d-sway', 'true');
-      setIsSwaying(true);
-      swayStartTimeRef.current = performance.now();
-
-      const animateSway = (now: number) => {
-        if (!swayStartTimeRef.current) return;
-        const elapsed = now - swayStartTimeRef.current;
-        const duration = 2400; // 2400ms duration
-        const u = Math.min(1.0, elapsed / duration);
-        setSwayProgress(u);
-
-        if (u < 1.0) {
-          swayRafRef.current = requestAnimationFrame(animateSway);
-        } else {
-          setIsSwaying(false);
-          swayRafRef.current = null;
-        }
-      };
-
-      swayRafRef.current = requestAnimationFrame(animateSway);
-    }
-
-    return () => {
-      if (swayRafRef.current !== null) {
-        cancelAnimationFrame(swayRafRef.current);
-      }
-    };
-  }, [isCanvasVisible, isTabActive]);
-
-  // Mark user interaction to dismiss hint & cancel sway
+  // Mark user interaction to dismiss hint
   const registerInteraction = useCallback(() => {
-    cancelSway();
     setHasInteracted(true);
-  }, [cancelSway]);
+  }, []);
 
   // Preset view selection (Front | Left | Back | Right)
   const handleSelectView = (view: PresetView) => {
@@ -359,12 +354,11 @@ export const HeartCanvas: React.FC = () => {
     setAnimTarget({
       azimuth: targetAz,
       distance: currentDistance,
-      duration: 500,
+      duration: 350,
       startTime: performance.now(),
     });
   };
 
-  // Zoom step changes distance by 15% over 200ms
   const handleZoomIn = () => {
     registerInteraction();
     const newDist = Math.max(1.8, currentDistance * 0.85);
@@ -389,41 +383,26 @@ export const HeartCanvas: React.FC = () => {
 
   const handleResetView = () => {
     registerInteraction();
-    if (activeVesselFocus !== 'default') {
-      setVesselFocus('default');
-    }
     setAnimTarget({
       azimuth: 0,
       distance: 3.1,
       duration: 500,
       startTime: performance.now(),
     });
+    setVesselFocus('default');
   };
 
-  // Keyboard navigation (Task 2.7 g)
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    registerInteraction();
-    const degToRad = Math.PI / 180;
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      // Rotate left by 5 degrees
-      const newAz = ((currentAzimuth - 5) * degToRad);
-      setAnimTarget({
-        azimuth: newAz,
-        distance: currentDistance,
-        duration: 120,
-        startTime: performance.now(),
-      });
+      registerInteraction();
+      const newAz = ((currentAzimuth - 15) * Math.PI) / 180;
+      setAnimTarget({ azimuth: newAz, distance: currentDistance, duration: 150, startTime: performance.now() });
     } else if (e.key === 'ArrowRight') {
       e.preventDefault();
-      // Rotate right by 5 degrees
-      const newAz = ((currentAzimuth + 5) * degToRad);
-      setAnimTarget({
-        azimuth: newAz,
-        distance: currentDistance,
-        duration: 120,
-        startTime: performance.now(),
-      });
+      registerInteraction();
+      const newAz = ((currentAzimuth + 15) * Math.PI) / 180;
+      setAnimTarget({ azimuth: newAz, distance: currentDistance, duration: 150, startTime: performance.now() });
     } else if (e.key === '+' || e.key === '=') {
       e.preventDefault();
       handleZoomIn();
@@ -439,14 +418,32 @@ export const HeartCanvas: React.FC = () => {
     }
   };
 
+  const handleSelectVessel = (vesselName: string) => {
+    setVesselFocus(activeVesselFocus === vesselName ? 'default' : vesselName);
+  };
+
+  const handlePointerOver = (vesselName: string) => {
+    document.body.style.cursor = 'pointer';
+    setHoveredVessel(vesselName);
+  };
+
+  const handlePointerOut = () => {
+    document.body.style.cursor = 'auto';
+    setHoveredVessel(null);
+  };
+
+  const selectedVesselName = activeVesselFocus !== 'default' && activeVesselFocus !== 'all' && activeVesselFocus !== 'free'
+    ? activeVesselFocus.replace('vessel_', '')
+    : null;
+
   if (!webGLSupported) {
     return (
       <div
         role="alert"
         style={{
           width: '100%',
-          height: 'clamp(300px, 52dvh, 420px)',
-          backgroundColor: CAVITY_EDGE,
+          height: '340px',
+          backgroundColor: VIEWER_BG,
           border: '1px solid var(--bd)',
           borderRadius: '3px',
           display: 'flex',
@@ -455,7 +452,6 @@ export const HeartCanvas: React.FC = () => {
           color: 'var(--ink)',
           fontFamily: 'var(--fs)',
           fontSize: '13px',
-          padding: '16px',
           textAlign: 'center',
         }}
       >
@@ -466,7 +462,7 @@ export const HeartCanvas: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full">
-      {/* 3D Recessed Cavity Container (Task 2.3 a) */}
+      {/* 3D Canvas Container */}
       <div
         ref={containerRef}
         id="viewer-cavity-container"
@@ -487,7 +483,7 @@ export const HeartCanvas: React.FC = () => {
         style={{
           width: '100%',
           height: 'clamp(300px, 52dvh, 420px)',
-          backgroundColor: CAVITY_EDGE,
+          backgroundColor: VIEWER_BG,
           border: '1px solid var(--bd)',
           borderRadius: '3px',
           overflow: 'hidden',
@@ -505,39 +501,21 @@ export const HeartCanvas: React.FC = () => {
         >
           {/* 3D WebGL Canvas */}
           <Canvas
-            camera={{ position: [0.0, 0.0, 3.1], fov: 40 }}
-            dpr={[1, 2]}
-            frameloop={isCanvasVisible && isTabActive ? 'always' : 'never'}
-            gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+            camera={CAMERA_CONFIG}
+            dpr={DPR_CONFIG}
+            gl={GL_CONFIG}
           >
-            {/* Dark plum-brown background & fog */}
-            <CavitySceneSetup />
+            {/* Flat deep-red background */}
+            <color attach="background" args={[VIEWER_BG]} />
 
-            {/* Cavity lighting system (Task 2.3 d) */}
-            <directionalLight
-              position={CAVITY_LIGHTS.key.position}
-              intensity={CAVITY_LIGHTS.key.intensity}
-              color={CAVITY_LIGHTS.key.color}
-            />
-            <directionalLight
-              position={CAVITY_LIGHTS.fill.position}
-              intensity={CAVITY_LIGHTS.fill.intensity}
-              color={CAVITY_LIGHTS.fill.color}
-            />
-            <directionalLight
-              position={CAVITY_LIGHTS.rim.position}
-              intensity={CAVITY_LIGHTS.rim.intensity}
-              color={CAVITY_LIGHTS.rim.color}
-            />
-            <pointLight
-              position={CAVITY_LIGHTS.glow.position}
-              intensity={CAVITY_LIGHTS.glow.intensity}
-              color={CAVITY_LIGHTS.glow.color}
-              distance={6}
-            />
+            <SceneTestHook />
 
-            {/* Inverted Ellipsoid Cavity Backdrop (Task 2.3 b) */}
-            <CavityBackdrop boundingCenter={[0.0, -0.08, 0.0]} boundingRadius={0.85} />
+            {/* High-Luminance Studio Clinical Lighting System (Baseline look) */}
+            <ambientLight intensity={1.35} color="rgb(255, 255, 255)" />
+            <directionalLight position={[3.5, 4.0, 3.5]} intensity={1.1} color="rgb(255, 255, 255)" />
+            <directionalLight position={[-3.5, 1.5, 2.5]} intensity={0.7} color="rgb(226, 232, 240)" />
+            <directionalLight position={[0.0, 3.0, -4.0]} intensity={8.0} color="rgb(203, 213, 225)" />
+            <directionalLight position={[0.0, -3.0, 1.5]} intensity={0.5} color="rgb(255, 255, 255)" />
 
             <Suspense fallback={null}>
               <HeartModel
@@ -571,51 +549,125 @@ export const HeartCanvas: React.FC = () => {
 
             <CameraRig
               controlsRef={controlsRef}
-              isUserInteracting={isUserInteracting || animTarget !== null || isSwaying}
+              isUserInteracting={isUserInteracting || animTarget !== null}
             />
 
-            <CavityCameraController
+            <CameraController
               controlsRef={controlsRef}
               animTarget={animTarget}
               onAnimComplete={() => setAnimTarget(null)}
-              isSwaying={isSwaying}
-              swayProgress={swayProgress}
               onCameraUpdate={(az, dist) => {
                 setCurrentAzimuth(az);
                 setCurrentDistance(dist);
               }}
             />
+
+            <LabelSyncTracker
+              ladRef={ladLabelRef}
+              lcxRef={lcxLabelRef}
+              rcaRef={rcaLabelRef}
+            />
           </Canvas>
         </CanvasErrorBoundary>
 
-        {/* Loading chip suspended fallback in DOM (Task 2.7 h) */}
+        {/* Stable HTML Labels Overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none overflow-hidden"
+          style={{ zIndex: 10 }}
+        >
+          <VesselLabel
+            ref={ladLabelRef}
+            vesselKey="vessel_LAD"
+            code="LAD"
+            riskDotColor={ladColorHex}
+            riskText={ladRiskText}
+            placement="below"
+            isSelected={isLadSelected}
+            onSelect={() => handleSelectVessel('vessel_LAD')}
+            onPointerOver={() => handlePointerOver('vessel_LAD')}
+            onPointerOut={handlePointerOut}
+          />
+          <VesselLabel
+            ref={lcxLabelRef}
+            vesselKey="vessel_LCX"
+            code="LCX"
+            riskDotColor={lcxColorHex}
+            riskText={lcxRiskText}
+            placement="right"
+            isSelected={isLcxSelected}
+            onSelect={() => handleSelectVessel('vessel_LCX')}
+            onPointerOver={() => handlePointerOver('vessel_LCX')}
+            onPointerOut={handlePointerOut}
+          />
+          <VesselLabel
+            ref={rcaLabelRef}
+            vesselKey="vessel_RCA"
+            code="RCA"
+            riskDotColor={rcaColorHex}
+            riskText={rcaRiskText}
+            placement="left"
+            isSelected={isRcaSelected}
+            onSelect={() => handleSelectVessel('vessel_RCA')}
+            onPointerOver={() => handlePointerOver('vessel_RCA')}
+            onPointerOut={handlePointerOut}
+          />
+        </div>
+
+        {/* Loading chip suspended fallback in DOM */}
         <Suspense fallback={<LoaderChip />}>
           <div style={{ display: 'none' }} />
         </Suspense>
 
-        {/* Vignette Overlay (Task 2.3 e) */}
-        <div className="cavity-vignette" />
-
-        {/* ViewerHint (Task 2.7 a) */}
+        {/* ViewerHint */}
         <ViewerHint hasInteracted={hasInteracted} />
 
-        {/* Subtle Vessel Hover Inspection Chip */}
-        {hoveredVessel && (
+        {/* Selected-vessel chip at top-left (8px from edges) with 24px icon button to clear */}
+        {selectedVesselName && (
           <div
-            className="absolute top-4 left-4 z-20 p-1.5 px-3 rounded flex items-center gap-2 text-[12px] pointer-events-none"
             style={{
+              position: 'absolute',
+              top: '8px',
+              left: '8px',
+              zIndex: 20,
               backgroundColor: 'var(--panel)',
-              color: 'var(--ink)',
               border: '1px solid var(--bds)',
+              borderRadius: '3px',
+              padding: '2px 4px 2px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
               fontFamily: 'var(--fs)',
+              fontSize: '12px',
+              color: 'var(--ink)',
+              userSelect: 'none',
             }}
           >
-            <span>{hoveredVessel.replace('vessel_', '')} artery</span>
+            <span>{selectedVesselName} artery</span>
+            <button
+              type="button"
+              aria-label="Clear selection"
+              onClick={() => setVesselFocus('default')}
+              style={{
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--ink)',
+                cursor: 'pointer',
+                padding: 0,
+                borderRadius: '2px',
+              }}
+            >
+              <X size={14} />
+            </button>
           </div>
         )}
       </div>
 
-      {/* ViewerToolbar directly below cavity (Task 2.7 b) */}
+      {/* ViewerToolbar directly below canvas */}
       <ViewerToolbar
         currentAzimuth={currentAzimuth}
         onSelectView={handleSelectView}

@@ -1,60 +1,45 @@
-import React, { useState } from 'react';
-import { Html } from '@react-three/drei';
+import React, { forwardRef, useState } from 'react';
 
 export interface VesselLabelProps {
   vesselKey: 'vessel_LAD' | 'vessel_LCX' | 'vessel_RCA';
   code: 'LAD' | 'LCX' | 'RCA';
   riskDotColor: string;
   riskText: string;
-  position: [number, number, number];
   placement: 'left' | 'right' | 'below';
   isSelected: boolean;
-  isFacingAway: boolean;
-  nudgeY?: number;
   onSelect: () => void;
   onPointerOver?: () => void;
   onPointerOut?: () => void;
 }
 
-export const VesselLabel: React.FC<VesselLabelProps> = ({
+export const VesselLabel = forwardRef<HTMLDivElement, VesselLabelProps>(({
   vesselKey,
   code,
   riskDotColor,
   riskText,
-  position,
   placement,
   isSelected,
-  isFacingAway,
-  nudgeY = 0,
   onSelect,
   onPointerOver,
   onPointerOut,
-}) => {
+}, ref) => {
   const [isHovered, setIsHovered] = useState(false);
-
-  // Active / hover state styling: border var(--acc), background var(--hov)
   const isHighlighted = isSelected || isHovered;
 
-  // Placement container styling for leader line attachment
-  let containerStyle: React.CSSProperties = {
-    position: 'absolute',
-    pointerEvents: 'auto',
-    userSelect: 'none',
-    opacity: isFacingAway ? 0.35 : 1.0,
-    transition: 'opacity 180ms ease',
-    transform: `translateY(${nudgeY}px)`,
+  let containerInnerStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
+    position: 'relative',
+    pointerEvents: 'auto',
   };
 
   let leaderLine: React.ReactNode = null;
 
   if (placement === 'right') {
     // LCX: Anchor at (0, 0), leader line 12px right, then label box
-    containerStyle = {
-      ...containerStyle,
-      left: 0,
-      top: '-11px', // vertically center 22px label box on anchor
+    containerInnerStyle = {
+      ...containerInnerStyle,
+      transform: 'translate(0, -11px)',
       flexDirection: 'row',
     };
     leaderLine = (
@@ -70,10 +55,9 @@ export const VesselLabel: React.FC<VesselLabelProps> = ({
     );
   } else if (placement === 'left') {
     // RCA: Anchor at (0, 0), label box on left, leader line 12px to anchor
-    containerStyle = {
-      ...containerStyle,
-      right: 0,
-      top: '-11px',
+    containerInnerStyle = {
+      ...containerInnerStyle,
+      transform: 'translate(-100%, -11px)',
       flexDirection: 'row',
     };
     leaderLine = (
@@ -89,10 +73,9 @@ export const VesselLabel: React.FC<VesselLabelProps> = ({
     );
   } else {
     // LAD: below anchor. Leader line 12px down, then label box
-    containerStyle = {
-      ...containerStyle,
-      left: '-48px', // center ~96px box under anchor
-      top: 0,
+    containerInnerStyle = {
+      ...containerInnerStyle,
+      transform: 'translate(-50%, 0)',
       flexDirection: 'column',
       alignItems: 'center',
     };
@@ -142,10 +125,9 @@ export const VesselLabel: React.FC<VesselLabelProps> = ({
         justifyContent: 'center',
         boxSizing: 'border-box',
         outline: 'none',
-        transition: 'border-color 150ms ease, background-color 150ms ease',
+        transition: 'border-color 120ms ease, background-color 120ms ease',
       }}
     >
-      {/* 6px risk-colour dot */}
       <span
         style={{
           width: '6px',
@@ -158,25 +140,23 @@ export const VesselLabel: React.FC<VesselLabelProps> = ({
           flexShrink: 0,
         }}
       />
-      {/* Key: Sora 11px/600 */}
       <span
         style={{
           fontFamily: 'var(--fs)',
           fontSize: '11px',
           fontWeight: 600,
           lineHeight: 1,
-          letterSpacing: '0.02em',
         }}
       >
         {code}
       </span>
-      {/* Value: IBM Plex Mono 11px */}
       <span
         style={{
           fontFamily: 'var(--fm)',
           fontSize: '11px',
           lineHeight: 1,
           fontVariantNumeric: 'tabular-nums',
+          color: 'var(--mut)',
         }}
       >
         {riskText}
@@ -185,12 +165,22 @@ export const VesselLabel: React.FC<VesselLabelProps> = ({
   );
 
   return (
-    <Html
-      position={position}
-      center={false}
-      style={{ pointerEvents: 'auto', userSelect: 'none' }}
+    <div
+      ref={ref}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+        userSelect: 'none',
+        transition: 'opacity 120ms ease',
+        willChange: 'transform, opacity',
+        zIndex: 10,
+        transform: 'translate3d(0, 0, 0)',
+        opacity: 1,
+      }}
     >
-      <div style={containerStyle}>
+      <div style={containerInnerStyle}>
         {placement === 'left' ? (
           <>
             {labelButton}
@@ -203,8 +193,8 @@ export const VesselLabel: React.FC<VesselLabelProps> = ({
           </>
         )}
       </div>
-    </Html>
+    </div>
   );
-};
+});
 
-export default VesselLabel;
+VesselLabel.displayName = 'VesselLabel';

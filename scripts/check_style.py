@@ -35,8 +35,7 @@ EXEMPT_3D_FILES = {
     "CameraRig.tsx",
     "HeartCanvas.tsx",
     "VesselLabel.tsx",
-    "cavityConfig.ts",
-    "cavity.css",
+    "viewerConfig.ts",
 }
 
 # Regex patterns for validation
