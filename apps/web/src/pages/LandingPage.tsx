@@ -120,13 +120,24 @@ export const LandingPage: React.FC = () => {
   const handleScrollToHowItWorks = () => {
     const el = document.getElementById('how-it-works');
     if (el) {
+      const navHeader = document.querySelector('.landing-nav-header');
+      const headerHeight = navHeader ? navHeader.getBoundingClientRect().height : 56;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 12;
+
       const prefersReducedMotion =
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+
+      window.scrollTo({
+        top: Math.max(0, offsetPosition),
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      });
+
       const h2 = el.querySelector('h2');
       if (h2) {
-        h2.focus();
+        h2.setAttribute('tabindex', '-1');
+        h2.focus({ preventScroll: true });
       }
     }
   };
@@ -366,22 +377,24 @@ export const LandingPage: React.FC = () => {
                       <span>TERRITORY AUDIT</span>
                       <span>PERFUSION MAPPING</span>
                     </div>
-                    <table className="w-full text-left text-[11px] font-[var(--fs)]">
-                      <tbody>
-                        {LANDING_COPY.whatYouGet.rows[0].vessels.map((v) => (
-                          <tr key={v.vessel} className="border-b border-[var(--bd)] last:border-b-0">
-                            <td className="px-3 py-1.5 font-bold font-[var(--fm)] text-[var(--ink)]">{v.vessel}</td>
-                            <td className="px-3 py-1.5 text-[var(--mut)]">{v.territory}</td>
-                            <td className="px-3 py-1.5 text-right font-[var(--fm)] text-[var(--ink)]">{v.prob}</td>
-                            <td className="px-3 py-1.5 text-right">
-                              <span className={v.risk === 'High Risk' ? 'xai-badge-up' : 'xai-badge-down'}>
-                                {v.risk}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <div className="table-scroll-wrap overflow-x-auto w-full">
+                      <table className="w-full text-left text-[11px] font-[var(--fs)]" style={{ minWidth: '320px' }}>
+                        <tbody>
+                          {LANDING_COPY.whatYouGet.rows[0].vessels.map((v) => (
+                            <tr key={v.vessel} className="border-b border-[var(--bd)] last:border-b-0">
+                              <td className="px-3 py-1.5 font-bold font-[var(--fm)] text-[var(--ink)]">{v.vessel}</td>
+                              <td className="px-3 py-1.5 text-[var(--mut)]">{v.territory}</td>
+                              <td className="px-3 py-1.5 text-right font-[var(--fm)] text-[var(--ink)]">{v.prob}</td>
+                              <td className="px-3 py-1.5 text-right">
+                                <span className={v.risk === 'High Risk' ? 'xai-badge-up' : 'xai-badge-down'}>
+                                  {v.risk}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
 
@@ -475,50 +488,52 @@ export const LandingPage: React.FC = () => {
                         </div>
                         <span className="text-[10px] font-[var(--fm)] text-[var(--mut)]">LOCAL ATTRIBUTION Δ</span>
                       </div>
-                      <table className="telemetry-table">
-                        <thead>
-                          <tr>
-                            <th>Biomarker / Modality</th>
-                            <th>Patient Value</th>
-                            <th>Explainable AI Impact</th>
-                            <th style={{ textAlign: 'right' }}>Direction</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {LANDING_COPY.whatYouGet.rows[1].factorsTable.map((f) => (
-                            <tr key={f.feature}>
-                              <td>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="feature-group-chip">{f.category}</span>
-                                  <span className="font-medium text-[11px]">{f.feature}</span>
-                                </div>
-                              </td>
-                              <td className="font-[var(--fm)] text-[11px] text-[var(--mut)]">{f.patientVal}</td>
-                              <td>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-[var(--fm)] font-semibold text-[11px] w-10">
-                                    {f.impact}
-                                  </span>
-                                  <div className="w-16 h-1.5 bg-[var(--bd)] rounded-full overflow-hidden">
-                                    <div
-                                      className="h-full rounded-full"
-                                      style={{
-                                        width: f.barWidth,
-                                        backgroundColor: f.isElevating ? 'var(--high)' : 'var(--low)',
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              </td>
-                              <td style={{ textAlign: 'right' }}>
-                                <span className={f.isElevating ? 'xai-badge-up' : 'xai-badge-down'}>
-                                  {f.effect}
-                                </span>
-                              </td>
+                      <div className="table-scroll-wrap overflow-x-auto w-full">
+                        <table className="telemetry-table" style={{ minWidth: '460px' }}>
+                          <thead>
+                            <tr>
+                              <th>Biomarker / Modality</th>
+                              <th>Patient Value</th>
+                              <th>Explainable AI Impact</th>
+                              <th style={{ textAlign: 'right' }}>Direction</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {LANDING_COPY.whatYouGet.rows[1].factorsTable.map((f) => (
+                              <tr key={f.feature}>
+                                <td>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="feature-group-chip">{f.category}</span>
+                                    <span className="font-medium text-[11px]">{f.feature}</span>
+                                  </div>
+                                </td>
+                                <td className="font-[var(--fm)] text-[11px] text-[var(--mut)]">{f.patientVal}</td>
+                                <td>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-[var(--fm)] font-semibold text-[11px] w-10">
+                                      {f.impact}
+                                    </span>
+                                    <div className="w-16 h-1.5 bg-[var(--bd)] rounded-full overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full"
+                                        style={{
+                                          width: f.barWidth,
+                                          backgroundColor: f.isElevating ? 'var(--high)' : 'var(--low)',
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                </td>
+                                <td style={{ textAlign: 'right' }}>
+                                  <span className={f.isElevating ? 'xai-badge-up' : 'xai-badge-down'}>
+                                    {f.effect}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                       <div className="pt-2 text-[11px] text-[var(--mut)] font-[var(--fs)] border-t border-[var(--bd)] flex items-center justify-between">
                         <span>Transparent directional attributions per patient</span>
                         <span className="font-[var(--fm)] text-[10px] text-[var(--acc)]">Σ Δ = +0.48 NET CAD</span>
@@ -620,81 +635,84 @@ export const LandingPage: React.FC = () => {
                             Model outputs
                           </span>
                         </div>
-                        <table
-                          style={{
-                            width: '100%',
-                            borderCollapse: 'collapse',
-                            fontSize: '11px',
-                            fontFamily: 'var(--fs)',
-                          }}
-                        >
-                          <thead>
-                            <tr
-                              style={{
-                                borderBottom: '1px solid var(--s-bd)',
-                                color: 'var(--s-mut)',
-                                textAlign: 'left',
-                              }}
-                            >
-                              <th style={{ padding: '4px 0', fontWeight: 500 }}>Target Vessel</th>
-                              <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
-                                Probability
-                              </th>
-                              <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
-                                Risk band
-                              </th>
-                              <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
-                                Top Explainable AI Driver
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {LANDING_COPY.whatYouGet.rows[2].clinicianRows.map((r) => (
+                        <div className="table-scroll-wrap overflow-x-auto w-full">
+                          <table
+                            style={{
+                              width: '100%',
+                              minWidth: '420px',
+                              borderCollapse: 'collapse',
+                              fontSize: '11px',
+                              fontFamily: 'var(--fs)',
+                            }}
+                          >
+                            <thead>
                               <tr
-                                key={r.target}
-                                style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}
+                                style={{
+                                  borderBottom: '1px solid var(--s-bd)',
+                                  color: 'var(--s-mut)',
+                                  textAlign: 'left',
+                                }}
                               >
-                                <td style={{ padding: '4px 0', fontWeight: 500 }}>{r.target}</td>
-                                <td
-                                  style={{
-                                    padding: '4px 0',
-                                    textAlign: 'right',
-                                    fontFamily: 'var(--fm)',
-                                    fontWeight: 600,
-                                  }}
+                                <th style={{ padding: '4px 0', fontWeight: 500 }}>Target Vessel</th>
+                                <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
+                                  Probability
+                                </th>
+                                <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
+                                  Risk band
+                                </th>
+                                <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
+                                  Top Explainable AI Driver
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {LANDING_COPY.whatYouGet.rows[2].clinicianRows.map((r) => (
+                                <tr
+                                  key={r.target}
+                                  style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}
                                 >
-                                  {r.prob}
-                                </td>
-                                <td style={{ padding: '4px 0', textAlign: 'right' }}>
-                                  <span
+                                  <td style={{ padding: '4px 0', fontWeight: 500 }}>{r.target}</td>
+                                  <td
                                     style={{
+                                      padding: '4px 0',
+                                      textAlign: 'right',
                                       fontFamily: 'var(--fm)',
-                                      fontSize: '10px',
                                       fontWeight: 600,
-                                      padding: '1px 6px',
-                                      borderRadius: '2px',
-                                      color: r.band === 'High' ? 'var(--s-high)' : 'var(--s-low)',
-                                      background:
-                                        r.band === 'High' ? 'rgba(179, 21, 47, 0.08)' : 'rgba(31, 111, 69, 0.08)',
                                     }}
                                   >
-                                    {r.band}
-                                  </span>
-                                </td>
-                                <td
-                                  style={{
-                                    padding: '4px 0',
-                                    textAlign: 'right',
-                                    fontSize: '10px',
-                                    color: 'var(--s-mut)',
-                                  }}
-                                >
-                                  {r.topXai}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                    {r.prob}
+                                  </td>
+                                  <td style={{ padding: '4px 0', textAlign: 'right' }}>
+                                    <span
+                                      style={{
+                                        fontFamily: 'var(--fm)',
+                                        fontSize: '10px',
+                                        fontWeight: 600,
+                                        padding: '1px 6px',
+                                        borderRadius: '2px',
+                                        color: r.band === 'High' ? 'var(--s-high)' : 'var(--s-low)',
+                                        background:
+                                          r.band === 'High' ? 'rgba(179, 21, 47, 0.08)' : 'rgba(31, 111, 69, 0.08)',
+                                      }}
+                                    >
+                                      {r.band}
+                                    </span>
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: '4px 0',
+                                      textAlign: 'right',
+                                      fontSize: '10px',
+                                      color: 'var(--s-mut)',
+                                    }}
+                                  >
+                                    {r.topXai}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                         <div
                           style={{
                             marginTop: '10px',
@@ -765,23 +783,25 @@ export const LandingPage: React.FC = () => {
                       VALIDATION MATRIX
                     </span>
                   </div>
-                  <table className="telemetry-table">
-                    <tbody>
-                      {LANDING_COPY.about.systemSpecs.map((s) => (
-                        <tr key={s.component}>
-                          <td className="font-semibold text-[11px] text-[var(--ink)] w-[32%]">
-                            {s.component}
-                          </td>
-                          <td className="font-[var(--fm)] text-[11px] text-[var(--acc)]">
-                            {s.spec}
-                          </td>
-                          <td className="text-[11px] text-[var(--mut)] text-right">
-                            {s.role}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="table-scroll-wrap overflow-x-auto w-full">
+                    <table className="telemetry-table" style={{ minWidth: '420px' }}>
+                      <tbody>
+                        {LANDING_COPY.about.systemSpecs.map((s) => (
+                          <tr key={s.component}>
+                            <td className="font-semibold text-[11px] text-[var(--ink)] w-[32%]">
+                              {s.component}
+                            </td>
+                            <td className="font-[var(--fm)] text-[11px] text-[var(--acc)]">
+                              {s.spec}
+                            </td>
+                            <td className="text-[11px] text-[var(--mut)] text-right">
+                              {s.role}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
@@ -1500,6 +1520,18 @@ export const LandingPage: React.FC = () => {
           }
         }
 
+        #how-it-works,
+        #what-you-get,
+        #about {
+          scroll-margin-top: 68px;
+        }
+
+        .table-scroll-wrap {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
         /* Under 768px: Mobile sizing & 44px touch targets */
         @media (max-width: 767px) {
           .hero-h1 {
@@ -1555,12 +1587,51 @@ export const LandingPage: React.FC = () => {
           .sample-open-btn {
             min-height: 44px;
           }
+
+          .what-row {
+            padding: 22px 0;
+          }
+
+          .what-preview-panel {
+            padding: 12px;
+          }
+
+          .step-panel {
+            padding: 16px;
+          }
+
+          .table-scroll-wrap::-webkit-scrollbar {
+            height: 4px;
+          }
         }
 
-        /* Under 480px: Facts row labels 11px */
+        /* Under 480px: Facts row labels 11px & tight spacing */
         @media (max-width: 479px) {
+          .hero-band {
+            padding: 24px 0 32px !important;
+          }
+
+          .facts-row {
+            padding-top: 14px;
+            margin-bottom: 16px;
+          }
+
+          .facts-cell {
+            padding: 0 4px;
+          }
+
+          .facts-value {
+            font-size: 19px;
+          }
+
           .facts-label {
-            font-size: 11px;
+            font-size: 10.5px;
+            line-height: 1.25;
+          }
+
+          .telemetry-table th,
+          .telemetry-table td {
+            padding: 4px 6px;
           }
         }
       `}</style>

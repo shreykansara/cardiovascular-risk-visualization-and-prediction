@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { Sun, Moon } from 'lucide-react';
 import { WIZARD_STEPS } from '../../types/wizard';
 import { useWizardStore } from '../../store/useWizardStore';
 import { useTheme } from '../../hooks/useTheme';
@@ -17,7 +18,7 @@ export interface AppNavProps {
 export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const reset = useWizardStore((s) => s.reset);
   const isStepUnlocked = useWizardStore((s) => s.isStepUnlocked);
 
@@ -156,45 +157,34 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
         </nav>
 
         {/* Task 2.4 RIGHT zone */}
-        <div style={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* a) Theme control */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <label
-              htmlFor="nav-theme-select"
-              className="theme-label"
-              style={{
-                fontFamily: 'var(--fs)',
-                fontSize: '12px',
-                color: 'var(--mut)',
-              }}
-            >
-              Theme
-            </label>
-            <select
-              id="nav-theme-select"
-              aria-label="Theme"
-              className="theme-select-control"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as any)}
-              style={{
-                height: '32px',
-                width: '112px',
-                fontFamily: 'var(--fs)',
-                fontSize: '12px',
-                backgroundColor: 'var(--panel)',
-                color: 'var(--ink)',
-                border: '1px solid var(--bds)',
-                borderRadius: 'var(--radius)',
-                padding: '0 8px',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="system">System</option>
-              <option value="light">Paper</option>
-              <option value="dark">Monitor</option>
-            </select>
-          </div>
+        <div style={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* a) Theme toggle button */}
+          <button
+            type="button"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="app-theme-toggle-btn"
+            aria-label={`Switch to ${resolvedTheme === 'dark' ? 'Paper' : 'Monitor'} theme`}
+            title={`Switch to ${resolvedTheme === 'dark' ? 'Paper' : 'Monitor'} theme`}
+            style={{
+              width: '32px',
+              height: '32px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--panel)',
+              border: '1px solid var(--bds)',
+              borderRadius: 'var(--radius)',
+              color: 'var(--ink)',
+              cursor: 'pointer',
+              transition: 'background-color 140ms ease, border-color 140ms ease, transform 140ms ease',
+            }}
+          >
+            {resolvedTheme === 'dark' ? (
+              <Sun size={15} />
+            ) : (
+              <Moon size={15} />
+            )}
+          </button>
 
           {/* b) New assessment text button (shown only on steps 2-4 and >=900px) */}
           {isWizardStep && currentStepNumber >= 2 && currentStepNumber <= 4 && (

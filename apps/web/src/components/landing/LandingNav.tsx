@@ -6,7 +6,7 @@ import { QuietButton } from '../ui/QuietButton';
 import { useTheme } from '../../hooks/useTheme';
 import { useWizardStore } from '../../store/useWizardStore';
 import { LANDING_COPY } from '../../content/landing';
-import { ArrowRight, Sun, Moon } from 'lucide-react';
+import { ArrowRight, Sun, Moon, Menu, X } from 'lucide-react';
 
 export const LandingNav: React.FC = () => {
   const navigate = useNavigate();
@@ -14,10 +14,14 @@ export const LandingNav: React.FC = () => {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<string>('');
   const [isNarrow, setIsNarrow] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkWidth = () => {
       setIsNarrow(window.innerWidth < 480);
+      if (window.innerWidth >= 900) {
+        setIsMobileMenuOpen(false);
+      }
     };
     checkWidth();
     window.addEventListener('resize', checkWidth);
@@ -54,6 +58,7 @@ export const LandingNav: React.FC = () => {
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (location.pathname === '/' && !location.hash) {
       e.preventDefault();
+      setIsMobileMenuOpen(false);
       const prefersReducedMotion =
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -62,25 +67,30 @@ export const LandingNav: React.FC = () => {
   };
 
   const handleNavClick = (sectionId: string) => {
+    setIsMobileMenuOpen(false);
     const el = document.getElementById(sectionId);
     if (!el) return;
+
+    const navHeader = document.querySelector('.landing-nav-header');
+    const headerHeight = navHeader ? navHeader.getBoundingClientRect().height : 56;
+    const elementPosition = el.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 12;
 
     const prefersReducedMotion =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-    window.history.pushState(null, '', `#${sectionId}`);
+    window.scrollTo({
+      top: Math.max(0, offsetPosition),
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    });
 
-    const heading = el.querySelector('h2');
-    if (heading) {
-      heading.setAttribute('tabindex', '-1');
-      heading.focus({ preventScroll: true });
-    }
+    window.history.pushState(null, '', `#${sectionId}`);
     setActiveSection(sectionId);
   };
 
   const handleStartAssessment = () => {
+    setIsMobileMenuOpen(false);
     useWizardStore.getState().reset();
     navigate('/welcome');
   };
@@ -146,8 +156,8 @@ export const LandingNav: React.FC = () => {
           })}
         </nav>
 
-        {/* Right: Theme Toggle & Start Assessment */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Right: Theme Toggle & Start Assessment & Mobile Menu Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             type="button"
             onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
@@ -179,12 +189,84 @@ export const LandingNav: React.FC = () => {
             size="md"
             onClick={handleStartAssessment}
             aria-label={LANDING_COPY.nav.startAssessment}
-            rightIcon={<ArrowRight size={16} />}
+            rightIcon={<ArrowRight size={15} />}
           >
             {isNarrow ? LANDING_COPY.nav.startAssessmentShort : LANDING_COPY.nav.startAssessment}
           </PrimaryButton>
+
+          {/* Mobile Menu Toggle Button (<900px) */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="landing-mobile-menu-btn"
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMobileMenuOpen}
+            style={{
+              width: '34px',
+              height: '34px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--panel)',
+              border: '1px solid var(--bds)',
+              borderRadius: 'var(--radius)',
+              color: 'var(--ink)',
+              cursor: 'pointer',
+            }}
+          >
+            {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer Dropdown (<900px) */}
+      {isMobileMenuOpen && (
+        <div
+          className="landing-mobile-drawer"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            backgroundColor: 'var(--panel)',
+            borderBottom: '1px solid var(--bd)',
+            padding: '12px 16px 16px',
+            boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}
+        >
+          {LANDING_COPY.nav.links.map((link) => {
+            const isCurrent = activeSection === link.id;
+            return (
+              <button
+                key={link.id}
+                type="button"
+                onClick={() => handleNavClick(link.id)}
+                style={{
+                  height: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '0 12px',
+                  borderRadius: 'var(--radius)',
+                  backgroundColor: isCurrent ? 'var(--hov)' : 'transparent',
+                  border: '1px solid',
+                  borderColor: isCurrent ? 'var(--bd)' : 'transparent',
+                  color: isCurrent ? 'var(--ink)' : 'var(--mut)',
+                  fontFamily: 'var(--fs)',
+                  fontSize: '14px',
+                  fontWeight: isCurrent ? 600 : 500,
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                }}
+              >
+                {link.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </header>
   );
 };

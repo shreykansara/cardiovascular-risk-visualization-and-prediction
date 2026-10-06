@@ -117,6 +117,9 @@
     align-items: center;
     gap: 4px;
   }
+  .landing-mobile-menu-btn {
+    display: none !important;
+  }
 }
 
 /* Field Grid responsive columns (Task 5.2d) */

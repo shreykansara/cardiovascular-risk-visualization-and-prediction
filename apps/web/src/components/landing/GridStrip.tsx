@@ -34,9 +34,9 @@ export const GridStrip: React.FC = () => {
       ref={containerRef}
       className="ecg-grid w-full overflow-hidden"
       style={{
-        height: '28px',
-        minHeight: '28px',
-        maxHeight: '28px',
+        height: '48px',
+        minHeight: '48px',
+        maxHeight: '48px',
         borderTop: '1px solid var(--bd)',
         borderBottom: '1px solid var(--bd)',
         position: 'relative',
@@ -46,21 +46,21 @@ export const GridStrip: React.FC = () => {
       aria-hidden="true"
     >
       <svg
-        viewBox="0 0 1000 28"
+        viewBox="0 0 1000 48"
         preserveAspectRatio="none"
         width="100%"
-        height="28"
-        style={{ display: 'block', height: '28px', width: '100%' }}
+        height="48"
+        style={{ display: 'block', height: '48px', width: '100%' }}
       >
         <path
           pathLength="1"
           fill="none"
           stroke="var(--acc)"
-          strokeWidth="1.25"
+          strokeWidth="1.75"
           strokeLinejoin="round"
           strokeLinecap="round"
           strokeDasharray="1"
-          d="M0 14 L80 14 L95 14 L102 10 L109 18 L116 14 L170 14 L185 14 L195 3 L207 25 L219 14 L280 14 L300 11 L318 14 L400 14 L415 14 L422 10 L429 18 L436 14 L490 14 L505 14 L515 3 L527 25 L539 14 L600 14 L620 11 L638 14 L720 14 L735 14 L742 10 L749 18 L756 14 L810 14 L825 14 L835 3 L847 25 L859 14 L920 14 L940 11 L958 14 L1000 14"
+          d="M0 26 L75 26 L90 26 L98 18 L106 30 L114 26 L165 26 L175 29 L188 6 L202 42 L216 26 L280 26 L298 17 L318 26 L385 26 L400 26 L408 18 L416 30 L424 26 L475 26 L485 29 L498 6 L512 42 L526 26 L590 26 L608 17 L628 26 L695 26 L710 26 L718 18 L726 30 L734 26 L785 26 L795 29 L808 6 L822 42 L836 26 L900 26 L918 17 L938 26 L1000 26"
           style={{
             animation: hasDrawn ? 'draw 1200ms var(--ease-draw) forwards' : 'none',
           }}

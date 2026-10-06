@@ -73,9 +73,16 @@
   .nav-new-assessment-btn {
     display: none !important;
   }
-  .theme-select-control {
-    width: 104px !important;
-  }
+}
+
+.app-theme-toggle-btn:hover {
+  border-color: var(--acc) !important;
+  background-color: var(--hov) !important;
+}
+
+.app-theme-toggle-btn:focus-visible {
+  outline: var(--focus);
+  outline-offset: var(--focus-offset);
 }
 
 @media (min-width: 900px) {

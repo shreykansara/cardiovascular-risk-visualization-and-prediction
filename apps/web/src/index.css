@@ -17,6 +17,13 @@
     min-height: 100%;
     background-color: var(--page);
     color: var(--ink);
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   body {
