@@ -71,6 +71,7 @@ npm install
 npm run dev:web
 ```
 Open **`http://localhost:5173`** in your browser.
+*(To regenerate landing samples from the engine or app icons, run `python scripts/generate-landing-samples.py` and `node scripts/generate-icons.mjs`)*
 
 ---
 
@@ -85,10 +86,12 @@ Perfusion3D integrates high-throughput machine learning with an interactive 3D W
 
   [ Web Client / Nginx Container ] (:8080)
      │
-     ├── /welcome         Clinical safety consent & preset selectors
-     ├── /enter-data      55-feature verified clinical input catalog
-     ├── /results         3D anatomical digital twin & TreeSHAP waterfalls
-     ├── /reports         Clinician technical report & patient plain-language report
+     ├── /                Landing page with 3D coronary risk heart hero
+     ├── /welcome         Clinical safety consent & preset selectors (step 1)
+     ├── /enter-data      55-feature verified clinical input catalog (step 2)
+     ├── /results         3D anatomical visualization & risk breakdown (step 3)
+     ├── /reports         Clinician technical report & patient plain-language report (step 4)
+     ├── /model-info      Model performance & evaluation figures
      └── /design-system   Clinical Design System showcase & token reference
      │
      ▼ (Reverse Proxy /api/ -> http://api:8000)
