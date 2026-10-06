@@ -4,7 +4,6 @@
  */
 
 .ecg-grid {
-  min-height: 100vh;
   background-color: var(--page);
   background-image:
     linear-gradient(var(--gmaj) 1px, transparent 1px),
