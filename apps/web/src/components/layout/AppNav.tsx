@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { WIZARD_STEPS } from '../../types/wizard';
 import { useWizardStore } from '../../store/useWizardStore';
 import { useTheme } from '../../hooks/useTheme';
@@ -33,7 +33,7 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
   const currentStepDef = WIZARD_STEPS.find((s) => s.path === location.pathname);
   const currentStepNumber = forceStep !== undefined
     ? forceStep
-    : currentStepDef ? currentStepDef.step : 1;
+    : currentStepDef ? currentStepDef.step : 0;
   const isWizardStep = Boolean(currentStepDef) || forceStep !== undefined;
 
   // Step bar forward animation logic (Task 2.3)
@@ -54,7 +54,7 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
   }, [currentStepNumber]);
 
   const handleStepClick = (stepNumber: number, path: string) => {
-    if (stepNumber < currentStepNumber || isStepUnlocked(stepNumber)) {
+    if (stepNumber === 1 || stepNumber < currentStepNumber || isStepUnlocked(stepNumber)) {
       navigate(path);
     }
   };
@@ -74,7 +74,18 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
 
       <div className="app-header-inner">
         {/* Task 2.2 LEFT zone */}
-        <div style={{ justifySelf: 'start', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <Link
+          to="/"
+          style={{
+            justifySelf: 'start',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            textDecoration: 'none',
+            color: 'inherit',
+          }}
+          aria-label="Perfusion3D Home"
+        >
           <Trace width={36} height={16} className="trace-initial" />
           <span
             style={{
@@ -86,7 +97,7 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
           >
             Perfusion3D
           </span>
-        </div>
+        </Link>
 
         {/* Task 2.3 CENTER zone (>=900px) */}
         <nav aria-label="Progress" className="nav-center-zone">
@@ -130,10 +141,10 @@ export const AppNav: React.FC<AppNavProps> = ({ forceStep, forceState }) => {
                     type="button"
                     className={`nav-step-item-btn ${stateClass} ${barAnimClass}`}
                     onClick={() => handleStepClick(s.step, s.path)}
-                    disabled={isCurrent || isUpcoming}
+                    disabled={isCurrent || (isUpcoming && s.step !== 1 && !isStepUnlocked(s.step))}
                     aria-current={isCurrent ? 'step' : undefined}
-                    aria-disabled={isUpcoming ? 'true' : undefined}
-                    tabIndex={isUpcoming ? -1 : 0}
+                    aria-disabled={isUpcoming && s.step !== 1 && !isStepUnlocked(s.step) ? 'true' : undefined}
+                    tabIndex={isUpcoming && s.step !== 1 && !isStepUnlocked(s.step) ? -1 : 0}
                   >
                     <span className="nav-step-num">{s.step}</span>
                     <span>{s.label}</span>

@@ -6,6 +6,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { WizardLayout } from './components/layout/WizardLayout';
+import { LandingPage } from './pages/LandingPage';
 import { WelcomePage } from './pages/WelcomePage';
 import { DataEntryPage } from './pages/DataEntryPage';
 import { ReportsPage } from './pages/ReportsPage';
@@ -21,7 +22,7 @@ export const App: React.FC = () => {
       <Suspense fallback={null}>
         <Routes>
           <Route element={<WizardLayout />}>
-            <Route path="/" element={<Navigate to="/welcome" replace />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/welcome" element={<WelcomePage />} />
             <Route path="/enter-data" element={<DataEntryPage />} />
             <Route path="/results" element={<ResultsPage />} />

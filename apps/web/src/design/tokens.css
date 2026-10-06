@@ -42,6 +42,17 @@
   box-shadow: none;
 }
 
+/* 3D Heart Landing Showcase Stage */
+.landing-heart-stage {
+  background-color: #180307;
+  border: 1px solid var(--bd);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  height: 440px;
+  width: 100%;
+}
+
 /* Field Grid responsive columns (Task 5.2d) */
 .field-grid {
   display: grid;

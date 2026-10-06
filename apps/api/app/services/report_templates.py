@@ -104,21 +104,28 @@ def build_compact_context(
         top_feats = exp.get("top_features", [])[:5]
         compact_feats = []
         for f in top_feats:
-            fname = f.get("clinical_label") or f.get("feature", "")
-            raw_v = (
-                f.get("patient_value")
-                or f.get("input_value")
-                or f.get("value")
-                or patient_data.get(f.get("feature", ""))
-            )
-            val = str(raw_v) if raw_v is not None else ""
-            direction = (
-                "increases risk"
-                if f.get("direction") in ("INCREASES_RISK", "increases risk")
-                else "decreases risk"
-            )
-            raw_mag = f.get("shap_value") or f.get("magnitude") or 0.0
+            fname = f.get("clinical_label") or f.get("feature") or f.get("feature_name", "")
+            raw_v = None
+            for k in ["feature_value", "patient_value", "input_value", "value"]:
+                if k in f and f[k] is not None and str(f[k]).strip() != "":
+                    raw_v = f[k]
+                    break
+            if raw_v is None:
+                feat_key = f.get("feature_name") or f.get("feature", "")
+                base_k = feat_key.replace("num__", "").replace("cat__", "").split("_")[0]
+                if base_k in patient_data and patient_data[base_k] is not None:
+                    raw_v = patient_data[base_k]
+            val = str(raw_v) if raw_v is not None else "—"
+
+            raw_impact = f.get("impact") or f.get("direction")
+            raw_mag = f.get("shap_value") if f.get("shap_value") is not None else f.get("magnitude", 0.0)
             mag = round(float(raw_mag), 4)
+
+            if raw_impact:
+                direction = "increases risk" if "INCREASE" in str(raw_impact).upper() else "decreases risk"
+            else:
+                direction = "increases risk" if mag > 0 else "decreases risk"
+
             compact_feats.append({
                 "feature": fname,
                 "value": val,
@@ -345,7 +352,7 @@ def assemble_final_reports(
                         {
                             "feature": f["feature"],
                             "patient_value": f["value"],
-                            "direction": "INCREASES_RISK" if "increase" in f["direction"] else "DECREASES_RISK",
+                            "direction": "INCREASES_RISK" if ("increase" in str(f.get("direction", "")).lower() or float(f.get("magnitude", 0)) > 0) else "DECREASES_RISK",
                             "shap_value": f["magnitude"],
                         }
                         for f in context["top_shap_contributors"].get("CAD", [])
@@ -357,7 +364,7 @@ def assemble_final_reports(
                         {
                             "feature": f["feature"],
                             "patient_value": f["value"],
-                            "direction": "INCREASES_RISK" if "increase" in f["direction"] else "DECREASES_RISK",
+                            "direction": "INCREASES_RISK" if ("increase" in str(f.get("direction", "")).lower() or float(f.get("magnitude", 0)) > 0) else "DECREASES_RISK",
                             "shap_value": f["magnitude"],
                         }
                         for f in context["top_shap_contributors"].get("LAD", [])
@@ -369,7 +376,7 @@ def assemble_final_reports(
                         {
                             "feature": f["feature"],
                             "patient_value": f["value"],
-                            "direction": "INCREASES_RISK" if "increase" in f["direction"] else "DECREASES_RISK",
+                            "direction": "INCREASES_RISK" if ("increase" in str(f.get("direction", "")).lower() or float(f.get("magnitude", 0)) > 0) else "DECREASES_RISK",
                             "shap_value": f["magnitude"],
                         }
                         for f in context["top_shap_contributors"].get("LCX", [])
@@ -381,7 +388,7 @@ def assemble_final_reports(
                         {
                             "feature": f["feature"],
                             "patient_value": f["value"],
-                            "direction": "INCREASES_RISK" if "increase" in f["direction"] else "DECREASES_RISK",
+                            "direction": "INCREASES_RISK" if ("increase" in str(f.get("direction", "")).lower() or float(f.get("magnitude", 0)) > 0) else "DECREASES_RISK",
                             "shap_value": f["magnitude"],
                         }
                         for f in context["top_shap_contributors"].get("RCA", [])

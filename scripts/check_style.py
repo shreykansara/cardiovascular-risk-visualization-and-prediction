@@ -74,6 +74,7 @@ ANIMATION_ALLOWED_FILES = {
     "nav.css",
     "WelcomePage.tsx",
     "DataEntryPage.tsx",  # Predict transition overlay draw animation
+    "LandingPage.tsx",
 }
 
 # Allowlist of files permitted for IBM Plex Mono / var(--fm)
@@ -91,6 +92,7 @@ MONO_ALLOWED_FILES = {
     "PatientReportView.tsx",
     "ResultsPage.tsx",
     "WelcomePage.tsx",
+    "LandingPage.tsx",
     "FieldAnatomy.tsx",
     "StepSummary.tsx",
     "nav.css",

@@ -234,9 +234,15 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
                 {tgt.top_features.map((f, fIdx) => (
                   <tr key={fIdx} style={{ borderBottom: '1px solid var(--s-bd)' }}>
                     <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--s-ink)', fontWeight: 500 }}>{f.feature}</td>
-                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--s-mut)' }}>{f.patient_value ?? f.input_value ?? '—'}</td>
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--s-mut)' }}>
+                      {(f.patient_value !== undefined && f.patient_value !== null && String(f.patient_value).trim() !== '')
+                        ? String(f.patient_value)
+                        : (f.input_value !== undefined && f.input_value !== null && String(f.input_value).trim() !== '')
+                        ? String(f.input_value)
+                        : '—'}
+                    </td>
                     <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--s-ink)' }}>
-                      {f.direction === 'INCREASES_RISK' ? 'Raises probability' : 'Lowers probability'}
+                      {f.direction === 'INCREASES_RISK' || f.shap_value > 0 ? 'Raises probability' : 'Lowers probability'}
                     </td>
                     <td style={{ fontFamily: 'var(--fm)', padding: '6px 0', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--s-ink)' }}>
                       {f.shap_value.toFixed(4)}
