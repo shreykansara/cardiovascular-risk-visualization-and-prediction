@@ -152,6 +152,8 @@ export const HeartCanvas: React.FC<HeartCanvasProps> = ({
         backgroundColor: VIEWER_BG,
         touchAction: isLanding ? 'pan-y' : 'auto',
         cursor: isUserInteracting ? 'grabbing' : isLanding ? 'grab' : 'auto',
+        isolation: 'isolate',
+        zIndex: 1,
       }}
     >
       {/* 3D WebGL Canvas */}

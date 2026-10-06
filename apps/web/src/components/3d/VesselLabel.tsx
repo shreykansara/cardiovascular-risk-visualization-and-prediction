@@ -175,7 +175,7 @@ export const VesselLabel = forwardRef<HTMLDivElement, VesselLabelProps>(({
         userSelect: 'none',
         transition: 'opacity 120ms ease',
         willChange: 'transform, opacity',
-        zIndex: 10,
+        zIndex: 2,
         transform: 'translate3d(0, 0, 0)',
         opacity: 1,
       }}

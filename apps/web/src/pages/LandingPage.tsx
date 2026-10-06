@@ -1067,6 +1067,8 @@ export const LandingPage: React.FC = () => {
           border-radius: 3px;
           overflow: hidden;
           box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+          isolation: isolate;
+          z-index: 1;
         }
 
         @media (min-width: 1200px) {

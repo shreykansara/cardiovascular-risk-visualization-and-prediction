@@ -136,6 +136,8 @@ export const ResultsPage: React.FC = () => {
               borderRadius: '3px',
               overflow: 'hidden',
               position: 'relative',
+              isolation: 'isolate',
+              zIndex: 1,
             }}
           >
             <HeartCanvas />

@@ -491,6 +491,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({
             position={ladBadgePos}
             center
             distanceFactor={2.4}
+            zIndexRange={[5, 1]}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
             <VesselLabel
@@ -546,6 +547,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({
             position={lcxBadgePos}
             center
             distanceFactor={2.4}
+            zIndexRange={[5, 1]}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
             <VesselLabel
@@ -601,6 +603,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({
             position={rcaBadgePos}
             center
             distanceFactor={2.4}
+            zIndexRange={[5, 1]}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
             <VesselLabel
