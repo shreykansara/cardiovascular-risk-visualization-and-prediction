@@ -18,6 +18,7 @@ import { useGLTF, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { usePatientStore } from '../../store/usePatientStore';
+import { useWizardStore } from '../../store/useWizardStore';
 
 interface HeartModelProps {
   onHoverVessel?: (vesselName: string | null) => void;
@@ -188,7 +189,17 @@ function createTaperedArteryGeometry(
 }
 
 export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
-  const { analysis, activeVesselFocus, setVesselFocus } = usePatientStore();
+  const wizardPrediction = useWizardStore((s) => s.prediction);
+  const wizardFocus = useWizardStore((s) => s.activeVesselFocus);
+  const setWizardFocus = useWizardStore((s) => s.setVesselFocus);
+  const { analysis, activeVesselFocus: patientFocus, setVesselFocus: setPatientFocus } = usePatientStore();
+
+  const activeVesselFocus = wizardFocus || patientFocus || 'default';
+  const setVesselFocus = (focus: string) => {
+    setWizardFocus(focus);
+    setPatientFocus(focus);
+  };
+
   const groupRef = useRef<THREE.Group>(null);
   const [hoveredVessel, setHoveredVessel] = useState<string | null>(null);
 
@@ -303,10 +314,13 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 16, 0.013, 0.008);
     const mergedRca = BufferGeometryUtils.mergeGeometries([rcaMainGeo, rcaMarginalGeo]);
 
-    // Step 3: Proximal callout badge anchors in local myocardium space
-    const ladAnchor = ladPts[0].clone().add(new THREE.Vector3(0.0, 0.06, 0.07));
-    const lcxAnchor = lcxPts[1].clone().add(new THREE.Vector3(0.06, 0.06, 0.05));
-    const rcaAnchor = rcaPts[1].clone().add(new THREE.Vector3(-0.04, 0.05, 0.06));
+    // Step 3: Centered callout badge anchors along each vein's true midpoint path
+    // LAD midpoint is index 4 (anterior interventricular sulcus)
+    const ladAnchor = ladPts[4].clone().add(new THREE.Vector3(-0.02, 0.02, 0.06));
+    // LCX midpoint is index 4 (lateral obtuse margin)
+    const lcxAnchor = lcxPts[4].clone().add(new THREE.Vector3(0.06, 0.02, 0.03));
+    // RCA midpoint is index 9 (right acute margin)
+    const rcaAnchor = rcaPts[9].clone().add(new THREE.Vector3(-0.06, 0.02, 0.04));
 
     return {
       ladGeo: mergedLad,
@@ -318,28 +332,28 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     };
   }, [myocardiumMesh]);
 
-  // Extract patient prediction data for each vessel
-  const vesselsPred = analysis?.predictions?.vessels;
+  // Extract patient prediction data for each vessel (Primary: wizard, Fallback: patient analysis)
+  const vesselsPred = wizardPrediction?.vessels || analysis?.predictions?.vessels;
 
   const ladPred = vesselsPred?.lad;
-  const ladProb = ladPred?.probability ?? 0.142;
-  const ladColorHex = ladPred?.color_hex ?? '#10B981';
-  const isLadCritical = ladProb > 0.70;
-  const isLadBorderline = ladProb > 0.40 && ladProb <= 0.70;
+  const ladProb = ladPred?.probability ?? 0.724;
+  const isLadCritical = ladPred?.risk_tier === 'HIGH' || ladPred?.risk_tier === 'CRITICAL' || ladProb > 0.70;
+  const isLadBorderline = ladPred?.risk_tier === 'BORDERLINE' || (ladProb > 0.40 && ladProb <= 0.70);
+  const ladColorHex = ladPred?.color_hex ?? (isLadCritical ? '#EF4444' : isLadBorderline ? '#F59E0B' : '#10B981');
   const isLadSelected = activeVesselFocus === 'vessel_LAD';
 
   const lcxPred = vesselsPred?.lcx;
-  const lcxProb = lcxPred?.probability ?? 0.114;
-  const lcxColorHex = lcxPred?.color_hex ?? '#10B981';
-  const isLcxCritical = lcxProb > 0.70;
-  const isLcxBorderline = lcxProb > 0.40 && lcxProb <= 0.70;
+  const lcxProb = lcxPred?.probability ?? 0.218;
+  const isLcxCritical = lcxPred?.risk_tier === 'HIGH' || lcxPred?.risk_tier === 'CRITICAL' || lcxProb > 0.70;
+  const isLcxBorderline = lcxPred?.risk_tier === 'BORDERLINE' || (lcxProb > 0.40 && lcxProb <= 0.70);
+  const lcxColorHex = lcxPred?.color_hex ?? (isLcxCritical ? '#EF4444' : isLcxBorderline ? '#F59E0B' : '#10B981');
   const isLcxSelected = activeVesselFocus === 'vessel_LCX';
 
   const rcaPred = vesselsPred?.rca;
-  const rcaProb = rcaPred?.probability ?? 0.127;
-  const rcaColorHex = rcaPred?.color_hex ?? '#10B981';
-  const isRcaCritical = rcaProb > 0.70;
-  const isRcaBorderline = rcaProb > 0.40 && rcaProb <= 0.70;
+  const rcaProb = rcaPred?.probability ?? 0.185;
+  const isRcaCritical = rcaPred?.risk_tier === 'HIGH' || rcaPred?.risk_tier === 'CRITICAL' || rcaProb > 0.70;
+  const isRcaBorderline = rcaPred?.risk_tier === 'BORDERLINE' || (rcaProb > 0.40 && rcaProb <= 0.70);
+  const rcaColorHex = rcaPred?.color_hex ?? (isRcaCritical ? '#EF4444' : isRcaBorderline ? '#F59E0B' : '#10B981');
   const isRcaSelected = activeVesselFocus === 'vessel_RCA';
 
   const isGlobalFocus = activeVesselFocus === 'default' || activeVesselFocus === 'all' || activeVesselFocus === 'free';
@@ -351,44 +365,50 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
   const lcxRiskText = `${(lcxProb * 100).toFixed(1)}%`;
   const rcaRiskText = `${(rcaProb * 100).toFixed(1)}%`;
 
-  // Dynamic 60fps frame loop: synchronized resting heartbeat pulse on critical vessels
+  // Dynamic 60fps frame loop: synchronized resting heartbeat pulse and material color enforcement
   useFrame(({ clock }) => {
     const elapsed = clock.getElapsedTime();
     const pulse = (Math.sin(elapsed * 7.54) + 1.0) * 0.5;
 
     if (ladMatRef.current) {
+      ladMatRef.current.color.set(ladColorHex);
+      ladMatRef.current.emissive.set(ladColorHex);
       if (isLadDimmed) {
-        ladMatRef.current.emissiveIntensity = 0.05;
+        ladMatRef.current.emissiveIntensity = 0.08;
       } else if (isLadSelected) {
-        ladMatRef.current.emissiveIntensity = 0.7;
+        ladMatRef.current.emissiveIntensity = 0.8;
       } else if (isLadCritical) {
-        ladMatRef.current.emissiveIntensity = 0.6 + 0.3 * pulse;
+        ladMatRef.current.emissiveIntensity = 0.65 + 0.35 * pulse;
       } else {
-        ladMatRef.current.emissiveIntensity = 0.25;
+        ladMatRef.current.emissiveIntensity = 0.35;
       }
     }
 
     if (lcxMatRef.current) {
+      lcxMatRef.current.color.set(lcxColorHex);
+      lcxMatRef.current.emissive.set(lcxColorHex);
       if (isLcxDimmed) {
-        lcxMatRef.current.emissiveIntensity = 0.05;
+        lcxMatRef.current.emissiveIntensity = 0.08;
       } else if (isLcxSelected) {
-        lcxMatRef.current.emissiveIntensity = 0.7;
+        lcxMatRef.current.emissiveIntensity = 0.8;
       } else if (isLcxCritical) {
-        lcxMatRef.current.emissiveIntensity = 0.6 + 0.3 * pulse;
+        lcxMatRef.current.emissiveIntensity = 0.65 + 0.35 * pulse;
       } else {
-        lcxMatRef.current.emissiveIntensity = 0.25;
+        lcxMatRef.current.emissiveIntensity = 0.35;
       }
     }
 
     if (rcaMatRef.current) {
+      rcaMatRef.current.color.set(rcaColorHex);
+      rcaMatRef.current.emissive.set(rcaColorHex);
       if (isRcaDimmed) {
-        rcaMatRef.current.emissiveIntensity = 0.05;
+        rcaMatRef.current.emissiveIntensity = 0.08;
       } else if (isRcaSelected) {
-        rcaMatRef.current.emissiveIntensity = 0.7;
+        rcaMatRef.current.emissiveIntensity = 0.8;
       } else if (isRcaCritical) {
-        rcaMatRef.current.emissiveIntensity = 0.6 + 0.3 * pulse;
+        rcaMatRef.current.emissiveIntensity = 0.65 + 0.35 * pulse;
       } else {
-        rcaMatRef.current.emissiveIntensity = 0.25;
+        rcaMatRef.current.emissiveIntensity = 0.35;
       }
     }
   });
@@ -438,12 +458,15 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             ref={ladMatRef}
             color={ladColorHex}
             emissive={ladColorHex}
-            emissiveIntensity={isLadSelected ? 0.7 : (isLadCritical ? 0.6 : 0.25)}
+            emissiveIntensity={isLadSelected ? 0.8 : (isLadCritical ? 0.65 : 0.35)}
             roughness={0.25}
             metalness={0.1}
             side={THREE.DoubleSide}
             depthTest={true}
             depthWrite={true}
+            polygonOffset={true}
+            polygonOffsetFactor={-2}
+            polygonOffsetUnits={-2}
             transparent={false}
           />
 
@@ -510,12 +533,15 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             ref={lcxMatRef}
             color={lcxColorHex}
             emissive={lcxColorHex}
-            emissiveIntensity={isLcxSelected ? 0.7 : (isLcxCritical ? 0.6 : 0.25)}
+            emissiveIntensity={isLcxSelected ? 0.8 : (isLcxCritical ? 0.65 : 0.35)}
             roughness={0.25}
             metalness={0.1}
             side={THREE.DoubleSide}
             depthTest={true}
             depthWrite={true}
+            polygonOffset={true}
+            polygonOffsetFactor={-2}
+            polygonOffsetUnits={-2}
             transparent={false}
           />
 
@@ -582,12 +608,15 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             ref={rcaMatRef}
             color={rcaColorHex}
             emissive={rcaColorHex}
-            emissiveIntensity={isRcaSelected ? 0.7 : (isRcaCritical ? 0.6 : 0.25)}
+            emissiveIntensity={isRcaSelected ? 0.8 : (isRcaCritical ? 0.65 : 0.35)}
             roughness={0.25}
             metalness={0.1}
             side={THREE.DoubleSide}
             depthTest={true}
             depthWrite={true}
+            polygonOffset={true}
+            polygonOffsetFactor={-2}
+            polygonOffsetUnits={-2}
             transparent={false}
           />
 

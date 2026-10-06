@@ -21,11 +21,11 @@ export const HeartCanvas: React.FC = () => {
         <color attach="background" args={['rgb(246, 247, 249)']} />
 
         {/* High-Luminance Studio Clinical Lighting System */}
-        <ambientLight intensity={1.35} color="rgb(255, 255, 255)" />
-        <directionalLight position={[3.5, 4.0, 3.5]} intensity={2.2} color="rgb(255, 255, 255)" />
-        <directionalLight position={[-3.5, 1.5, 2.5]} intensity={1.1} color="rgb(226, 232, 240)" />
-        <directionalLight position={[0.0, 3.0, -4.0]} intensity={1.2} color="rgb(203, 213, 225)" />
-        <directionalLight position={[0.0, -3.0, 1.5]} intensity={0.5} color="rgb(255, 255, 255)" />
+        <ambientLight intensity={1.1} color="rgb(255, 255, 255)" />
+        <directionalLight position={[3.5, 4.0, 3.5]} intensity={1.8} color="rgb(255, 255, 255)" />
+        <directionalLight position={[-3.5, 1.5, 2.5]} intensity={0.9} color="rgb(226, 232, 240)" />
+        <directionalLight position={[0.0, 3.0, -4.0]} intensity={1.0} color="rgb(203, 213, 225)" />
+        <directionalLight position={[0.0, -3.0, 1.5]} intensity={0.4} color="rgb(255, 255, 255)" />
 
         <Suspense
           fallback={
