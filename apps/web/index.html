@@ -3,15 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Perfusion3D | Coronary Artery Disease Risk Assessment</title>
-    <meta name="description" content="Estimates the likelihood of coronary artery narrowing from clinical measurements and shows the result on a 3D heart." />
-    <!-- OpenGraph -->
-    <meta property="og:title" content="Perfusion3D | Coronary Artery Disease Risk Assessment" />
-    <meta property="og:description" content="Estimates the likelihood of coronary artery narrowing from clinical measurements and shows the result on a 3D heart." />
+    <title>Perfusion3D | Precision Coronary Risk Visualization & 3D Perfusion Mapping</title>
+    <meta name="description" content="Clinical AI decision-support platform predicting coronary artery stenosis (LAD, LCX, RCA) from multimodal clinical measurements with interactive 3D anatomical perfusion mapping and TreeSHAP explainability." />
+    <meta name="keywords" content="coronary artery disease, cardiovascular risk prediction, 3D heart model, myocardial perfusion, LAD stenosis, LCX stenosis, RCA stenosis, TreeSHAP, clinical decision support, medical AI, cardiology" />
+    <meta name="author" content="Perfusion3D Clinical AI Team" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#180307" />
+    <link rel="canonical" href="https://perfusion3d.health/" />
+
+    <!-- Favicon & App Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- OpenGraph Metadata -->
+    <meta property="og:site_name" content="Perfusion3D" />
     <meta property="og:type" content="website" />
+    <meta property="og:title" content="Perfusion3D | Precision Coronary Risk Visualization & 3D Perfusion Mapping" />
+    <meta property="og:description" content="AI decision support evaluating vessel-specific coronary stenosis risk with 3D digital twin visualization, TreeSHAP local explainability, and dual clinician-patient reporting." />
+    <meta property="og:url" content="https://perfusion3d.health/" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card Metadata -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Perfusion3D | Coronary Artery Disease Risk Assessment" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 12h-4l-3 9L9 3l-3 9H2'/></svg>" />
+    <meta name="twitter:title" content="Perfusion3D | Precision Coronary Risk Visualization & 3D Perfusion Mapping" />
+    <meta name="twitter:description" content="AI decision support evaluating vessel-specific coronary stenosis risk with 3D digital twin visualization and TreeSHAP local explainability." />
+
+    <!-- Structured Data (Schema.org JSON-LD for Medical Web Application) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://perfusion3d.health/#app",
+          "name": "Perfusion3D",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "All modern WebGL browsers",
+          "description": "Clinical decision-support tool estimating coronary artery disease (CAD) risk across LAD, LCX, and RCA territories with interactive 3D heart perfusion mapping.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        },
+        {
+          "@type": "MedicalWebPage",
+          "@id": "https://perfusion3d.health/#webpage",
+          "url": "https://perfusion3d.health/",
+          "name": "Perfusion3D Cardiovascular Risk Visualization & Prediction",
+          "description": "Precision machine learning prediction of coronary artery narrowing mapped onto a calibrated 3D anatomical heart.",
+          "about": {
+            "@type": "MedicalCondition",
+            "name": "Coronary Artery Disease",
+            "alternateName": ["CAD", "Coronary Heart Disease", "Ischemic Heart Disease"],
+            "code": {
+              "@type": "MedicalCode",
+              "code": "I25.1",
+              "codingSystem": "ICD-10"
+            }
+          },
+          "aspect": ["diagnosis", "risk stratification", "anatomical visualization"]
+        }
+      ]
+    }
+    </script>
     <script>
       (function() {
         try {
