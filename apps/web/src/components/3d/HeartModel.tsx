@@ -451,7 +451,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
           <Html
             position={ladBadgePos}
             center
-            distanceFactor={3.5}
+            distanceFactor={2.4}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
             <button
@@ -462,9 +462,9 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
               }}
               onMouseEnter={() => handlePointerOver('vessel_LAD')}
               onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
+              className={`group flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-md whitespace-nowrap hover:scale-110 active:scale-95 ${
                 isLadSelected
-                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
+                  ? 'ring-1.5 ring-white shadow-cyan-500/50 scale-105'
                   : 'hover:border-cyan-400/80'
               } ${
                 isLadCritical
@@ -475,7 +475,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
               }`}
             >
               <span
-                className={`w-2 h-2 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                   isLadCritical
                     ? 'bg-rose-500 animate-ping'
                     : isLadBorderline
@@ -483,7 +483,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
                     : 'bg-emerald-400'
                 }`}
               />
-              <span className="tracking-wide">LAD · {ladRiskText}</span>
+              <span className="tracking-tight">LAD · {ladRiskText}</span>
             </button>
           </Html>
         </mesh>
@@ -523,7 +523,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
           <Html
             position={lcxBadgePos}
             center
-            distanceFactor={3.5}
+            distanceFactor={2.4}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
             <button
@@ -534,9 +534,9 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
               }}
               onMouseEnter={() => handlePointerOver('vessel_LCX')}
               onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
+              className={`group flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-md whitespace-nowrap hover:scale-110 active:scale-95 ${
                 isLcxSelected
-                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
+                  ? 'ring-1.5 ring-white shadow-cyan-500/50 scale-105'
                   : 'hover:border-cyan-400/80'
               } ${
                 isLcxCritical
@@ -547,7 +547,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
               }`}
             >
               <span
-                className={`w-2 h-2 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                   isLcxCritical
                     ? 'bg-rose-500 animate-ping'
                     : isLcxBorderline
@@ -555,7 +555,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
                     : 'bg-emerald-400'
                 }`}
               />
-              <span className="tracking-wide">LCX · {lcxRiskText}</span>
+              <span className="tracking-tight">LCX · {lcxRiskText}</span>
             </button>
           </Html>
         </mesh>
@@ -595,7 +595,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
           <Html
             position={rcaBadgePos}
             center
-            distanceFactor={3.5}
+            distanceFactor={2.4}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
             <button
@@ -606,9 +606,9 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
               }}
               onMouseEnter={() => handlePointerOver('vessel_RCA')}
               onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
+              className={`group flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-md whitespace-nowrap hover:scale-110 active:scale-95 ${
                 isRcaSelected
-                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
+                  ? 'ring-1.5 ring-white shadow-cyan-500/50 scale-105'
                   : 'hover:border-cyan-400/80'
               } ${
                 isRcaCritical
@@ -619,7 +619,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
               }`}
             >
               <span
-                className={`w-2 h-2 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                   isRcaCritical
                     ? 'bg-rose-500 animate-ping'
                     : isRcaBorderline
@@ -627,7 +627,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
                     : 'bg-emerald-400'
                 }`}
               />
-              <span className="tracking-wide">RCA · {rcaRiskText}</span>
+              <span className="tracking-tight">RCA · {rcaRiskText}</span>
             </button>
           </Html>
         </mesh>
