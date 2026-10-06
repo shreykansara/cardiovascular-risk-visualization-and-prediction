@@ -3,6 +3,9 @@ Explainability Service: TreeSHAP Attributions & Clinical Feature Mapping
 Multimodal AI Hackathon 2026 - Track A: Cardiovascular Risk Visualization & Prediction
 """
 
+from __future__ import annotations
+
+from typing import Any
 import warnings
 import numpy as np
 

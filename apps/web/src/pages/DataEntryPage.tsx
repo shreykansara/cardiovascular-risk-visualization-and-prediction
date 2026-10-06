@@ -35,6 +35,7 @@ export const DataEntryPage: React.FC = () => {
     isDirty,
     inputs,
     fieldMeta,
+    analysisError,
     setFieldValue,
     loadSamplePatient,
     predictPatient,
@@ -331,6 +332,29 @@ export const DataEntryPage: React.FC = () => {
           >
             Estimating…
           </span>
+        </div>
+      )}
+
+      {/* Analysis Error Alert */}
+      {analysisError && (
+        <div
+          role="alert"
+          style={{
+            backgroundColor: 'var(--panel)',
+            border: '1px solid var(--crit, #EF4444)',
+            borderRadius: '3px',
+            padding: '12px 16px',
+            marginBottom: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontFamily: 'var(--fs)',
+            fontSize: '13px',
+            color: 'var(--ink)',
+          }}
+        >
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--crit, #EF4444)', flexShrink: 0 }} />
+          <span>{analysisError}</span>
         </div>
       )}
 
