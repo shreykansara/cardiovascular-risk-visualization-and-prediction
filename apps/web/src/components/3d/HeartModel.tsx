@@ -314,13 +314,13 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 16, 0.013, 0.008);
     const mergedRca = BufferGeometryUtils.mergeGeometries([rcaMainGeo, rcaMarginalGeo]);
 
-    // Step 3: Centered callout badge anchors exactly in user-designated zones
+    // Step 3: Centered callout badge anchors exactly in user-designated zones (+0.03 upward adjustment)
     // LAD midpoint: over the anterior mid-trunk right at the bifurcation zone
-    const ladAnchor = ladPts[5].clone().add(new THREE.Vector3(0.0, 0.04, 0.08));
+    const ladAnchor = ladPts[5].clone().add(new THREE.Vector3(0.0, 0.07, 0.08));
     // LCX midpoint: floating to the right of the heart beside the lateral LCX vessel
-    const lcxAnchor = lcxPts[6].clone().add(new THREE.Vector3(0.18, 0.02, 0.06));
+    const lcxAnchor = lcxPts[6].clone().add(new THREE.Vector3(0.18, 0.05, 0.06));
     // RCA midpoint: floating to the left of the heart beside the right acute margin
-    const rcaAnchor = rcaPts[11].clone().add(new THREE.Vector3(-0.16, 0.02, 0.06));
+    const rcaAnchor = rcaPts[11].clone().add(new THREE.Vector3(-0.16, 0.05, 0.06));
 
     return {
       ladGeo: mergedLad,
@@ -337,22 +337,22 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
 
   const ladPred = vesselsPred?.lad;
   const ladProb = ladPred?.probability ?? 0.724;
-  const isLadCritical = ladPred?.risk_tier === 'HIGH' || ladPred?.risk_tier === 'CRITICAL' || ladProb > 0.70;
-  const isLadBorderline = ladPred?.risk_tier === 'BORDERLINE' || (ladProb > 0.40 && ladProb <= 0.70);
+  const isLadCritical = String(ladPred?.risk_tier).toLowerCase() === 'high' || ladPred?.risk_tier === 'CRITICAL' || ladProb > 0.70;
+  const isLadBorderline = String(ladPred?.risk_tier).toLowerCase() === 'moderate' || ladPred?.risk_tier === 'BORDERLINE' || (ladProb > 0.40 && ladProb <= 0.70);
   const ladColorHex = ladPred?.color_hex ?? (isLadCritical ? '#EF4444' : isLadBorderline ? '#F59E0B' : '#10B981');
   const isLadSelected = activeVesselFocus === 'vessel_LAD';
 
   const lcxPred = vesselsPred?.lcx;
   const lcxProb = lcxPred?.probability ?? 0.218;
-  const isLcxCritical = lcxPred?.risk_tier === 'HIGH' || lcxPred?.risk_tier === 'CRITICAL' || lcxProb > 0.70;
-  const isLcxBorderline = lcxPred?.risk_tier === 'BORDERLINE' || (lcxProb > 0.40 && lcxProb <= 0.70);
+  const isLcxCritical = String(lcxPred?.risk_tier).toLowerCase() === 'high' || lcxPred?.risk_tier === 'CRITICAL' || lcxProb > 0.70;
+  const isLcxBorderline = String(lcxPred?.risk_tier).toLowerCase() === 'moderate' || lcxPred?.risk_tier === 'BORDERLINE' || (lcxProb > 0.40 && lcxProb <= 0.70);
   const lcxColorHex = lcxPred?.color_hex ?? (isLcxCritical ? '#EF4444' : isLcxBorderline ? '#F59E0B' : '#10B981');
   const isLcxSelected = activeVesselFocus === 'vessel_LCX';
 
   const rcaPred = vesselsPred?.rca;
   const rcaProb = rcaPred?.probability ?? 0.185;
-  const isRcaCritical = rcaPred?.risk_tier === 'HIGH' || rcaPred?.risk_tier === 'CRITICAL' || rcaProb > 0.70;
-  const isRcaBorderline = rcaPred?.risk_tier === 'BORDERLINE' || (rcaProb > 0.40 && rcaProb <= 0.70);
+  const isRcaCritical = String(rcaPred?.risk_tier).toLowerCase() === 'high' || rcaPred?.risk_tier === 'CRITICAL' || rcaProb > 0.70;
+  const isRcaBorderline = String(rcaPred?.risk_tier).toLowerCase() === 'moderate' || rcaPred?.risk_tier === 'BORDERLINE' || (rcaProb > 0.40 && rcaProb <= 0.70);
   const rcaColorHex = rcaPred?.color_hex ?? (isRcaCritical ? '#EF4444' : isRcaBorderline ? '#F59E0B' : '#10B981');
   const isRcaSelected = activeVesselFocus === 'vessel_RCA';
 
