@@ -4,6 +4,7 @@ import { OrbitControls, Html } from '@react-three/drei';
 import { HeartModel } from './HeartModel';
 import { CameraRig } from './CameraRig';
 import { usePatientStore } from '../../store/usePatientStore';
+import { RotateCcw } from 'lucide-react';
 
 export const HeartCanvas: React.FC = () => {
   const controlsRef = useRef<any>(null);
@@ -11,14 +12,24 @@ export const HeartCanvas: React.FC = () => {
   const [isUserInteracting, setIsUserInteracting] = useState(false);
   const { activeVesselFocus, setVesselFocus } = usePatientStore();
 
+  const handleResetView = () => {
+    if (controlsRef.current) {
+      controlsRef.current.reset();
+    }
+    setVesselFocus('default');
+  };
+
   return (
-    <div className="relative w-full h-full bg-panel overflow-hidden select-none">
+    <div
+      className="relative w-full h-full overflow-hidden select-none"
+      style={{ backgroundColor: '#180307' }}
+    >
       {/* 3D WebGL Canvas */}
       <Canvas
         camera={{ position: [0.0, 0.0, 3.1], fov: 40 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
-        <color attach="background" args={['rgb(246, 247, 249)']} />
+        <color attach="background" args={['#180307']} />
 
         {/* High-Luminance Studio Clinical Lighting System */}
         <ambientLight intensity={1.1} color="rgb(255, 255, 255)" />
@@ -30,7 +41,7 @@ export const HeartCanvas: React.FC = () => {
         <Suspense
           fallback={
             <Html center>
-              <div className="flex flex-col items-center gap-2 p-3 rounded bg-page text-text-muted text-[13px] border border-border">
+              <div className="flex flex-col items-center gap-2 p-3 rounded bg-black/70 text-rose-200 text-[13px] border border-rose-900/50 backdrop-blur-md">
                 <span className="spinner" />
                 <span>Loading 3D model...</span>
               </div>
@@ -65,10 +76,21 @@ export const HeartCanvas: React.FC = () => {
 
       {/* Subtle Vessel Hover Inspection Chip */}
       {hoveredVessel && (
-        <div className="absolute top-4 left-4 z-20 bg-page p-1.5 px-3 rounded border border-border flex items-center gap-2 text-[12px] text-text pointer-events-none">
+        <div className="absolute top-4 left-4 z-20 bg-black/75 backdrop-blur-md p-1.5 px-3 rounded-full border border-rose-900/50 flex items-center gap-2 text-[12px] text-rose-100 pointer-events-none shadow-md">
           <span>{hoveredVessel.replace('vessel_', '')} artery</span>
         </div>
       )}
+
+      {/* Reset Camera View Button */}
+      <button
+        type="button"
+        onClick={handleResetView}
+        className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/85 text-rose-100 hover:text-white border border-rose-900/50 hover:border-rose-500/60 backdrop-blur-md text-[11px] font-mono transition-all duration-150 cursor-pointer shadow-lg active:scale-95"
+        title="Reset 3D camera to default anatomical view"
+      >
+        <RotateCcw className="w-3.5 h-3.5 text-rose-300" />
+        <span>Reset View</span>
+      </button>
     </div>
   );
 };

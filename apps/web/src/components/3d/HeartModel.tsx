@@ -314,13 +314,13 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     const rcaMarginalGeo = createTaperedArteryGeometry(rcaMarginalCurve, 48, 16, 0.013, 0.008);
     const mergedRca = BufferGeometryUtils.mergeGeometries([rcaMainGeo, rcaMarginalGeo]);
 
-    // Step 3: Centered callout badge anchors along each vein's true midpoint path
-    // LAD midpoint is index 4 (anterior interventricular sulcus)
-    const ladAnchor = ladPts[4].clone().add(new THREE.Vector3(-0.02, 0.02, 0.06));
-    // LCX midpoint is index 4 (lateral obtuse margin)
-    const lcxAnchor = lcxPts[4].clone().add(new THREE.Vector3(0.06, 0.02, 0.03));
-    // RCA midpoint is index 9 (right acute margin)
-    const rcaAnchor = rcaPts[9].clone().add(new THREE.Vector3(-0.06, 0.02, 0.04));
+    // Step 3: Centered callout badge anchors exactly in user-designated zones
+    // LAD midpoint: over the anterior mid-trunk right at the bifurcation zone
+    const ladAnchor = ladPts[5].clone().add(new THREE.Vector3(0.0, 0.04, 0.08));
+    // LCX midpoint: floating to the right of the heart beside the lateral LCX vessel
+    const lcxAnchor = lcxPts[6].clone().add(new THREE.Vector3(0.18, 0.02, 0.06));
+    // RCA midpoint: floating to the left of the heart beside the right acute margin
+    const rcaAnchor = rcaPts[11].clone().add(new THREE.Vector3(-0.16, 0.02, 0.06));
 
     return {
       ladGeo: mergedLad,
