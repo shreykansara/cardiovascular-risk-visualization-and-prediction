@@ -5,15 +5,16 @@
 
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { LandingLayout } from './components/layout/LandingLayout';
 import { WizardLayout } from './components/layout/WizardLayout';
-import { LandingPage } from './pages/LandingPage';
 import { WelcomePage } from './pages/WelcomePage';
 import { DataEntryPage } from './pages/DataEntryPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { ModelInfoPage } from './pages/ModelInfoPage';
 import { DesignSystemPage } from './pages/DesignSystemPage';
 
-// Lazy-load the 3D chunk with the Results route only (Task 2.8)
+// Lazy-load pages
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const ResultsPage = React.lazy(() => import('./pages/ResultsPage'));
 
 export const App: React.FC = () => {
@@ -21,8 +22,13 @@ export const App: React.FC = () => {
     <BrowserRouter>
       <Suspense fallback={null}>
         <Routes>
-          <Route element={<WizardLayout />}>
+          {/* Standalone Landing Page (Task 2.1 - 2.2) */}
+          <Route element={<LandingLayout />}>
             <Route path="/" element={<LandingPage />} />
+          </Route>
+
+          {/* Clinical Assessment Stepper (Steps 1-4) */}
+          <Route element={<WizardLayout />}>
             <Route path="/welcome" element={<WelcomePage />} />
             <Route path="/enter-data" element={<DataEntryPage />} />
             <Route path="/results" element={<ResultsPage />} />

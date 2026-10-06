@@ -53,6 +53,72 @@
   width: 100%;
 }
 
+/* Landing Section Primitives (Task 2.4) */
+.landing-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+@media (min-width: 768px) {
+  .landing-container {
+    padding: 0 24px;
+  }
+}
+
+.landing-band {
+  width: 100%;
+  background-color: var(--panel);
+  border-top: 1px solid var(--bd);
+  border-bottom: 1px solid var(--bd);
+  padding: 40px 0;
+}
+.landing-band.alt {
+  background-color: var(--band-alt);
+}
+@media (min-width: 768px) {
+  .landing-band {
+    padding: 64px 0;
+  }
+}
+
+/* Landing Nav (Phase 3) */
+.landing-nav-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 48px;
+  background-color: var(--panel);
+  border-bottom: 1px solid var(--bd);
+}
+@media (min-width: 900px) {
+  .landing-nav-header {
+    height: 56px;
+  }
+}
+
+.landing-nav-theme-label {
+  display: none;
+  font-family: var(--fs);
+  font-size: 12px;
+  color: var(--mut);
+}
+@media (min-width: 1100px) {
+  .landing-nav-theme-label {
+    display: inline;
+  }
+}
+
+.landing-nav-center {
+  display: none;
+}
+@media (min-width: 900px) {
+  .landing-nav-center {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
 /* Field Grid responsive columns (Task 5.2d) */
 .field-grid {
   display: grid;
@@ -104,6 +170,7 @@
   --bd: #E3CFCC;
   --bds: #9F817E; /* Adjusted from #B99A96 to meet 3.55:1 against #FFFFFF and 3.21:1 against #FFF0F0 */
   --hov: #F4F7FD;
+  --band-alt: var(--hov);
   --low: #2E8B57;
   --mod: #B87700;
   --high: #C81D3A;
@@ -130,6 +197,7 @@
   --bd: #1D3A2A;
   --bds: #477B64; /* Adjusted from #3A6350 to meet 3.65:1 against #0C1A13 and 3.32:1 against #11241B */
   --hov: #12281D;
+  --band-alt: var(--hov);
   --low: #3FD08A;
   --mod: #FFC24D;
   --high: #FF6B7A;

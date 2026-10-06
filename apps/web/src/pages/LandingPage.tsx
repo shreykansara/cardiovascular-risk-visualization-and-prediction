@@ -1,800 +1,1170 @@
-import React, { Suspense, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ArrowRight, ChevronDown, ClipboardList, Heart, FileText } from 'lucide-react';
 import { useWizardStore } from '../store/useWizardStore';
-import { usePatientStore } from '../store/usePatientStore';
+import { LANDING_COPY } from '../content/landing';
+import landingSamples from '../content/landingSamples.json';
+
+import { Container } from '../components/landing/Container';
+import { Band } from '../components/landing/Band';
+import { GridStrip } from '../components/landing/GridStrip';
+import { Reveal } from '../components/landing/Reveal';
+
 import { Panel } from '../components/ui/Panel';
 import { PrimaryButton } from '../components/ui/PrimaryButton';
 import { SecondaryButton } from '../components/ui/SecondaryButton';
+import { QuietButton } from '../components/ui/QuietButton';
+import { SegmentedControl, SegmentedOption } from '../components/ui/SegmentedControl';
+import { Bar } from '../components/ui/Bar';
+import { RiskLabel } from '../components/ui/RiskLabel';
+import { VesselCard } from '../components/results/VesselCard';
+import { VIEWER_BG } from '../components/canvas/viewerConfig';
 
-// Lazy-load the 3D heart model for fast initial bundle parsing
+// Lazy-load 3D Canvas
 const HeartCanvas = lazy(() => import('../components/3d/HeartCanvas'));
+
+type VesselFocusOption = 'full' | 'lad' | 'lcx' | 'rca';
+type SampleOptionId = 'normal' | 'rca_ischemia' | 'high_risk_lad';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { setDisclaimerAccepted, markStepCompleted, loadSamplePatient } = useWizardStore();
-  const { activeVesselFocus, setVesselFocus } = usePatientStore();
 
-  const handleStart = () => {
+  // State: Default sample is high_risk_lad (Higher risk sample) so first view shows red artery
+  const [selectedSampleId, setSelectedSampleId] = useState<SampleOptionId>('high_risk_lad');
+  const [vesselFocus, setVesselFocus] = useState<VesselFocusOption>('full');
+
+  // Find currently selected sample
+  const currentSample = useMemo(() => {
+    return (
+      landingSamples.find((s) => s.id === selectedSampleId) ||
+      landingSamples[2] // fallback to high_risk_lad
+    );
+  }, [selectedSampleId]);
+
+  // Map 3D selection key to local vesselFocus and vice versa
+  const handleSelectVesselFrom3D = (vesselKey: string | null) => {
+    if (!vesselKey) {
+      setVesselFocus('full');
+    } else if (vesselKey === 'vessel_LAD' || vesselKey === 'LAD' || vesselKey === 'lad') {
+      setVesselFocus('lad');
+    } else if (vesselKey === 'vessel_LCX' || vesselKey === 'LCX' || vesselKey === 'lcx') {
+      setVesselFocus('lcx');
+    } else if (vesselKey === 'vessel_RCA' || vesselKey === 'RCA' || vesselKey === 'rca') {
+      setVesselFocus('rca');
+    }
+  };
+
+  const currentSelectionFor3D = useMemo(() => {
+    switch (vesselFocus) {
+      case 'lad':
+        return 'vessel_LAD';
+      case 'lcx':
+        return 'vessel_LCX';
+      case 'rca':
+        return 'vessel_RCA';
+      default:
+        return 'default';
+    }
+  }, [vesselFocus]);
+
+  // Readout calculations
+  const readoutData = useMemo(() => {
+    const copy = LANDING_COPY.hero.heart.readout[vesselFocus];
+    let prob = currentSample.cad;
+    if (vesselFocus === 'lad') prob = currentSample.lad;
+    else if (vesselFocus === 'lcx') prob = currentSample.lcx;
+    else if (vesselFocus === 'rca') prob = currentSample.rca;
+
+    return {
+      key: copy.key,
+      name: copy.name,
+      description: copy.description,
+      probability: prob,
+      ratio: prob / 100,
+      formattedProb: prob.toFixed(1),
+    };
+  }, [vesselFocus, currentSample]);
+
+  // Sample radio options
+  const sampleOptions: SegmentedOption<SampleOptionId>[] = useMemo(
+    () => [
+      { id: 'normal', label: 'Lower risk sample' },
+      { id: 'rca_ischemia', label: 'Moderate risk sample' },
+      { id: 'high_risk_lad', label: 'Higher risk sample' },
+    ],
+    []
+  );
+
+  // Vessel selector radio options
+  const vesselOptions: SegmentedOption<VesselFocusOption>[] = useMemo(
+    () => [
+      { id: 'full', label: 'Full heart' },
+      { id: 'lad', label: 'LAD' },
+      { id: 'lcx', label: 'LCX' },
+      { id: 'rca', label: 'RCA' },
+    ],
+    []
+  );
+
+  // Action handlers
+  const handleStartAssessment = () => {
+    useWizardStore.getState().reset();
     navigate('/welcome');
   };
 
-  const handleQuickDemo = (presetKey: string) => {
-    setDisclaimerAccepted(true);
-    markStepCompleted(1);
-    loadSamplePatient(presetKey);
-    navigate('/results');
+  const handleOpenSampleInApp = () => {
+    useWizardStore.getState().loadSamplePatient(currentSample.id);
+    navigate('/welcome');
+  };
+
+  const handleScrollToHowItWorks = () => {
+    const el = document.getElementById('how-it-works');
+    if (el) {
+      const prefersReducedMotion =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+      const h2 = el.querySelector('h2');
+      if (h2) {
+        h2.focus();
+      }
+    }
   };
 
   return (
-    <div
-      className="w-full mx-auto"
-      style={{
-        maxWidth: '1160px',
-        marginTop: '16px',
-        marginBottom: '48px',
-      }}
-    >
-      {/* Main Container Panel with ECG Header */}
-      <Panel
-        style={{
-          padding: 0,
-          overflow: 'hidden',
-        }}
-      >
-        {/* Animated ECG Rhythm Strip Header Banner */}
-        <div
-          className="wipe ecg-grid ecg-strip-band"
-          style={{
-            height: '64px',
-            borderBottom: '1px solid var(--bd)',
-            overflow: 'hidden',
-            '--i': 0,
-          } as React.CSSProperties}
-        >
-          <svg
-            viewBox="0 0 1160 64"
-            preserveAspectRatio="none"
-            width="100%"
-            height="100%"
-            aria-hidden="true"
-            style={{ display: 'block' }}
-          >
-            <path
-              pathLength="1"
-              fill="none"
-              stroke="var(--acc)"
-              strokeWidth="2"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              strokeDasharray="1"
-              d="M0 40 L90 40 L108 40 L116 30 L124 48 L132 40 L190 40 L208 40 L220 10 L234 58 L248 40 L330 40 L356 34 L376 40 L450 40 L468 40 L480 30 L488 48 L496 40 L540 40 L558 40 L570 10 L584 58 L598 40 L680 40 L702 34 L722 40 L780 40 L798 40 L810 10 L824 58 L838 40 L920 40 L948 40 L960 10 L974 58 L988 40 L1060 40 L1082 34 L1102 40 L1160 40"
-              style={{
-                animation: 'draw 1200ms var(--ease-draw) 200ms backwards',
-              }}
-            />
-          </svg>
-        </div>
+    <div className="w-full flex flex-col">
+      {/* ======================================================== */}
+      {/* HERO BAND                                                */}
+      {/* ======================================================== */}
+      <Band className="hero-band" style={{ padding: '48px 0 56px' }}>
+        <Container>
+          <div className="hero-layout-grid">
+            {/* LEFT / CONTENT COLUMN */}
+            <div className="hero-text-col wipe" style={{ '--i': 0 } as React.CSSProperties}>
+              {/* Task 4.1: H1 */}
+              <h1 className="hero-h1">{LANDING_COPY.hero.title}</h1>
 
-        {/* Hero Section: Split 2-Column (Copy on Left, Interactive 3D Heart on Right) */}
-        <div
-          className="wipe"
-          style={{
-            padding: '32px 28px',
-            '--i': 1,
-          } as React.CSSProperties}
-        >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-              gap: '32px',
-              alignItems: 'center',
-            }}
-          >
-            {/* Left Column: Clinical Title, Value Proposition & Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Eyebrow Clinical Badge */}
-              <div>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontFamily: 'var(--fm)',
-                    fontSize: '11px',
-                    color: 'var(--mut)',
-                    backgroundColor: 'var(--hov)',
-                    border: '1px solid var(--bd)',
-                    borderRadius: 'var(--radius)',
-                    padding: '3px 8px',
-                  }}
+              {/* Task 4.2: Lead Paragraph */}
+              <p className="hero-lead">{LANDING_COPY.hero.lead}</p>
+
+              {/* Task 4.3: Button Row */}
+              <div className="hero-btn-row">
+                <PrimaryButton
+                  size="lg"
+                  onClick={handleStartAssessment}
+                  className="hero-start-btn"
                 >
-                  <span
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--acc)',
-                      display: 'inline-block',
-                    }}
-                  />
-                  <span>Clinical Perfusion Intelligence</span>
-                  <span style={{ color: 'var(--bd)' }}>|</span>
-                  <span>Multimodal AI Track A</span>
-                </span>
-              </div>
-
-              {/* Headline */}
-              <h1
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: 'clamp(26px, 3.2vw, 36px)',
-                  fontWeight: 600,
-                  lineHeight: 1.15,
-                  color: 'var(--ink)',
-                  margin: 0,
-                }}
-              >
-                3D Coronary Perfusion & Multimodal Risk Intelligence
-              </h1>
-
-              {/* Subhead */}
-              <p
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '14px',
-                  lineHeight: 1.55,
-                  color: 'var(--mut)',
-                  margin: 0,
-                  maxWidth: '520px',
-                }}
-              >
-                Predict multi-vessel stenosis probabilities in under 45ms with real-time 3D anatomical twin visualization, transparent TreeSHAP attributions, and deterministic dual-persona clinical reporting.
-              </p>
-
-              {/* Primary Action Buttons */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '12px',
-                  alignItems: 'center',
-                }}
-              >
-                <PrimaryButton onClick={handleStart} size="lg">
-                  Launch Clinical Assessment
+                  <span>{LANDING_COPY.hero.startAssessment}</span>
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
                 </PrimaryButton>
-                <SecondaryButton onClick={() => navigate('/model-info')} size="lg">
-                  Explore Architecture
+
+                <SecondaryButton
+                  size="lg"
+                  onClick={handleScrollToHowItWorks}
+                  className="hero-how-btn"
+                >
+                  <span>{LANDING_COPY.hero.howItWorks}</span>
+                  <ChevronDown className="w-4 h-4 ml-1.5" />
                 </SecondaryButton>
               </div>
 
-              {/* Quick Case Demo Loaders */}
-              <div
-                style={{
-                  borderTop: '1px solid var(--bd)',
-                  paddingTop: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--fs)',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    color: 'var(--mut)',
-                  }}
-                >
-                  Instant clinical demo profiles:
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickDemo('high_risk_lad')}
-                    style={{
-                      fontFamily: 'var(--fs)',
-                      fontSize: '12px',
-                      padding: '5px 10px',
-                      backgroundColor: 'var(--hov)',
-                      color: 'var(--ink)',
-                      border: '1px solid var(--bd)',
-                      borderRadius: 'var(--radius)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    High-Risk LAD (78%)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickDemo('rca_ischemia')}
-                    style={{
-                      fontFamily: 'var(--fs)',
-                      fontSize: '12px',
-                      padding: '5px 10px',
-                      backgroundColor: 'var(--hov)',
-                      color: 'var(--ink)',
-                      border: '1px solid var(--bd)',
-                      borderRadius: 'var(--radius)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Inferior RCA Ischemia (62%)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickDemo('normal')}
-                    style={{
-                      fontFamily: 'var(--fs)',
-                      fontSize: '12px',
-                      padding: '5px 10px',
-                      backgroundColor: 'var(--hov)',
-                      color: 'var(--ink)',
-                      border: '1px solid var(--bd)',
-                      borderRadius: 'var(--radius)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Healthy Normal (14%)
-                  </button>
-                </div>
+              {/* Task 4.4: Facts Row */}
+              <div className="facts-row">
+                {LANDING_COPY.hero.facts.map((fact, idx) => (
+                  <div key={idx} className="facts-cell">
+                    <span className="facts-value">{fact.value}</span>
+                    <span className="facts-label">{fact.label}</span>
+                  </div>
+                ))}
               </div>
 
-              {/* Benchmarks Strip */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '8px',
-                  paddingTop: '12px',
-                  borderTop: '1px solid var(--bd)',
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--fm)',
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      color: 'var(--ink)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    0.88 - 0.92
-                  </div>
-                  <div style={{ fontFamily: 'var(--fs)', fontSize: '11px', color: 'var(--mut)' }}>
-                    Calibrated AUC
-                  </div>
+              {/* Task 4.5: Sample Patient Block */}
+              <div className="sample-block">
+                <h3 className="sample-heading">{LANDING_COPY.hero.sampleBlock.heading}</h3>
+                <p className="sample-helper">{LANDING_COPY.hero.sampleBlock.helper}</p>
+
+                <div className="sample-controls-row">
+                  <SegmentedControl<SampleOptionId>
+                    options={sampleOptions}
+                    value={selectedSampleId}
+                    onChange={(id) => setSelectedSampleId(id)}
+                    aria-label="Sample patient"
+                    className="sample-segmented-ctrl"
+                  />
                 </div>
-                <div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--fm)',
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      color: 'var(--ink)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
+
+                <div className="sample-action-row">
+                  <QuietButton
+                    size="sm"
+                    onClick={handleOpenSampleInApp}
+                    className="sample-open-btn"
                   >
-                    &lt; 45 ms
-                  </div>
-                  <div style={{ fontFamily: 'var(--fs)', fontSize: '11px', color: 'var(--mut)' }}>
-                    Inference Latency
-                  </div>
+                    <span>{LANDING_COPY.hero.sampleBlock.openInApp}</span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </QuietButton>
                 </div>
-                <div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--fm)',
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      color: 'var(--ink)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    100%
-                  </div>
-                  <div style={{ fontFamily: 'var(--fs)', fontSize: '11px', color: 'var(--mut)' }}>
-                    Deterministic
-                  </div>
-                </div>
-                <div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--fm)',
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      color: 'var(--ink)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    Offline
-                  </div>
-                  <div style={{ fontFamily: 'var(--fs)', fontSize: '11px', color: 'var(--mut)' }}>
-                    EHR Privacy
-                  </div>
-                </div>
+
+                <span className="sample-caption">{LANDING_COPY.hero.sampleBlock.caption}</span>
               </div>
             </div>
 
-            {/* Right Column: 3D Heart Showcase Model */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontFamily: 'var(--fs)',
-                  fontSize: '12px',
-                  color: 'var(--mut)',
-                }}
-              >
-                <span style={{ fontWeight: 500, color: 'var(--ink)' }}>
-                  Interactive 3D Coronary Model
-                </span>
-                <span style={{ fontFamily: 'var(--fm)', fontSize: '11px' }}>
-                  Drag to rotate • Pinch to zoom
-                </span>
-              </div>
-
-              {/* 3D Heart Canvas Frame */}
-              <div className="landing-heart-stage">
+            {/* RIGHT / 3D HEART COLUMN */}
+            <div className="hero-heart-col wipe" style={{ '--i': 1 } as React.CSSProperties}>
+              {/* Task 4.6: Heart Panel */}
+              <div className="heart-panel-container">
                 <Suspense
                   fallback={
                     <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: '100%',
-                        color: 'var(--mut)',
-                        fontFamily: 'var(--fs)',
-                        fontSize: '13px',
-                        gap: '8px',
-                      }}
+                      className="w-full h-full flex items-center justify-center select-none"
+                      style={{ backgroundColor: VIEWER_BG }}
                     >
-                      <span>Loading 3D anatomical coronary model...</span>
+                      <div className="loading-chip">{LANDING_COPY.hero.heart.loadingChip}</div>
                     </div>
                   }
                 >
-                  <HeartCanvas />
+                  <HeartCanvas
+                    results={currentSample}
+                    selection={currentSelectionFor3D}
+                    onSelect={handleSelectVesselFrom3D}
+                    isLanding={true}
+                  />
                 </Suspense>
               </div>
 
-              {/* Vessel Quick-Focus Pills */}
-              <div
+              {/* Task 4.9: Vessel Selector */}
+              <div className="vessel-selector-row">
+                <span className="inspect-label">{LANDING_COPY.hero.heart.inspectLabel}</span>
+                <SegmentedControl<VesselFocusOption>
+                  options={vesselOptions}
+                  value={vesselFocus}
+                  onChange={(val) => {
+                    if (val === vesselFocus) return;
+                    setVesselFocus(val);
+                  }}
+                  aria-label="Inspect vessel"
+                  className="vessel-segmented-ctrl"
+                />
+              </div>
+
+              {/* Task 4.10: Readout Card */}
+              <Panel
+                className="readout-card"
+                aria-live="polite"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '6px',
-                  flexWrap: 'wrap',
+                  minHeight: '112px',
+                  padding: '12px 14px',
+                  marginTop: '12px',
                 }}
               >
-                <div style={{ fontFamily: 'var(--fs)', fontSize: '11px', color: 'var(--mut)' }}>
-                  Inspect vessel:
+                {/* Row 1: Name and Probability with RiskLabel */}
+                <div className="flex items-baseline justify-between gap-2">
+                  <div className="flex items-baseline gap-1.5 flex-wrap">
+                    {vesselFocus === 'full' ? (
+                      <span className="readout-title-full">{readoutData.name}</span>
+                    ) : (
+                      <>
+                        <span className="readout-title-key">{readoutData.key}</span>
+                        <span className="readout-title-sub">{readoutData.name}</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-baseline gap-2 shrink-0">
+                    <span className="readout-prob-value">
+                      {readoutData.formattedProb}%
+                    </span>
+                    <RiskLabel probability={readoutData.ratio} />
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setVesselFocus('lad')}
+
+                {/* Row 2: Description (max 2 lines) */}
+                <p className="readout-desc">{readoutData.description}</p>
+
+                {/* Row 3: Probability Bar */}
+                <div className="mt-2.5">
+                  <Bar
+                    key={`${selectedSampleId}-${vesselFocus}`}
+                    value={readoutData.ratio}
+                    variant="probability"
+                  />
+                </div>
+              </Panel>
+            </div>
+          </div>
+        </Container>
+      </Band>
+
+      {/* GridStrip between Hero and How it works */}
+      <GridStrip />
+
+      {/* ======================================================== */}
+      {/* PHASE 5: HOW IT WORKS                                    */}
+      {/* ======================================================== */}
+      <Band variant="alt" id="how-it-works">
+        <Container>
+          <Reveal>
+            <h2 id="how-it-works-h2" tabIndex={-1} className="section-h2">
+              {LANDING_COPY.howItWorks.heading}
+            </h2>
+            <p className="section-subline">{LANDING_COPY.howItWorks.subline}</p>
+
+            <div className="how-it-works-grid">
+              {LANDING_COPY.howItWorks.steps.map((step, idx) => {
+                const IconComponent =
+                  idx === 0 ? ClipboardList : idx === 1 ? Heart : FileText;
+                return (
+                  <Panel key={step.number} className="step-panel">
+                    <div className="flex items-center justify-between">
+                      <div className="step-number-box">{step.number}</div>
+                      <IconComponent className="w-5 h-5 text-[var(--acc)]" />
+                    </div>
+                    <h3 className="step-title">{step.title}</h3>
+                    <p className="step-desc">{step.description}</p>
+                  </Panel>
+                );
+              })}
+            </div>
+          </Reveal>
+        </Container>
+      </Band>
+
+      {/* ======================================================== */}
+      {/* PHASE 6: WHAT YOU GET                                    */}
+      {/* ======================================================== */}
+      <Band id="what-you-get">
+        <Container>
+          <Reveal>
+            <h2 id="what-you-get-h2" tabIndex={-1} className="section-h2">
+              {LANDING_COPY.whatYouGet.heading}
+            </h2>
+
+            <div className="what-you-get-rows">
+              {/* ROW 1: 3D view of each artery */}
+              <div className="what-row">
+                <div className="what-text-col">
+                  <h3 className="what-title">{LANDING_COPY.whatYouGet.rows[0].title}</h3>
+                  <p className="what-desc">{LANDING_COPY.whatYouGet.rows[0].description}</p>
+                </div>
+                <div className="what-preview-col">
+                  <div {...({ inert: '' } as any)} aria-hidden="true">
+                    <Panel className="what-preview-panel flex flex-col justify-center">
+                      <VesselCard
+                        vesselKey="lad"
+                        vesselCode="LAD"
+                        fullName="Left anterior descending"
+                        prediction={{
+                          target: 'LAD',
+                          display_name: 'LAD',
+                          probability: 0.91,
+                          binary_class: 1,
+                          stenosis_suspected: true,
+                          risk_tier: 'HIGH',
+                          optimal_threshold: 0.5,
+                          color_hex: 'var(--high)',
+                          color_rgb: [179, 21, 47],
+                          emissive_pulse: true,
+                        }}
+                        isSelected={false}
+                        onSelect={() => {}}
+                        animationIndex={1}
+                      />
+                      <VesselCard
+                        vesselKey="lcx"
+                        vesselCode="LCX"
+                        fullName="Left circumflex"
+                        prediction={{
+                          target: 'LCX',
+                          display_name: 'LCX',
+                          probability: 0.244,
+                          binary_class: 0,
+                          stenosis_suspected: false,
+                          risk_tier: 'LOW',
+                          optimal_threshold: 0.5,
+                          color_hex: 'var(--low)',
+                          color_rgb: [31, 111, 69],
+                          emissive_pulse: false,
+                        }}
+                        isSelected={false}
+                        onSelect={() => {}}
+                        animationIndex={2}
+                      />
+                      <VesselCard
+                        vesselKey="rca"
+                        vesselCode="RCA"
+                        fullName="Right coronary"
+                        prediction={{
+                          target: 'RCA',
+                          display_name: 'RCA',
+                          probability: 0.228,
+                          binary_class: 0,
+                          stenosis_suspected: false,
+                          risk_tier: 'LOW',
+                          optimal_threshold: 0.5,
+                          color_hex: 'var(--low)',
+                          color_rgb: [31, 111, 69],
+                          emissive_pulse: false,
+                        }}
+                        isSelected={false}
+                        onSelect={() => {}}
+                        animationIndex={3}
+                      />
+                    </Panel>
+                  </div>
+                  <span className="what-caption">{LANDING_COPY.whatYouGet.rows[0].caption}</span>
+                </div>
+              </div>
+
+              {/* ROW 2: The factors behind each result (swapped desktop columns) */}
+              <div className="what-row what-row-even">
+                <div className="what-preview-col">
+                  <div {...({ inert: '' } as any)} aria-hidden="true">
+                    <Panel className="what-preview-panel flex flex-col justify-center gap-3 px-4">
+                      {LANDING_COPY.whatYouGet.rows[1].exampleFactors.map((f) => (
+                        <div key={f.name} className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between text-[12px] font-[var(--fs)]">
+                            <span className="text-[var(--ink)] font-medium">{f.name}</span>
+                            <span className="text-[var(--mut)]">{f.direction}</span>
+                          </div>
+                          <div className="w-full h-1 bg-[var(--bd)] overflow-hidden">
+                            <div
+                              className="h-full bg-[var(--high)]"
+                              style={{ width: f.barWidth }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </Panel>
+                  </div>
+                  <span className="what-caption">{LANDING_COPY.whatYouGet.rows[1].caption}</span>
+                </div>
+                <div className="what-text-col">
+                  <h3 className="what-title">{LANDING_COPY.whatYouGet.rows[1].title}</h3>
+                  <p className="what-desc">{LANDING_COPY.whatYouGet.rows[1].description}</p>
+                </div>
+              </div>
+
+              {/* ROW 3: Two reports */}
+              <div className="what-row">
+                <div className="what-text-col">
+                  <h3 className="what-title">{LANDING_COPY.whatYouGet.rows[2].title}</h3>
+                  <p className="what-desc">{LANDING_COPY.whatYouGet.rows[2].description}</p>
+                </div>
+                <div className="what-preview-col">
+                  <div {...({ inert: '' } as any)} aria-hidden="true">
+                    <Panel
+                      className="what-preview-panel !p-0"
+                      style={{
+                        backgroundColor: 'var(--s-bg)',
+                        border: '1px solid var(--s-bd)',
+                        borderRadius: '3px',
+                      }}
+                    >
+                    <div style={{ padding: '14px 16px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          borderBottom: '1px solid var(--s-bd)',
+                          paddingBottom: '6px',
+                          marginBottom: '8px',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: 'var(--fs)',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            color: 'var(--s-ink)',
+                          }}
+                        >
+                          Clinician report
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--fm)',
+                            fontSize: '11px',
+                            color: 'var(--s-mut)',
+                          }}
+                        >
+                          Model outputs
+                        </span>
+                      </div>
+                      <table
+                        style={{
+                          width: '100%',
+                          borderCollapse: 'collapse',
+                          fontSize: '11px',
+                          fontFamily: 'var(--fs)',
+                        }}
+                      >
+                        <thead>
+                          <tr
+                            style={{
+                              borderBottom: '1px solid var(--s-bd)',
+                              color: 'var(--s-mut)',
+                              textAlign: 'left',
+                            }}
+                          >
+                            <th style={{ padding: '4px 0', fontWeight: 500 }}>Target</th>
+                            <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
+                              Probability
+                            </th>
+                            <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
+                              Risk band
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
+                            <td style={{ padding: '4px 0', fontWeight: 500 }}>CAD</td>
+                            <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
+                              94.4%
+                            </td>
+                            <td style={{ padding: '4px 0', textAlign: 'right' }}>High</td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
+                            <td style={{ padding: '4px 0', fontWeight: 500 }}>LAD</td>
+                            <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
+                              91.0%
+                            </td>
+                            <td style={{ padding: '4px 0', textAlign: 'right' }}>High</td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
+                            <td style={{ padding: '4px 0', fontWeight: 500 }}>LCX</td>
+                            <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
+                              24.4%
+                            </td>
+                            <td style={{ padding: '4px 0', textAlign: 'right' }}>Low</td>
+                          </tr>
+                          <tr style={{ color: 'var(--s-ink)' }}>
+                            <td style={{ padding: '4px 0', fontWeight: 500 }}>RCA</td>
+                            <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
+                              22.8%
+                            </td>
+                            <td style={{ padding: '4px 0', textAlign: 'right' }}>Low</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </Panel>
+                </div>
+                <span className="what-caption">{LANDING_COPY.whatYouGet.rows[2].caption}</span>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </Container>
+      </Band>
+
+      {/* GridStrip between What you get and About */}
+      <GridStrip />
+
+      {/* ======================================================== */}
+      {/* PHASE 6: ABOUT THE RESULTS                               */}
+      {/* ======================================================== */}
+      <Band variant="alt" id="about">
+        <Container>
+          <Reveal>
+            <h2 id="about-h2" tabIndex={-1} className="section-h2">
+              {LANDING_COPY.about.heading}
+            </h2>
+
+            <div className="about-grid">
+              {/* Left Column: 5 Paragraphs */}
+              <div className="about-text-col">
+                <p className="about-paragraph">{LANDING_COPY.about.paragraphs[0]}</p>
+                <p className="about-paragraph">{LANDING_COPY.about.paragraphs[1]}</p>
+                <p className="about-paragraph">{LANDING_COPY.about.paragraphs[2]}</p>
+                <p className="about-paragraph">{LANDING_COPY.about.paragraphs[3]}</p>
+                <p className="about-paragraph">
+                  {LANDING_COPY.about.technicalTextPre}
+                  <Link
+                    to="/model-info"
                     style={{
-                      fontFamily: 'var(--fs)',
-                      fontSize: '11px',
-                      padding: '4px 8px',
-                      borderRadius: 'var(--radius)',
-                      border: '1px solid var(--bd)',
-                      backgroundColor: activeVesselFocus === 'lad' ? 'var(--acc)' : 'var(--panel)',
-                      color: activeVesselFocus === 'lad' ? 'var(--onacc)' : 'var(--ink)',
-                      cursor: 'pointer',
+                      color: 'var(--acc)',
+                      textDecoration: 'underline',
                     }}
                   >
-                    LAD (Anterior)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setVesselFocus('lcx')}
+                    {LANDING_COPY.about.technicalLinkText}
+                  </Link>
+                  {LANDING_COPY.about.technicalTextPost}
+                </p>
+              </div>
+
+              {/* Right Column: Decision support disclaimer block from Welcome */}
+              <div className="about-disclaimer-col">
+                <div
+                  style={{
+                    border: '1px solid var(--bd)',
+                    borderRadius: 'var(--radius)',
+                    backgroundColor: 'var(--panel)',
+                    padding: '16px',
+                  }}
+                >
+                  <div
                     style={{
                       fontFamily: 'var(--fs)',
-                      fontSize: '11px',
-                      padding: '4px 8px',
-                      borderRadius: 'var(--radius)',
-                      border: '1px solid var(--bd)',
-                      backgroundColor: activeVesselFocus === 'lcx' ? 'var(--acc)' : 'var(--panel)',
-                      color: activeVesselFocus === 'lcx' ? 'var(--onacc)' : 'var(--ink)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    LCX (Lateral)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setVesselFocus('rca')}
-                    style={{
-                      fontFamily: 'var(--fs)',
-                      fontSize: '11px',
-                      padding: '4px 8px',
-                      borderRadius: 'var(--radius)',
-                      border: '1px solid var(--bd)',
-                      backgroundColor: activeVesselFocus === 'rca' ? 'var(--acc)' : 'var(--panel)',
-                      color: activeVesselFocus === 'rca' ? 'var(--onacc)' : 'var(--ink)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    RCA (Inferior)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setVesselFocus('default')}
-                    style={{
-                      fontFamily: 'var(--fs)',
-                      fontSize: '11px',
-                      padding: '4px 8px',
-                      borderRadius: 'var(--radius)',
-                      border: '1px solid var(--bd)',
-                      backgroundColor: activeVesselFocus === 'default' ? 'var(--hov)' : 'var(--panel)',
+                      fontSize: '13px',
+                      fontWeight: 600,
                       color: 'var(--ink)',
-                      cursor: 'pointer',
+                      marginBottom: '4px',
                     }}
                   >
-                    Full Heart
-                  </button>
+                    {LANDING_COPY.about.disclaimer.heading}
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--fs)',
+                      fontSize: '13px',
+                      lineHeight: 1.45,
+                      color: 'var(--ink)',
+                      margin: 0,
+                    }}
+                  >
+                    {LANDING_COPY.about.disclaimer.body}
+                  </p>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </Reveal>
+        </Container>
+      </Band>
 
-        {/* Section 2: Core Capabilities Grid */}
-        <div
-          className="wipe"
-          style={{
-            borderTop: '1px solid var(--bd)',
-            padding: '28px',
-            backgroundColor: 'var(--page)',
-            '--i': 2,
-          } as React.CSSProperties}
-        >
-          <div style={{ marginBottom: '20px' }}>
-            <h2
-              style={{
-                fontFamily: 'var(--fs)',
-                fontSize: '18px',
-                fontWeight: 600,
-                color: 'var(--ink)',
-                margin: '0 0 6px',
-              }}
-            >
-              Multimodal Clinical Risk Architecture
-            </h2>
-            <p
-              style={{
-                fontFamily: 'var(--fs)',
-                fontSize: '13px',
-                color: 'var(--mut)',
-                margin: 0,
-              }}
-            >
-              Engineered for sub-100ms decision support with zero-hallucination deterministic safeguards.
-            </p>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '16px',
-            }}
-          >
-            {/* Card 1 */}
-            <div
-              style={{
-                backgroundColor: 'var(--panel)',
-                border: '1px solid var(--bd)',
-                borderRadius: 'var(--radius)',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--fm)',
-                  fontSize: '11px',
-                  color: 'var(--acc)',
-                  fontWeight: 600,
-                }}
+      {/* ======================================================== */}
+      {/* PHASE 6: FINAL CALL TO ACTION                            */}
+      {/* ======================================================== */}
+      <Band className="final-cta-band">
+        <Container>
+          <Reveal>
+            <div className="final-cta-box">
+              <h2 className="final-cta-h2">{LANDING_COPY.cta.heading}</h2>
+              <p className="final-cta-sub">{LANDING_COPY.cta.text}</p>
+              <PrimaryButton
+                size="lg"
+                onClick={handleStartAssessment}
+                className="final-cta-btn"
               >
-                01. 3D SPATIAL PERFUSION
-              </div>
-              <h3
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'var(--ink)',
-                  margin: 0,
-                }}
-              >
-                Interactive Coronary Twin
-              </h3>
-              <p
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '12px',
-                  lineHeight: 1.5,
-                  color: 'var(--mut)',
-                  margin: 0,
-                }}
-              >
-                Real-time WebGL rendering visualizes stenosis probabilities mapped to specific arterial beds with anatomical position markers.
-              </p>
+                <span>{LANDING_COPY.cta.button}</span>
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </PrimaryButton>
             </div>
+          </Reveal>
+        </Container>
+      </Band>
 
-            {/* Card 2 */}
-            <div
-              style={{
-                backgroundColor: 'var(--panel)',
-                border: '1px solid var(--bd)',
-                borderRadius: 'var(--radius)',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--fm)',
-                  fontSize: '11px',
-                  color: 'var(--acc)',
-                  fontWeight: 600,
-                }}
-              >
-                02. 4-HEAD CALIBRATION
-              </div>
-              <h3
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'var(--ink)',
-                  margin: 0,
-                }}
-              >
-                Independent Risk Heads
-              </h3>
-              <p
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '12px',
-                  lineHeight: 1.5,
-                  color: 'var(--mut)',
-                  margin: 0,
-                }}
-              >
-                Separate calibrated gradient boosted classifiers for Overall CAD, LAD, LCX, and RCA with Platt scaling and isotonic calibration.
-              </p>
-            </div>
+      {/* Scoped CSS for landing page layout and responsive breakpoints */}
+      <style>{`
+        /* Hero Grid Layout */
+        .hero-layout-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+          gap: 48px;
+          align-items: start;
+        }
 
-            {/* Card 3 */}
-            <div
-              style={{
-                backgroundColor: 'var(--panel)',
-                border: '1px solid var(--bd)',
-                borderRadius: 'var(--radius)',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--fm)',
-                  fontSize: '11px',
-                  color: 'var(--acc)',
-                  fontWeight: 600,
-                }}
-              >
-                03. TREESHAP EXPLAINABILITY
-              </div>
-              <h3
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'var(--ink)',
-                  margin: 0,
-                }}
-              >
-                Transparent Attributions
-              </h3>
-              <p
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '12px',
-                  lineHeight: 1.5,
-                  color: 'var(--mut)',
-                  margin: 0,
-                }}
-              >
-                Local Shapley feature attributions quantify positive and negative clinical drivers for every single vessel prediction.
-              </p>
-            </div>
+        .hero-text-col {
+          display: flex;
+          flex-direction: column;
+        }
 
-            {/* Card 4 */}
-            <div
-              style={{
-                backgroundColor: 'var(--panel)',
-                border: '1px solid var(--bd)',
-                borderRadius: 'var(--radius)',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--fm)',
-                  fontSize: '11px',
-                  color: 'var(--acc)',
-                  fontWeight: 600,
-                }}
-              >
-                04. DUAL REPORTING
-              </div>
-              <h3
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'var(--ink)',
-                  margin: 0,
-                }}
-              >
-                Deterministic Reporting
-              </h3>
-              <p
-                style={{
-                  fontFamily: 'var(--fs)',
-                  fontSize: '12px',
-                  lineHeight: 1.5,
-                  color: 'var(--mut)',
-                  margin: 0,
-                }}
-              >
-                Standardized 7-section Clinician report and 8-section plain-language Patient report rendered offline with zero LLM hallucinations.
-              </p>
-            </div>
-          </div>
-        </div>
+        .hero-heart-col {
+          display: flex;
+          flex-direction: column;
+        }
 
-        {/* Section 3: Clinical Diagnostic Matrix */}
-        <div
-          className="wipe"
-          style={{
-            borderTop: '1px solid var(--bd)',
-            padding: '28px',
-            '--i': 3,
-          } as React.CSSProperties}
-        >
-          <div style={{ marginBottom: '16px' }}>
-            <h2
-              style={{
-                fontFamily: 'var(--fs)',
-                fontSize: '16px',
-                fontWeight: 600,
-                color: 'var(--ink)',
-                margin: '0 0 4px',
-              }}
-            >
-              Model Validation & Benchmark Metrics
-            </h2>
-            <div style={{ fontFamily: 'var(--fs)', fontSize: '12px', color: 'var(--mut)' }}>
-              Evaluated on 303 cohort subjects with catheterization ground truth (Z-Alizadeh Sani protocol).
-            </div>
-          </div>
+        /* Hero Typography */
+        .hero-h1 {
+          font-family: var(--fs);
+          font-size: 40px;
+          line-height: 48px;
+          font-weight: 600;
+          color: var(--ink);
+          margin: 0 0 16px;
+        }
 
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontSize: '12px',
-            }}
-          >
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--bd)' }}>
-                <th style={{ fontFamily: 'var(--fs)', fontWeight: 600, color: 'var(--mut)', padding: '6px 0', textAlign: 'left' }}>Target Head</th>
-                <th style={{ fontFamily: 'var(--fs)', fontWeight: 600, color: 'var(--mut)', padding: '6px 0', textAlign: 'left' }}>Anatomical Territory</th>
-                <th style={{ fontFamily: 'var(--fs)', fontWeight: 600, color: 'var(--mut)', padding: '6px 0', textAlign: 'right' }}>ROC-AUC</th>
-                <th style={{ fontFamily: 'var(--fs)', fontWeight: 600, color: 'var(--mut)', padding: '6px 0', textAlign: 'right' }}>Brier Score</th>
-                <th style={{ fontFamily: 'var(--fs)', fontWeight: 600, color: 'var(--mut)', padding: '6px 0', textAlign: 'right' }}>Threshold</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: '1px solid var(--bd)' }}>
-                <td style={{ fontFamily: 'var(--fs)', fontWeight: 600, padding: '8px 0', color: 'var(--ink)' }}>CAD</td>
-                <td style={{ fontFamily: 'var(--fs)', padding: '8px 0', color: 'var(--mut)' }}>Overall Coronary Artery Disease</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--ink)' }}>0.918</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--ink)' }}>0.114</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--mut)' }}>0.48</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--bd)' }}>
-                <td style={{ fontFamily: 'var(--fs)', fontWeight: 600, padding: '8px 0', color: 'var(--ink)' }}>LAD</td>
-                <td style={{ fontFamily: 'var(--fs)', padding: '8px 0', color: 'var(--mut)' }}>Left Anterior Descending Artery</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--ink)' }}>0.887</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--ink)' }}>0.138</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--mut)' }}>0.40</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--bd)' }}>
-                <td style={{ fontFamily: 'var(--fs)', fontWeight: 600, padding: '8px 0', color: 'var(--ink)' }}>LCX</td>
-                <td style={{ fontFamily: 'var(--fs)', padding: '8px 0', color: 'var(--mut)' }}>Left Circumflex Artery</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--ink)' }}>0.892</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--ink)' }}>0.142</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--mut)' }}>0.40</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid var(--bd)' }}>
-                <td style={{ fontFamily: 'var(--fs)', fontWeight: 600, padding: '8px 0', color: 'var(--ink)' }}>RCA</td>
-                <td style={{ fontFamily: 'var(--fs)', padding: '8px 0', color: 'var(--mut)' }}>Right Coronary Artery</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--ink)' }}>0.895</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--ink)' }}>0.129</td>
-                <td style={{ fontFamily: 'var(--fm)', padding: '8px 0', textAlign: 'right', color: 'var(--mut)' }}>0.40</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        .hero-lead {
+          font-family: var(--fs);
+          font-size: 16px;
+          line-height: 26px;
+          color: var(--ink);
+          max-width: 52ch;
+          margin: 0 0 24px;
+        }
 
-        {/* Section 4: Workflow Overview Strip */}
-        <div
-          className="wipe"
-          style={{
-            borderTop: '1px solid var(--bd)',
-            padding: '24px 28px',
-            backgroundColor: 'var(--page)',
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '16px',
-            '--i': 4,
-          } as React.CSSProperties}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: 'var(--fs)',
-                fontSize: '15px',
-                fontWeight: 600,
-                color: 'var(--ink)',
-              }}
-            >
-              Begin clinical risk assessment
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--fs)',
-                fontSize: '12px',
-                color: 'var(--mut)',
-              }}
-            >
-              Step-by-step guided workflow with physiological boundary validation.
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <PrimaryButton onClick={handleStart}>
-              Start Assessment
-            </PrimaryButton>
-            <SecondaryButton onClick={() => navigate('/design-system')}>
-              Design System
-            </SecondaryButton>
-          </div>
-        </div>
-      </Panel>
+        .hero-btn-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-bottom: 28px;
+        }
+
+        /* Facts Row */
+        .facts-row {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          padding-top: 20px;
+          border-top: 1px solid var(--bd);
+          margin-bottom: 24px;
+        }
+
+        .facts-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding: 0 12px;
+          border-right: 1px solid var(--bd);
+        }
+
+        .facts-cell:first-child {
+          padding-left: 0;
+        }
+
+        .facts-cell:last-child {
+          border-right: none;
+          padding-right: 0;
+        }
+
+        .facts-value {
+          font-family: var(--fm);
+          font-size: 24px;
+          line-height: 1.1;
+          font-weight: 500;
+          color: var(--ink);
+          font-variant-numeric: tabular-nums;
+        }
+
+        .facts-label {
+          font-family: var(--fs);
+          font-size: 12px;
+          color: var(--mut);
+          line-height: 1.3;
+        }
+
+        /* Sample Patient Block */
+        .sample-block {
+          margin-top: 24px;
+          border-top: 1px solid var(--bd);
+          padding-top: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .sample-heading {
+          font-family: var(--fs);
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--ink);
+          margin: 0;
+        }
+
+        .sample-helper {
+          font-family: var(--fs);
+          font-size: 12px;
+          color: var(--mut);
+          margin: 0 0 8px;
+        }
+
+        .sample-controls-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .sample-segmented-ctrl {
+          height: 36px;
+        }
+
+        .sample-action-row {
+          margin-top: 4px;
+        }
+
+        .sample-caption {
+          font-family: var(--fs);
+          font-size: 11px;
+          color: var(--mut);
+          margin-top: 2px;
+        }
+
+        /* 3D Heart Panel */
+        .heart-panel-container {
+          position: relative;
+          width: 100%;
+          height: 520px;
+          background-color: ${VIEWER_BG};
+          border: 1px solid var(--bd);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        @media (min-width: 1200px) {
+          .heart-panel-container {
+            height: 560px;
+          }
+        }
+
+        @media (max-width: 999px) {
+          .heart-panel-container {
+            height: clamp(320px, 50dvh, 480px);
+          }
+        }
+
+        @media (max-width: 767px) {
+          .heart-panel-container {
+            height: clamp(280px, 44dvh, 380px);
+          }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+          .heart-panel-container {
+            height: max(260px, 80dvh);
+          }
+        }
+
+        .loading-chip {
+          background-color: var(--panel);
+          border: 1px solid var(--bds);
+          border-radius: 3px;
+          padding: 6px 12px;
+          font-size: 12px;
+          color: var(--ink);
+          font-family: var(--fs);
+          font-weight: 500;
+        }
+
+        /* Vessel Selector Row */
+        .vessel-selector-row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 12px;
+          margin-top: 12px;
+        }
+
+        .inspect-label {
+          font-family: var(--fs);
+          font-size: 12px;
+          color: var(--mut);
+        }
+
+        .vessel-segmented-ctrl {
+          height: 36px;
+        }
+
+        /* Readout Card */
+        .readout-card {
+          margin-top: 12px;
+        }
+
+        .readout-title-full {
+          font-family: var(--fs);
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--ink);
+        }
+
+        .readout-title-key {
+          font-family: var(--fs);
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--ink);
+        }
+
+        .readout-title-sub {
+          font-family: var(--fs);
+          font-size: 12px;
+          color: var(--mut);
+        }
+
+        .readout-prob-value {
+          font-family: var(--fm);
+          font-size: 24px;
+          line-height: 1;
+          font-weight: 500;
+          color: var(--ink);
+          font-variant-numeric: tabular-nums;
+        }
+
+        .readout-desc {
+          font-family: var(--fs);
+          font-size: 13px;
+          line-height: 1.45;
+          color: var(--mut);
+          margin: 6px 0 0;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        /* Section Commons */
+        .section-h2 {
+          font-family: var(--fs);
+          font-size: 24px;
+          line-height: 32px;
+          font-weight: 600;
+          color: var(--ink);
+          margin: 0;
+          outline: none;
+        }
+
+        .section-subline {
+          font-family: var(--fs);
+          font-size: 14px;
+          color: var(--mut);
+          margin: 4px 0 24px;
+        }
+
+        /* How it works */
+        .how-it-works-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .step-panel {
+          padding: 16px 18px;
+        }
+
+        .step-number-box {
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid var(--bd);
+          border-radius: 3px;
+          font-family: var(--fm);
+          font-size: 12px;
+          color: var(--mut);
+        }
+
+        .step-title {
+          font-family: var(--fs);
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--ink);
+          margin: 12px 0 0;
+        }
+
+        .step-desc {
+          font-family: var(--fs);
+          font-size: 13px;
+          line-height: 1.5;
+          color: var(--mut);
+          margin: 6px 0 0;
+        }
+
+        /* What you get */
+        .what-you-get-rows {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .what-row {
+          display: grid;
+          grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+          gap: 32px;
+          align-items: center;
+          padding: 32px 0;
+          border-bottom: 1px solid var(--bd);
+        }
+
+        .what-row:last-child {
+          border-bottom: none;
+          padding-bottom: 0;
+        }
+
+        .what-row:first-child {
+          padding-top: 16px;
+        }
+
+        .what-title {
+          font-family: var(--fs);
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--ink);
+          margin: 0 0 6px;
+        }
+
+        .what-desc {
+          font-family: var(--fs);
+          font-size: 14px;
+          line-height: 22px;
+          color: var(--mut);
+          max-width: 48ch;
+          margin: 0;
+        }
+
+        .what-preview-panel {
+          height: 220px;
+          padding: 12px;
+          overflow: hidden;
+        }
+
+        .what-caption {
+          display: block;
+          font-family: var(--fs);
+          font-size: 11px;
+          color: var(--mut);
+          margin-top: 6px;
+        }
+
+        /* About */
+        .about-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+          gap: 32px;
+          align-items: start;
+        }
+
+        .about-paragraph {
+          font-family: var(--fs);
+          font-size: 14px;
+          line-height: 22px;
+          color: var(--ink);
+          max-width: 60ch;
+          margin: 0 0 12px;
+        }
+
+        /* Final CTA */
+        .final-cta-box {
+          max-width: 560px;
+          margin: 0 auto;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .final-cta-h2 {
+          font-family: var(--fs);
+          font-size: 24px;
+          line-height: 32px;
+          font-weight: 600;
+          color: var(--ink);
+          margin: 0;
+        }
+
+        .final-cta-sub {
+          font-family: var(--fs);
+          font-size: 14px;
+          color: var(--mut);
+          margin: 6px 0 20px;
+        }
+
+        /* ======================================================== */
+        /* RESPONSIVE OVERRIDES                                      */
+        /* ======================================================== */
+
+        /* Under 1000px: Hero becomes 1 column, heart column FIRST */
+        @media (max-width: 999px) {
+          .hero-layout-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+          }
+
+          .hero-heart-col {
+            order: 1;
+            width: 100%;
+          }
+
+          .hero-text-col {
+            order: 2;
+            width: 100%;
+          }
+        }
+
+        /* Under 900px: How it works & What you get & About stack */
+        @media (max-width: 899px) {
+          .how-it-works-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .what-row {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          .what-row-even .what-preview-col {
+            order: 2;
+          }
+
+          .what-row-even .what-text-col {
+            order: 1;
+          }
+
+          .about-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+        }
+
+        /* Under 768px: Mobile sizing & 44px touch targets */
+        @media (max-width: 767px) {
+          .hero-h1 {
+            font-size: 28px;
+            line-height: 36px;
+          }
+
+          .section-h2 {
+            font-size: 20px;
+            line-height: 28px;
+          }
+
+          .hero-btn-row {
+            flex-direction: column;
+            width: 100%;
+          }
+
+          .hero-start-btn,
+          .hero-how-btn,
+          .final-cta-btn {
+            width: 100%;
+            min-height: 44px;
+          }
+
+          .inspect-label {
+            display: none;
+          }
+
+          .vessel-selector-row {
+            width: 100%;
+          }
+
+          .vessel-segmented-ctrl {
+            width: 100%;
+            height: 44px;
+          }
+
+          .vessel-segmented-ctrl button {
+            flex: 1;
+            min-height: 44px;
+          }
+
+          .sample-segmented-ctrl {
+            width: 100%;
+            height: 44px;
+          }
+
+          .sample-segmented-ctrl button {
+            flex: 1;
+            min-height: 44px;
+          }
+
+          .sample-open-btn {
+            min-height: 44px;
+          }
+        }
+
+        /* Under 480px: Facts row labels 11px */
+        @media (max-width: 479px) {
+          .facts-label {
+            font-size: 11px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

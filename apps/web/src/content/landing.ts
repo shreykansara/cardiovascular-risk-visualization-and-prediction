@@ -128,7 +128,7 @@ export const LANDING_COPY = {
       'The results are probabilities estimated by a computer model from the values you enter. The model does not look at the heart directly.',
       'A probability describes what the model estimated, not a confirmed condition. The tool is meant for decision support and education.',
       `Risk words follow fixed bands: Low is under ${lowThreshold}%, Moderate is ${lowThreshold} to ${highThreshold}%, High is over ${highThreshold}%.`,
-      'Entered values are kept in your browser session and are sent to this app's server only to calculate results.',
+      "Entered values are kept in your browser session and are sent to this app's server only to calculate results.",
     ],
     technicalTextPre: 'Technical details and evaluation figures are on the ',
     technicalLinkText: 'Model information',

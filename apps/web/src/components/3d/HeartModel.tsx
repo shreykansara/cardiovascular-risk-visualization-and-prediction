@@ -19,9 +19,18 @@ import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { usePatientStore } from '../../store/usePatientStore';
 import { useWizardStore } from '../../store/useWizardStore';
+import { VesselLabel } from './VesselLabel';
 
-interface HeartModelProps {
+export interface HeartModelProps {
   onHoverVessel?: (vesselName: string | null) => void;
+  results?: {
+    cad: number;
+    lad: number;
+    lcx: number;
+    rca: number;
+  };
+  selection?: string | null;
+  onSelect?: (vesselKey: string | null) => void;
 }
 
 // Anatomical control points tracing authentic surface sulci on the 3D heart model
@@ -188,16 +197,26 @@ function createTaperedArteryGeometry(
   return geo;
 }
 
-export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
+export const HeartModel: React.FC<HeartModelProps> = ({
+  onHoverVessel,
+  results,
+  selection,
+  onSelect,
+}) => {
   const wizardPrediction = useWizardStore((s) => s.prediction);
   const wizardFocus = useWizardStore((s) => s.activeVesselFocus);
   const setWizardFocus = useWizardStore((s) => s.setVesselFocus);
   const { analysis, activeVesselFocus: patientFocus, setVesselFocus: setPatientFocus } = usePatientStore();
 
-  const activeVesselFocus = wizardFocus || patientFocus || 'default';
+  const storeFocus = wizardFocus || patientFocus || 'default';
+  const activeVesselFocus = selection !== undefined ? (selection ?? 'default') : storeFocus;
   const setVesselFocus = (focus: string) => {
-    setWizardFocus(focus);
-    setPatientFocus(focus);
+    if (onSelect) {
+      onSelect(focus === 'default' ? null : focus);
+    } else {
+      setWizardFocus(focus);
+      setPatientFocus(focus);
+    }
   };
 
   const groupRef = useRef<THREE.Group>(null);
@@ -332,31 +351,28 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
     };
   }, [myocardiumMesh]);
 
-  // Extract patient prediction data for each vessel (Primary: wizard, Fallback: patient analysis)
+  // Extract patient prediction data for each vessel (Primary: results prop, Secondary: wizard, Fallback: patient analysis)
   const vesselsPred = wizardPrediction?.vessels || analysis?.predictions?.vessels;
 
-  const ladPred = vesselsPred?.lad;
-  const ladProb = ladPred?.probability ?? 0.724;
-  const isLadCritical = String(ladPred?.risk_tier).toLowerCase() === 'high' || ladPred?.risk_tier === 'CRITICAL' || ladProb > 0.70;
-  const isLadBorderline = String(ladPred?.risk_tier).toLowerCase() === 'moderate' || ladPred?.risk_tier === 'BORDERLINE' || (ladProb > 0.40 && ladProb <= 0.70);
-  const ladColorHex = ladPred?.color_hex ?? (isLadCritical ? '#EF4444' : isLadBorderline ? '#F59E0B' : '#10B981');
-  const isLadSelected = activeVesselFocus === 'vessel_LAD';
+  const ladProb = results ? (results.lad > 1 ? results.lad / 100 : results.lad) : (vesselsPred?.lad?.probability ?? 0.724);
+  const isLadCritical = ladProb > 0.70;
+  const isLadBorderline = ladProb > 0.40 && ladProb <= 0.70;
+  const ladColorHex = (results ? null : vesselsPred?.lad?.color_hex) ?? (isLadCritical ? '#EF4444' : isLadBorderline ? '#F59E0B' : '#10B981');
+  const isLadSelected = activeVesselFocus === 'vessel_LAD' || activeVesselFocus === 'LAD';
 
-  const lcxPred = vesselsPred?.lcx;
-  const lcxProb = lcxPred?.probability ?? 0.218;
-  const isLcxCritical = String(lcxPred?.risk_tier).toLowerCase() === 'high' || lcxPred?.risk_tier === 'CRITICAL' || lcxProb > 0.70;
-  const isLcxBorderline = String(lcxPred?.risk_tier).toLowerCase() === 'moderate' || lcxPred?.risk_tier === 'BORDERLINE' || (lcxProb > 0.40 && lcxProb <= 0.70);
-  const lcxColorHex = lcxPred?.color_hex ?? (isLcxCritical ? '#EF4444' : isLcxBorderline ? '#F59E0B' : '#10B981');
-  const isLcxSelected = activeVesselFocus === 'vessel_LCX';
+  const lcxProb = results ? (results.lcx > 1 ? results.lcx / 100 : results.lcx) : (vesselsPred?.lcx?.probability ?? 0.218);
+  const isLcxCritical = lcxProb > 0.70;
+  const isLcxBorderline = lcxProb > 0.40 && lcxProb <= 0.70;
+  const lcxColorHex = (results ? null : vesselsPred?.lcx?.color_hex) ?? (isLcxCritical ? '#EF4444' : isLcxBorderline ? '#F59E0B' : '#10B981');
+  const isLcxSelected = activeVesselFocus === 'vessel_LCX' || activeVesselFocus === 'LCX';
 
-  const rcaPred = vesselsPred?.rca;
-  const rcaProb = rcaPred?.probability ?? 0.185;
-  const isRcaCritical = String(rcaPred?.risk_tier).toLowerCase() === 'high' || rcaPred?.risk_tier === 'CRITICAL' || rcaProb > 0.70;
-  const isRcaBorderline = String(rcaPred?.risk_tier).toLowerCase() === 'moderate' || rcaPred?.risk_tier === 'BORDERLINE' || (rcaProb > 0.40 && rcaProb <= 0.70);
-  const rcaColorHex = rcaPred?.color_hex ?? (isRcaCritical ? '#EF4444' : isRcaBorderline ? '#F59E0B' : '#10B981');
-  const isRcaSelected = activeVesselFocus === 'vessel_RCA';
+  const rcaProb = results ? (results.rca > 1 ? results.rca / 100 : results.rca) : (vesselsPred?.rca?.probability ?? 0.185);
+  const isRcaCritical = rcaProb > 0.70;
+  const isRcaBorderline = rcaProb > 0.40 && rcaProb <= 0.70;
+  const rcaColorHex = (results ? null : vesselsPred?.rca?.color_hex) ?? (isRcaCritical ? '#EF4444' : isRcaBorderline ? '#F59E0B' : '#10B981');
+  const isRcaSelected = activeVesselFocus === 'vessel_RCA' || activeVesselFocus === 'RCA';
 
-  const isGlobalFocus = activeVesselFocus === 'default' || activeVesselFocus === 'all' || activeVesselFocus === 'free';
+  const isGlobalFocus = activeVesselFocus === 'default' || activeVesselFocus === 'all' || activeVesselFocus === 'free' || activeVesselFocus === 'Full heart' || !activeVesselFocus;
   const isLadDimmed = !isGlobalFocus && !isLadSelected;
   const isLcxDimmed = !isGlobalFocus && !isLcxSelected;
   const isRcaDimmed = !isGlobalFocus && !isRcaSelected;
@@ -470,44 +486,24 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             transparent={false}
           />
 
-          {/* Step 3: Floating Drei <Html> Callout Badge for LAD */}
+          {/* Step 3: Floating Callout Badge for LAD */}
           <Html
             position={ladBadgePos}
             center
             distanceFactor={2.4}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectVessel('vessel_LAD');
-              }}
-              onMouseEnter={() => handlePointerOver('vessel_LAD')}
-              onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-md whitespace-nowrap hover:scale-110 active:scale-95 ${
-                isLadSelected
-                  ? 'ring-1.5 ring-white shadow-cyan-500/50 scale-105'
-                  : 'hover:border-cyan-400/80'
-              } ${
-                isLadCritical
-                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
-                  : isLadBorderline
-                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
-                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isLadCritical
-                    ? 'bg-rose-500 animate-ping'
-                    : isLadBorderline
-                    ? 'bg-amber-400'
-                    : 'bg-emerald-400'
-                }`}
-              />
-              <span className="tracking-tight">LAD · {ladRiskText}</span>
-            </button>
+            <VesselLabel
+              vesselKey="vessel_LAD"
+              code="LAD"
+              riskDotColor={ladColorHex}
+              riskText={ladRiskText}
+              placement="below"
+              isSelected={isLadSelected}
+              onSelect={() => handleSelectVessel('vessel_LAD')}
+              onPointerOver={() => handlePointerOver('vessel_LAD')}
+              onPointerOut={handlePointerOut}
+            />
           </Html>
         </mesh>
 
@@ -545,44 +541,24 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             transparent={false}
           />
 
-          {/* Step 3: Floating Drei <Html> Callout Badge for LCX */}
+          {/* Step 3: Floating Callout Badge for LCX */}
           <Html
             position={lcxBadgePos}
             center
             distanceFactor={2.4}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectVessel('vessel_LCX');
-              }}
-              onMouseEnter={() => handlePointerOver('vessel_LCX')}
-              onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-md whitespace-nowrap hover:scale-110 active:scale-95 ${
-                isLcxSelected
-                  ? 'ring-1.5 ring-white shadow-cyan-500/50 scale-105'
-                  : 'hover:border-cyan-400/80'
-              } ${
-                isLcxCritical
-                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
-                  : isLcxBorderline
-                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
-                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isLcxCritical
-                    ? 'bg-rose-500 animate-ping'
-                    : isLcxBorderline
-                    ? 'bg-amber-400'
-                    : 'bg-emerald-400'
-                }`}
-              />
-              <span className="tracking-tight">LCX · {lcxRiskText}</span>
-            </button>
+            <VesselLabel
+              vesselKey="vessel_LCX"
+              code="LCX"
+              riskDotColor={lcxColorHex}
+              riskText={lcxRiskText}
+              placement="right"
+              isSelected={isLcxSelected}
+              onSelect={() => handleSelectVessel('vessel_LCX')}
+              onPointerOver={() => handlePointerOver('vessel_LCX')}
+              onPointerOut={handlePointerOut}
+            />
           </Html>
         </mesh>
 
@@ -620,44 +596,24 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             transparent={false}
           />
 
-          {/* Step 3: Floating Drei <Html> Callout Badge for RCA */}
+          {/* Step 3: Floating Callout Badge for RCA */}
           <Html
             position={rcaBadgePos}
             center
             distanceFactor={2.4}
             style={{ pointerEvents: 'auto', userSelect: 'none' }}
           >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectVessel('vessel_RCA');
-              }}
-              onMouseEnter={() => handlePointerOver('vessel_RCA')}
-              onMouseLeave={handlePointerOut}
-              className={`group flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-md whitespace-nowrap hover:scale-110 active:scale-95 ${
-                isRcaSelected
-                  ? 'ring-1.5 ring-white shadow-cyan-500/50 scale-105'
-                  : 'hover:border-cyan-400/80'
-              } ${
-                isRcaCritical
-                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
-                  : isRcaBorderline
-                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
-                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isRcaCritical
-                    ? 'bg-rose-500 animate-ping'
-                    : isRcaBorderline
-                    ? 'bg-amber-400'
-                    : 'bg-emerald-400'
-                }`}
-              />
-              <span className="tracking-tight">RCA · {rcaRiskText}</span>
-            </button>
+            <VesselLabel
+              vesselKey="vessel_RCA"
+              code="RCA"
+              riskDotColor={rcaColorHex}
+              riskText={rcaRiskText}
+              placement="left"
+              isSelected={isRcaSelected}
+              onSelect={() => handleSelectVessel('vessel_RCA')}
+              onPointerOver={() => handlePointerOver('vessel_RCA')}
+              onPointerOut={handlePointerOut}
+            />
           </Html>
         </mesh>
       </primitive>
