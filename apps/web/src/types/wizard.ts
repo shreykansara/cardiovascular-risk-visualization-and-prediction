@@ -90,6 +90,8 @@ export interface TechnicalReportData {
         shap_value: number;
         input_value?: string | number;
         patient_value?: string | number;
+        feature_value?: string | number;
+        value?: string | number;
         direction: 'INCREASES_RISK' | 'DECREASES_RISK';
       }>;
     }>;

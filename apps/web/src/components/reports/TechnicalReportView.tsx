@@ -2,12 +2,123 @@ import React from 'react';
 import type { TechnicalReportData } from '../../types/wizard';
 import { RiskLabel } from '../ui/RiskLabel';
 import { riskLabel } from '../../config/riskBands';
+import { useWizardStore } from '../../store/useWizardStore';
+import { FEATURE_SCHEMA } from '../../config/featureSchema';
 
 interface TechnicalReportViewProps {
   report: TechnicalReportData;
 }
 
+function getResolvedPatientValue(
+  f: {
+    feature: string;
+    patient_value?: string | number;
+    input_value?: string | number;
+    feature_value?: string | number;
+    value?: string | number;
+  },
+  report: TechnicalReportData,
+  inputs?: Record<string, any>
+): string {
+  // 1. Direct explicit non-empty, non-dash value in feature item
+  for (const candidate of [f.patient_value, (f as any).feature_value, (f as any).value, f.input_value]) {
+    if (candidate !== undefined && candidate !== null) {
+      const s = String(candidate).trim();
+      if (s !== '' && s !== '—' && s !== '-') {
+        return s;
+      }
+    }
+  }
+
+  const featLower = (f.feature || '').toLowerCase();
+
+  // 2. Look up from report.input_parameters groups
+  if (report.input_parameters?.groups) {
+    for (const grp of report.input_parameters.groups) {
+      for (const p of grp.parameters) {
+        const pLower = p.name.toLowerCase();
+        const isMatch =
+          featLower.includes(pLower) ||
+          pLower.includes(featLower) ||
+          (pLower === 'typical chest pain' && featLower.includes('typical')) ||
+          (pLower === 'region rwma' && (featLower.includes('rwma') || featLower.includes('wall motion'))) ||
+          (pLower === 'ef-tte' && (featLower.includes('ejection') || featLower.includes('ef'))) ||
+          (pLower === 'st elevation' && featLower.includes('st elevation')) ||
+          (pLower === 'st depression' && featLower.includes('st depression')) ||
+          (pLower === 'tinversion' && (featLower.includes('t-wave') || featLower.includes('tinversion'))) ||
+          (pLower === 'htn' && (featLower.includes('hypertension') || featLower.includes('htn'))) ||
+          (pLower === 'dm' && (featLower.includes('diabetes') || featLower.includes('dm'))) ||
+          (pLower === 'current smoker' && (featLower.includes('smoker') || featLower.includes('tobacco')));
+
+        if (isMatch && p.value !== undefined && p.value !== null && String(p.value).trim() !== '' && String(p.value).trim() !== '—') {
+          return p.unit ? `${p.value} ${p.unit}`.trim() : String(p.value);
+        }
+      }
+    }
+  }
+
+  // 3. Fallback to wizard store inputs
+  if (inputs) {
+    for (const def of FEATURE_SCHEMA) {
+      const keyLower = def.key.toLowerCase();
+      const labelLower = def.label.toLowerCase();
+      const isMatch =
+        featLower.includes(keyLower) ||
+        featLower.includes(labelLower) ||
+        keyLower.includes(featLower) ||
+        (def.key === 'Typical Chest Pain' && featLower.includes('typical')) ||
+        (def.key === 'Region RWMA' && (featLower.includes('rwma') || featLower.includes('wall motion'))) ||
+        (def.key === 'EF-TTE' && (featLower.includes('ejection') || featLower.includes('ef'))) ||
+        (def.key === 'St Elevation' && featLower.includes('st elevation')) ||
+        (def.key === 'St Depression' && featLower.includes('st depression')) ||
+        (def.key === 'Tinversion' && (featLower.includes('t-wave') || featLower.includes('tinversion'))) ||
+        (def.key === 'HTN' && (featLower.includes('hypertension') || featLower.includes('htn'))) ||
+        (def.key === 'DM' && (featLower.includes('diabetes') || featLower.includes('dm'))) ||
+        (def.key === 'Current Smoker' && (featLower.includes('smoker') || featLower.includes('tobacco'))) ||
+        (def.key === 'EX-Smoker' && featLower.includes('ex-smoker')) ||
+        (def.key === 'FH' && featLower.includes('family history')) ||
+        (def.key === 'Obesity' && featLower.includes('obesity')) ||
+        (def.key === 'CRF' && (featLower.includes('renal') || featLower.includes('crf'))) ||
+        (def.key === 'CVA' && (featLower.includes('stroke') || featLower.includes('cva'))) ||
+        (def.key === 'Function Class' && (featLower.includes('functional class') || featLower.includes('nyha')));
+
+      if (isMatch) {
+        const val = inputs[def.key];
+        if (val !== undefined && val !== null && String(val).trim() !== '') {
+          const valStr = String(val);
+          if (def.key === 'Region RWMA') {
+            const rwmaMap: Record<string, string> = {
+              '0': 'Normal (0)',
+              '1': 'Anterior (1)',
+              '2': 'Inferior (2)',
+              '3': 'Lateral (3)',
+              '4': 'Septal (4)',
+            };
+            return rwmaMap[valStr] || valStr;
+          }
+          if (['DM', 'HTN', 'Current Smoker', 'EX-Smoker', 'FH', 'Edema', 'Typical Chest Pain', 'Q Wave', 'St Elevation', 'St Depression', 'Tinversion'].includes(def.key)) {
+            return valStr === '1' ? 'Present (1)' : 'Absent (0)';
+          }
+          if (['Obesity', 'CRF', 'CVA', 'Airway disease', 'Thyroid Disease', 'CHF', 'DLP', 'Weak Peripheral Pulse', 'Lung rales', 'Systolic Murmur', 'Diastolic Murmur', 'Dyspnea', 'Atypical', 'Nonanginal', 'Exertional CP', 'LowTH Ang', 'LVH', 'Poor R Progression'].includes(def.key)) {
+            return (valStr === 'Y' || valStr === '1') ? 'Present (Yes)' : 'Absent (No)';
+          }
+          if (def.key === 'Function Class') {
+            return valStr !== '0' ? `Class ${valStr}` : 'Class 0';
+          }
+          if (def.unit) {
+            return `${valStr} ${def.unit}`.trim();
+          }
+          return valStr;
+        }
+      }
+    }
+  }
+
+  return '—';
+}
+
 export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report }) => {
+  const storeInputs = useWizardStore((s) => s.inputs);
   return (
     <article
       id="printable-report-sheet"
@@ -234,12 +345,8 @@ export const TechnicalReportView: React.FC<TechnicalReportViewProps> = ({ report
                 {tgt.top_features.map((f, fIdx) => (
                   <tr key={fIdx} style={{ borderBottom: '1px solid var(--s-bd)' }}>
                     <td style={{ fontFamily: 'var(--fs)', padding: '6px 0', color: 'var(--s-ink)', fontWeight: 500 }}>{f.feature}</td>
-                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--s-mut)' }}>
-                      {(f.patient_value !== undefined && f.patient_value !== null && String(f.patient_value).trim() !== '')
-                        ? String(f.patient_value)
-                        : (f.input_value !== undefined && f.input_value !== null && String(f.input_value).trim() !== '')
-                        ? String(f.input_value)
-                        : '—'}
+                    <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--s-ink)', fontWeight: 500 }}>
+                      {getResolvedPatientValue(f, report, storeInputs)}
                     </td>
                     <td style={{ fontFamily: 'var(--fs)', padding: '6px 0 6px 8px', color: 'var(--s-ink)' }}>
                       {f.direction === 'INCREASES_RISK' || f.shap_value > 0 ? 'Raises probability' : 'Lowers probability'}

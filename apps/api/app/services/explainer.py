@@ -202,23 +202,46 @@ def explain_patient(
         phi_val = float(shap_vec[idx])
 
         # Retrieve observed value from patient schema
-        base_col = raw_name.replace("num__", "").replace("cat__", "").split("_")[0]
-        raw_val = patient_dict.get(base_col)
+        if raw_name.startswith("num__"):
+            base_col = raw_name[5:]
+        elif raw_name.startswith("cat__"):
+            base_col = raw_name[5:].rsplit("_", 1)[0]
+        else:
+            base_col = raw_name
+
+        def _lookup_patient_val(p_dict: dict[str, Any], col: str) -> Any:
+            for cand in [
+                col,
+                col.replace(" ", "_"),
+                col.replace("_", " "),
+                col.replace("-", "_"),
+                col.replace("_", "-"),
+            ]:
+                if cand in p_dict and p_dict[cand] is not None:
+                    return p_dict[cand]
+            norm = col.lower().replace("_", "").replace(" ", "").replace("-", "")
+            for k, v in p_dict.items():
+                if k.lower().replace("_", "").replace(" ", "").replace("-", "") == norm and v is not None:
+                    return v
+            return None
+
+        raw_val = _lookup_patient_val(patient_dict, base_col)
         if raw_val is not None:
             if raw_name.startswith("num__"):
                 obs_val = f"{raw_val} {unit}".strip() if unit else str(raw_val)
             else:
                 val_str = str(raw_val)
-                if base_col == "Region RWMA":
+                col_key = base_col.replace("_", " ")
+                if col_key == "Region RWMA":
                     rwma_map = {"0": "Normal (0)", "1": "Anterior (1)", "2": "Inferior (2)", "3": "Lateral (3)", "4": "Septal (4)"}
                     obs_val = rwma_map.get(val_str, val_str)
-                elif base_col in ("DM", "HTN", "Current Smoker", "EX-Smoker", "FH", "Edema", "Typical Chest Pain", "Q Wave", "St Elevation", "St Depression", "Tinversion"):
+                elif col_key in ("DM", "HTN", "Current Smoker", "EX-Smoker", "FH", "Edema", "Typical Chest Pain", "Q Wave", "St Elevation", "St Depression", "Tinversion"):
                     obs_val = "Present (1)" if val_str == "1" else "Absent (0)"
-                elif base_col in ("Obesity", "CRF", "CVA", "Airway disease", "Thyroid Disease", "CHF", "DLP", "Weak Peripheral Pulse", "Lung rales", "Systolic Murmur", "Diastolic Murmur", "Dyspnea", "Atypical", "Nonanginal", "Exertional CP", "LowTH Ang", "LVH", "Poor R Progression"):
-                    obs_val = "Present (Yes)" if val_str == "Y" else "Absent (No)"
-                elif base_col == "Function Class":
+                elif col_key in ("Obesity", "CRF", "CVA", "Airway disease", "Thyroid Disease", "CHF", "DLP", "Weak Peripheral Pulse", "Lung rales", "Systolic Murmur", "Diastolic Murmur", "Dyspnea", "Atypical", "Nonanginal", "Exertional CP", "LowTH Ang", "LVH", "Poor R Progression"):
+                    obs_val = "Present (Yes)" if val_str in ("Y", "1") else "Absent (No)"
+                elif col_key == "Function Class":
                     obs_val = f"Class {val_str}" if val_str != "0" else "Class 0"
-                elif base_col in ("BBB", "VHD"):
+                elif col_key in ("BBB", "VHD"):
                     obs_val = "None" if val_str == "N" else val_str
                 else:
                     obs_val = val_str

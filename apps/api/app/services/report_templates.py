@@ -107,15 +107,59 @@ def build_compact_context(
             fname = f.get("clinical_label") or f.get("feature") or f.get("feature_name", "")
             raw_v = None
             for k in ["feature_value", "patient_value", "input_value", "value"]:
-                if k in f and f[k] is not None and str(f[k]).strip() != "":
+                if k in f and f[k] is not None and str(f[k]).strip() not in ("", "—", "-"):
                     raw_v = f[k]
                     break
-            if raw_v is None:
+
+            if raw_v is None or str(raw_v).strip() in ("", "—", "-"):
                 feat_key = f.get("feature_name") or f.get("feature", "")
-                base_k = feat_key.replace("num__", "").replace("cat__", "").split("_")[0]
-                if base_k in patient_data and patient_data[base_k] is not None:
-                    raw_v = patient_data[base_k]
-            val = str(raw_v) if raw_v is not None else "—"
+                if feat_key.startswith("num__"):
+                    base_k = feat_key[5:]
+                elif feat_key.startswith("cat__"):
+                    base_k = feat_key[5:].rsplit("_", 1)[0]
+                else:
+                    base_k = feat_key
+
+                found_val = None
+                for cand in [
+                    base_k,
+                    base_k.replace(" ", "_"),
+                    base_k.replace("_", " "),
+                    base_k.replace("-", "_"),
+                    base_k.replace("_", "-"),
+                ]:
+                    if cand in patient_data and patient_data[cand] is not None:
+                        found_val = patient_data[cand]
+                        break
+
+                if found_val is None:
+                    norm = base_k.lower().replace("_", "").replace(" ", "").replace("-", "")
+                    for pk, pv in patient_data.items():
+                        if pk.lower().replace("_", "").replace(" ", "").replace("-", "") == norm and pv is not None:
+                            found_val = pv
+                            break
+
+                if found_val is not None:
+                    v_str = str(found_val)
+                    bk_clean = base_k.replace("_", " ")
+                    if bk_clean == "Region RWMA":
+                        rwma_map = {"0": "Normal (0)", "1": "Anterior (1)", "2": "Inferior (2)", "3": "Lateral (3)", "4": "Septal (4)"}
+                        raw_v = rwma_map.get(v_str, v_str)
+                    elif bk_clean in ("DM", "HTN", "Current Smoker", "EX-Smoker", "FH", "Edema", "Typical Chest Pain", "Q Wave", "St Elevation", "St Depression", "Tinversion"):
+                        raw_v = "Present (1)" if v_str == "1" else "Absent (0)"
+                    elif bk_clean in ("Obesity", "CRF", "CVA", "Airway disease", "Thyroid Disease", "CHF", "DLP", "Weak Peripheral Pulse", "Lung rales", "Systolic Murmur", "Diastolic Murmur", "Dyspnea", "Atypical", "Nonanginal", "Exertional CP", "LowTH Ang", "LVH", "Poor R Progression"):
+                        raw_v = "Present (Yes)" if v_str in ("Y", "1") else "Absent (No)"
+                    elif bk_clean == "Function Class":
+                        raw_v = f"Class {v_str}" if v_str != "0" else "Class 0"
+                    elif bk_clean in ("BBB", "VHD"):
+                        raw_v = "None" if v_str == "N" else v_str
+                    elif bk_clean in REFERENCE_RANGES:
+                        unit = REFERENCE_RANGES[bk_clean][2]
+                        raw_v = f"{v_str} {unit}".strip() if unit else v_str
+                    else:
+                        raw_v = v_str
+
+            val = str(raw_v) if (raw_v is not None and str(raw_v).strip() not in ("", "—", "-")) else "—"
 
             raw_impact = f.get("impact") or f.get("direction")
             raw_mag = f.get("shap_value") if f.get("shap_value") is not None else f.get("magnitude", 0.0)
