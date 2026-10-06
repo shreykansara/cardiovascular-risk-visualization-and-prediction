@@ -51,6 +51,7 @@
     "pdf-parse": "^2.4.5",
     "playwright-core": "^1.63.0",
     "postcss": "^8.4.35",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.6"
