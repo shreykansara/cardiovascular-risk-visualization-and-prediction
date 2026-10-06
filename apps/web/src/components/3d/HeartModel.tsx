@@ -14,14 +14,10 @@
 
 import React, { useRef, useMemo, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { usePatientStore } from '../../store/usePatientStore';
-
-const LAD_NORMAL = new THREE.Vector3(-0.2, 0.1, 0.95).normalize();
-const LCX_NORMAL = new THREE.Vector3(0.85, 0.1, -0.4).normalize();
-const RCA_NORMAL = new THREE.Vector3(-0.85, 0.1, 0.45).normalize();
 
 interface HeartModelProps {
   onHoverVessel?: (vesselName: string | null) => void;
@@ -355,7 +351,7 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
   const lcxRiskText = `${(lcxProb * 100).toFixed(1)}%`;
   const rcaRiskText = `${(rcaProb * 100).toFixed(1)}%`;
 
-  // Dynamic 60fps frame loop: synchronized resting heartbeat pulse
+  // Dynamic 60fps frame loop: synchronized resting heartbeat pulse on critical vessels
   useFrame(({ clock }) => {
     const elapsed = clock.getElapsedTime();
     const pulse = (Math.sin(elapsed * 7.54) + 1.0) * 0.5;
@@ -450,6 +446,46 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             depthWrite={true}
             transparent={false}
           />
+
+          {/* Step 3: Floating Drei <Html> Callout Badge for LAD */}
+          <Html
+            position={ladBadgePos}
+            center
+            distanceFactor={3.5}
+            style={{ pointerEvents: 'auto', userSelect: 'none' }}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelectVessel('vessel_LAD');
+              }}
+              onMouseEnter={() => handlePointerOver('vessel_LAD')}
+              onMouseLeave={handlePointerOut}
+              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
+                isLadSelected
+                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
+                  : 'hover:border-cyan-400/80'
+              } ${
+                isLadCritical
+                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
+                  : isLadBorderline
+                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
+                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isLadCritical
+                    ? 'bg-rose-500 animate-ping'
+                    : isLadBorderline
+                    ? 'bg-amber-400'
+                    : 'bg-emerald-400'
+                }`}
+              />
+              <span className="tracking-wide">LAD · {ladRiskText}</span>
+            </button>
+          </Html>
         </mesh>
 
         {/* ======================= LCX ARTERY ======================= */}
@@ -482,6 +518,46 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             depthWrite={true}
             transparent={false}
           />
+
+          {/* Step 3: Floating Drei <Html> Callout Badge for LCX */}
+          <Html
+            position={lcxBadgePos}
+            center
+            distanceFactor={3.5}
+            style={{ pointerEvents: 'auto', userSelect: 'none' }}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelectVessel('vessel_LCX');
+              }}
+              onMouseEnter={() => handlePointerOver('vessel_LCX')}
+              onMouseLeave={handlePointerOut}
+              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
+                isLcxSelected
+                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
+                  : 'hover:border-cyan-400/80'
+              } ${
+                isLcxCritical
+                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
+                  : isLcxBorderline
+                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
+                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isLcxCritical
+                    ? 'bg-rose-500 animate-ping'
+                    : isLcxBorderline
+                    ? 'bg-amber-400'
+                    : 'bg-emerald-400'
+                }`}
+              />
+              <span className="tracking-wide">LCX · {lcxRiskText}</span>
+            </button>
+          </Html>
         </mesh>
 
         {/* ======================= RCA ARTERY ======================= */}
@@ -514,6 +590,46 @@ export const HeartModel: React.FC<HeartModelProps> = ({ onHoverVessel }) => {
             depthWrite={true}
             transparent={false}
           />
+
+          {/* Step 3: Floating Drei <Html> Callout Badge for RCA */}
+          <Html
+            position={rcaBadgePos}
+            center
+            distanceFactor={3.5}
+            style={{ pointerEvents: 'auto', userSelect: 'none' }}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelectVessel('vessel_RCA');
+              }}
+              onMouseEnter={() => handlePointerOver('vessel_RCA')}
+              onMouseLeave={handlePointerOut}
+              className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium backdrop-blur-md transition-all duration-200 cursor-pointer shadow-lg hover:scale-110 active:scale-95 ${
+                isRcaSelected
+                  ? 'ring-2 ring-white shadow-cyan-500/50 scale-105'
+                  : 'hover:border-cyan-400/80'
+              } ${
+                isRcaCritical
+                  ? 'bg-rose-950/85 border border-rose-500/70 text-rose-200 shadow-rose-900/40'
+                  : isRcaBorderline
+                  ? 'bg-amber-950/85 border border-amber-500/70 text-amber-200 shadow-amber-900/40'
+                  : 'bg-emerald-950/85 border border-emerald-500/70 text-emerald-200 shadow-emerald-900/40'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isRcaCritical
+                    ? 'bg-rose-500 animate-ping'
+                    : isRcaBorderline
+                    ? 'bg-amber-400'
+                    : 'bg-emerald-400'
+                }`}
+              />
+              <span className="tracking-wide">RCA · {rcaRiskText}</span>
+            </button>
+          </Html>
         </mesh>
       </primitive>
     </group>

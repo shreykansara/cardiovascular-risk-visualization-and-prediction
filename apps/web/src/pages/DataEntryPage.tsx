@@ -285,10 +285,7 @@ export const DataEntryPage: React.FC = () => {
   };
 
   return (
-    <div
-      className="w-full flex-1 flex flex-col relative"
-      style={{ paddingBottom: '72px' }}
-    >
+    <div className="w-full flex-1 flex flex-col relative">
       {/* Predict Transition Overlay */}
       {isTransitioning && (
         <div
@@ -508,6 +505,7 @@ export const DataEntryPage: React.FC = () => {
           gap: '14px',
           alignItems: 'flex-start',
           width: '100%',
+          paddingBottom: '24px',
         }}
       >
         {/* Task 4.3 Sidebar (>=900px, sticky top 72px, wipe --i: 1) */}
@@ -777,11 +775,12 @@ export const DataEntryPage: React.FC = () => {
           position: 'sticky',
           bottom: 0,
           zIndex: 5,
-          width: '100%',
+          width: 'calc(100% + 32px)',
           backgroundColor: 'var(--panel)',
           borderTop: '1px solid var(--bd)',
           marginLeft: '-16px',
           marginRight: '-16px',
+          marginBottom: '-16px',
           paddingLeft: '16px',
           paddingRight: '16px',
         }}
