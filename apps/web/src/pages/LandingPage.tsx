@@ -136,11 +136,11 @@ export const LandingPage: React.FC = () => {
       {/* ======================================================== */}
       {/* HERO BAND                                                */}
       {/* ======================================================== */}
-      <Band className="hero-band" style={{ padding: '48px 0 56px' }}>
+      <Band className="hero-band" style={{ padding: '42px 0 48px' }}>
         <Container>
           <div className="hero-layout-grid">
             {/* LEFT / CONTENT COLUMN */}
-            <div className="hero-text-col wipe" style={{ '--i': 0 } as React.CSSProperties}>
+            <div className="hero-text-col fade-up" style={{ '--i': 0 } as React.CSSProperties}>
               {/* Task 4.1: H1 */}
               <h1 className="hero-h1">{LANDING_COPY.hero.title}</h1>
 
@@ -152,19 +152,19 @@ export const LandingPage: React.FC = () => {
                 <PrimaryButton
                   size="lg"
                   onClick={handleStartAssessment}
-                  className="hero-start-btn"
+                  className="hero-start-btn interactive-btn"
+                  rightIcon={<ArrowRight size={16} className="btn-arrow-icon" />}
                 >
-                  <span>{LANDING_COPY.hero.startAssessment}</span>
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                  {LANDING_COPY.hero.startAssessment}
                 </PrimaryButton>
 
                 <SecondaryButton
                   size="lg"
                   onClick={handleScrollToHowItWorks}
-                  className="hero-how-btn"
+                  className="hero-how-btn interactive-btn"
+                  rightIcon={<ChevronDown size={16} />}
                 >
-                  <span>{LANDING_COPY.hero.howItWorks}</span>
-                  <ChevronDown className="w-4 h-4 ml-1.5" />
+                  {LANDING_COPY.hero.howItWorks}
                 </SecondaryButton>
               </div>
 
@@ -198,9 +198,9 @@ export const LandingPage: React.FC = () => {
                     size="sm"
                     onClick={handleOpenSampleInApp}
                     className="sample-open-btn"
+                    rightIcon={<ArrowRight size={14} className="btn-arrow-icon" />}
                   >
-                    <span>{LANDING_COPY.hero.sampleBlock.openInApp}</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    {LANDING_COPY.hero.sampleBlock.openInApp}
                   </QuietButton>
                 </div>
 
@@ -209,7 +209,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* RIGHT / 3D HEART COLUMN */}
-            <div className="hero-heart-col wipe" style={{ '--i': 1 } as React.CSSProperties}>
+            <div className="hero-heart-col scale-in" style={{ '--i': 1 } as React.CSSProperties}>
               {/* Task 4.6: Heart Panel */}
               <div className="heart-panel-container">
                 <Suspense
@@ -248,12 +248,12 @@ export const LandingPage: React.FC = () => {
 
               {/* Task 4.10: Readout Card */}
               <Panel
-                className="readout-card"
+                className="readout-card hover-lift"
                 aria-live="polite"
                 style={{
-                  minHeight: '112px',
-                  padding: '12px 14px',
-                  marginTop: '12px',
+                  minHeight: '104px',
+                  padding: '13px 16px',
+                  marginTop: '10px',
                 }}
               >
                 {/* Row 1: Name and Probability with RiskLabel */}
@@ -299,9 +299,9 @@ export const LandingPage: React.FC = () => {
       {/* ======================================================== */}
       {/* PHASE 5: HOW IT WORKS                                    */}
       {/* ======================================================== */}
-      <Band variant="alt" id="how-it-works">
+      <Band variant="alt" id="how-it-works" style={{ padding: '56px 0' }}>
         <Container>
-          <Reveal>
+          <Reveal variant="fade-up">
             <h2 id="how-it-works-h2" tabIndex={-1} className="section-h2">
               {LANDING_COPY.howItWorks.heading}
             </h2>
@@ -312,14 +312,16 @@ export const LandingPage: React.FC = () => {
                 const IconComponent =
                   idx === 0 ? ClipboardList : idx === 1 ? Heart : FileText;
                 return (
-                  <Panel key={step.number} className="step-panel">
-                    <div className="flex items-center justify-between">
-                      <div className="step-number-box">{step.number}</div>
-                      <IconComponent className="w-5 h-5 text-[var(--acc)]" />
-                    </div>
-                    <h3 className="step-title">{step.title}</h3>
-                    <p className="step-desc">{step.description}</p>
-                  </Panel>
+                  <Reveal key={step.number} staggerIndex={idx} variant="fade-up">
+                    <Panel className="step-panel hover-lift">
+                      <div className="flex items-center justify-between">
+                        <div className="step-number-box">{step.number}</div>
+                        <IconComponent className="w-5 h-5 text-[var(--acc)]" />
+                      </div>
+                      <h3 className="step-title">{step.title}</h3>
+                      <p className="step-desc">{step.description}</p>
+                    </Panel>
+                  </Reveal>
                 );
               })}
             </div>
@@ -330,9 +332,9 @@ export const LandingPage: React.FC = () => {
       {/* ======================================================== */}
       {/* PHASE 6: WHAT YOU GET                                    */}
       {/* ======================================================== */}
-      <Band id="what-you-get">
+      <Band id="what-you-get" style={{ padding: '56px 0' }}>
         <Container>
-          <Reveal>
+          <Reveal variant="fade-up">
             <h2 id="what-you-get-h2" tabIndex={-1} className="section-h2">
               {LANDING_COPY.whatYouGet.heading}
             </h2>
@@ -346,7 +348,7 @@ export const LandingPage: React.FC = () => {
                 </div>
                 <div className="what-preview-col">
                   <div {...({ inert: '' } as any)} aria-hidden="true">
-                    <Panel className="what-preview-panel flex flex-col justify-center">
+                    <Panel className="what-preview-panel hover-lift flex flex-col justify-center">
                       <VesselCard
                         vesselKey="lad"
                         vesselCode="LAD"
@@ -417,7 +419,7 @@ export const LandingPage: React.FC = () => {
               <div className="what-row what-row-even">
                 <div className="what-preview-col">
                   <div {...({ inert: '' } as any)} aria-hidden="true">
-                    <Panel className="what-preview-panel flex flex-col justify-center gap-3 px-4">
+                    <Panel className="what-preview-panel hover-lift flex flex-col justify-center gap-3 px-4">
                       {LANDING_COPY.whatYouGet.rows[1].exampleFactors.map((f) => (
                         <div key={f.name} className="flex flex-col gap-1">
                           <div className="flex items-center justify-between text-[12px] font-[var(--fs)]">
@@ -451,104 +453,104 @@ export const LandingPage: React.FC = () => {
                 <div className="what-preview-col">
                   <div {...({ inert: '' } as any)} aria-hidden="true">
                     <Panel
-                      className="what-preview-panel !p-0"
+                      className="what-preview-panel hover-lift !p-0"
                       style={{
                         backgroundColor: 'var(--s-bg)',
                         border: '1px solid var(--s-bd)',
                         borderRadius: '3px',
                       }}
                     >
-                    <div style={{ padding: '14px 16px' }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'baseline',
-                          borderBottom: '1px solid var(--s-bd)',
-                          paddingBottom: '6px',
-                          marginBottom: '8px',
-                        }}
-                      >
-                        <span
+                      <div style={{ padding: '14px 16px' }}>
+                        <div
                           style={{
-                            fontFamily: 'var(--fs)',
-                            fontSize: '13px',
-                            fontWeight: 600,
-                            color: 'var(--s-ink)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'baseline',
+                            borderBottom: '1px solid var(--s-bd)',
+                            paddingBottom: '6px',
+                            marginBottom: '8px',
                           }}
                         >
-                          Clinician report
-                        </span>
-                        <span
-                          style={{
-                            fontFamily: 'var(--fm)',
-                            fontSize: '11px',
-                            color: 'var(--s-mut)',
-                          }}
-                        >
-                          Model outputs
-                        </span>
-                      </div>
-                      <table
-                        style={{
-                          width: '100%',
-                          borderCollapse: 'collapse',
-                          fontSize: '11px',
-                          fontFamily: 'var(--fs)',
-                        }}
-                      >
-                        <thead>
-                          <tr
+                          <span
                             style={{
-                              borderBottom: '1px solid var(--s-bd)',
-                              color: 'var(--s-mut)',
-                              textAlign: 'left',
+                              fontFamily: 'var(--fs)',
+                              fontSize: '13px',
+                              fontWeight: 600,
+                              color: 'var(--s-ink)',
                             }}
                           >
-                            <th style={{ padding: '4px 0', fontWeight: 500 }}>Target</th>
-                            <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
-                              Probability
-                            </th>
-                            <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
-                              Risk band
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
-                            <td style={{ padding: '4px 0', fontWeight: 500 }}>CAD</td>
-                            <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
-                              94.4%
-                            </td>
-                            <td style={{ padding: '4px 0', textAlign: 'right' }}>High</td>
-                          </tr>
-                          <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
-                            <td style={{ padding: '4px 0', fontWeight: 500 }}>LAD</td>
-                            <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
-                              91.0%
-                            </td>
-                            <td style={{ padding: '4px 0', textAlign: 'right' }}>High</td>
-                          </tr>
-                          <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
-                            <td style={{ padding: '4px 0', fontWeight: 500 }}>LCX</td>
-                            <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
-                              24.4%
-                            </td>
-                            <td style={{ padding: '4px 0', textAlign: 'right' }}>Low</td>
-                          </tr>
-                          <tr style={{ color: 'var(--s-ink)' }}>
-                            <td style={{ padding: '4px 0', fontWeight: 500 }}>RCA</td>
-                            <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
-                              22.8%
-                            </td>
-                            <td style={{ padding: '4px 0', textAlign: 'right' }}>Low</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </Panel>
-                </div>
-                <span className="what-caption">{LANDING_COPY.whatYouGet.rows[2].caption}</span>
+                            Clinician report
+                          </span>
+                          <span
+                            style={{
+                              fontFamily: 'var(--fm)',
+                              fontSize: '11px',
+                              color: 'var(--s-mut)',
+                            }}
+                          >
+                            Model outputs
+                          </span>
+                        </div>
+                        <table
+                          style={{
+                            width: '100%',
+                            borderCollapse: 'collapse',
+                            fontSize: '11px',
+                            fontFamily: 'var(--fs)',
+                          }}
+                        >
+                          <thead>
+                            <tr
+                              style={{
+                                borderBottom: '1px solid var(--s-bd)',
+                                color: 'var(--s-mut)',
+                                textAlign: 'left',
+                              }}
+                            >
+                              <th style={{ padding: '4px 0', fontWeight: 500 }}>Target</th>
+                              <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
+                                Probability
+                              </th>
+                              <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
+                                Risk band
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
+                              <td style={{ padding: '4px 0', fontWeight: 500 }}>CAD</td>
+                              <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
+                                94.4%
+                              </td>
+                              <td style={{ padding: '4px 0', textAlign: 'right' }}>High</td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
+                              <td style={{ padding: '4px 0', fontWeight: 500 }}>LAD</td>
+                              <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
+                                91.0%
+                              </td>
+                              <td style={{ padding: '4px 0', textAlign: 'right' }}>High</td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid var(--s-bd)', color: 'var(--s-ink)' }}>
+                              <td style={{ padding: '4px 0', fontWeight: 500 }}>LCX</td>
+                              <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
+                                24.4%
+                              </td>
+                              <td style={{ padding: '4px 0', textAlign: 'right' }}>Low</td>
+                            </tr>
+                            <tr style={{ color: 'var(--s-ink)' }}>
+                              <td style={{ padding: '4px 0', fontWeight: 500 }}>RCA</td>
+                              <td style={{ padding: '4px 0', textAlign: 'right', fontFamily: 'var(--fm)' }}>
+                                22.8%
+                              </td>
+                              <td style={{ padding: '4px 0', textAlign: 'right' }}>Low</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </Panel>
+                  </div>
+                  <span className="what-caption">{LANDING_COPY.whatYouGet.rows[2].caption}</span>
                 </div>
               </div>
             </div>
@@ -562,9 +564,9 @@ export const LandingPage: React.FC = () => {
       {/* ======================================================== */}
       {/* PHASE 6: ABOUT THE RESULTS                               */}
       {/* ======================================================== */}
-      <Band variant="alt" id="about">
+      <Band variant="alt" id="about" style={{ padding: '56px 0' }}>
         <Container>
-          <Reveal>
+          <Reveal variant="fade-up">
             <h2 id="about-h2" tabIndex={-1} className="section-h2">
               {LANDING_COPY.about.heading}
             </h2>
@@ -594,11 +596,12 @@ export const LandingPage: React.FC = () => {
               {/* Right Column: Decision support disclaimer block from Welcome */}
               <div className="about-disclaimer-col">
                 <div
+                  className="hover-lift"
                   style={{
                     border: '1px solid var(--bd)',
                     borderRadius: 'var(--radius)',
                     backgroundColor: 'var(--panel)',
-                    padding: '16px',
+                    padding: '18px 20px',
                   }}
                 >
                   <div
@@ -607,7 +610,7 @@ export const LandingPage: React.FC = () => {
                       fontSize: '13px',
                       fontWeight: 600,
                       color: 'var(--ink)',
-                      marginBottom: '4px',
+                      marginBottom: '6px',
                     }}
                   >
                     {LANDING_COPY.about.disclaimer.heading}
@@ -616,7 +619,7 @@ export const LandingPage: React.FC = () => {
                     style={{
                       fontFamily: 'var(--fs)',
                       fontSize: '13px',
-                      lineHeight: 1.45,
+                      lineHeight: 1.5,
                       color: 'var(--ink)',
                       margin: 0,
                     }}
@@ -633,32 +636,32 @@ export const LandingPage: React.FC = () => {
       {/* ======================================================== */}
       {/* PHASE 6: FINAL CALL TO ACTION                            */}
       {/* ======================================================== */}
-      <Band className="final-cta-band">
+      <Band className="final-cta-band" style={{ padding: '52px 0' }}>
         <Container>
-          <Reveal>
+          <Reveal variant="fade-up">
             <div className="final-cta-box">
               <h2 className="final-cta-h2">{LANDING_COPY.cta.heading}</h2>
               <p className="final-cta-sub">{LANDING_COPY.cta.text}</p>
               <PrimaryButton
                 size="lg"
                 onClick={handleStartAssessment}
-                className="final-cta-btn"
+                className="final-cta-btn interactive-btn"
+                rightIcon={<ArrowRight size={16} className="btn-arrow-icon" />}
               >
-                <span>{LANDING_COPY.cta.button}</span>
-                <ArrowRight className="w-4 h-4 ml-1.5" />
+                {LANDING_COPY.cta.button}
               </PrimaryButton>
             </div>
           </Reveal>
         </Container>
       </Band>
 
-      {/* Scoped CSS for landing page layout and responsive breakpoints */}
+      {/* Scoped CSS for refined proportions, responsive layout, and organic micro-animations */}
       <style>{`
-        /* Hero Grid Layout */
+        /* Hero Grid Layout with Golden Proportions */
         .hero-layout-grid {
           display: grid;
-          grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-          gap: 48px;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+          gap: 40px;
           align-items: start;
         }
 
@@ -675,36 +678,60 @@ export const LandingPage: React.FC = () => {
         /* Hero Typography */
         .hero-h1 {
           font-family: var(--fs);
-          font-size: 40px;
-          line-height: 48px;
+          font-size: 38px;
+          line-height: 46px;
           font-weight: 600;
           color: var(--ink);
-          margin: 0 0 16px;
+          margin: 0 0 14px;
+          letter-spacing: -0.015em;
         }
 
         .hero-lead {
           font-family: var(--fs);
-          font-size: 16px;
-          line-height: 26px;
+          font-size: 15.5px;
+          line-height: 25px;
           color: var(--ink);
-          max-width: 52ch;
-          margin: 0 0 24px;
+          opacity: 0.92;
+          max-width: 48ch;
+          margin: 0 0 22px;
         }
 
         .hero-btn-row {
           display: flex;
           flex-wrap: wrap;
+          align-items: center;
           gap: 12px;
-          margin-bottom: 28px;
+          margin-bottom: 24px;
+        }
+
+        /* Interactive Buttons with Micro-Lift and Arrow Slide */
+        .interactive-btn {
+          transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), background-color 140ms ease, border-color 140ms ease !important;
+        }
+
+        .interactive-btn:hover {
+          transform: translateY(-1.5px);
+        }
+
+        .interactive-btn:active {
+          transform: scale(0.985) translateY(0);
+        }
+
+        .interactive-btn:hover .btn-arrow-icon {
+          transform: translateX(3px);
+        }
+
+        .btn-arrow-icon {
+          transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         /* Facts Row */
         .facts-row {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          padding-top: 20px;
+          padding-top: 18px;
           border-top: 1px solid var(--bd);
-          margin-bottom: 24px;
+          margin-bottom: 22px;
         }
 
         .facts-cell {
@@ -726,28 +753,30 @@ export const LandingPage: React.FC = () => {
 
         .facts-value {
           font-family: var(--fm);
-          font-size: 24px;
+          font-size: 22px;
           line-height: 1.1;
           font-weight: 500;
           color: var(--ink);
           font-variant-numeric: tabular-nums;
+          letter-spacing: -0.02em;
         }
 
         .facts-label {
           font-family: var(--fs);
-          font-size: 12px;
+          font-size: 11.5px;
           color: var(--mut);
           line-height: 1.3;
+          margin-top: 2px;
         }
 
         /* Sample Patient Block */
         .sample-block {
-          margin-top: 24px;
+          margin-top: 20px;
           border-top: 1px solid var(--bd);
-          padding-top: 20px;
+          padding-top: 18px;
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 4px;
         }
 
         .sample-heading {
@@ -755,7 +784,7 @@ export const LandingPage: React.FC = () => {
           font-size: 13px;
           font-weight: 600;
           color: var(--ink);
-          margin: 0;
+          margin: 0 0 3px;
         }
 
         .sample-helper {
@@ -767,12 +796,19 @@ export const LandingPage: React.FC = () => {
 
         .sample-controls-row {
           display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
+          width: 100%;
         }
 
         .sample-segmented-ctrl {
+          width: 100%;
           height: 36px;
+        }
+
+        .sample-segmented-ctrl button {
+          flex: 1;
+          padding: 0 8px;
+          font-size: 11.5px;
+          transition: background-color 140ms ease, color 140ms ease;
         }
 
         .sample-action-row {
@@ -783,41 +819,42 @@ export const LandingPage: React.FC = () => {
           font-family: var(--fs);
           font-size: 11px;
           color: var(--mut);
-          margin-top: 2px;
+          margin-top: 4px;
         }
 
         /* 3D Heart Panel */
         .heart-panel-container {
           position: relative;
           width: 100%;
-          height: 520px;
+          height: 470px;
           background-color: ${VIEWER_BG};
           border: 1px solid var(--bd);
           border-radius: 3px;
           overflow: hidden;
+          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
         }
 
         @media (min-width: 1200px) {
           .heart-panel-container {
-            height: 560px;
+            height: 480px;
           }
         }
 
-        @media (max-width: 999px) {
+        @media (max-width: 1099px) and (min-width: 768px) {
           .heart-panel-container {
-            height: clamp(320px, 50dvh, 480px);
+            height: 410px;
           }
         }
 
         @media (max-width: 767px) {
           .heart-panel-container {
-            height: clamp(280px, 44dvh, 380px);
+            height: clamp(280px, 44dvh, 350px);
           }
         }
 
         @media (max-height: 500px) and (orientation: landscape) {
           .heart-panel-container {
-            height: max(260px, 80dvh);
+            height: max(240px, 75dvh);
           }
         }
 
@@ -835,37 +872,47 @@ export const LandingPage: React.FC = () => {
         /* Vessel Selector Row */
         .vessel-selector-row {
           display: flex;
-          flex-wrap: wrap;
           align-items: center;
           gap: 12px;
-          margin-top: 12px;
+          margin-top: 10px;
+          width: 100%;
         }
 
         .inspect-label {
           font-family: var(--fs);
           font-size: 12px;
           color: var(--mut);
+          font-weight: 500;
+          flex-shrink: 0;
         }
 
         .vessel-segmented-ctrl {
+          flex: 1;
           height: 36px;
+        }
+
+        .vessel-segmented-ctrl button {
+          flex: 1;
+          font-size: 12px;
+          transition: background-color 140ms ease, color 140ms ease;
         }
 
         /* Readout Card */
         .readout-card {
-          margin-top: 12px;
+          margin-top: 10px;
+          transition: border-color 180ms ease, transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .readout-title-full {
           font-family: var(--fs);
-          font-size: 13px;
+          font-size: 13.5px;
           font-weight: 600;
           color: var(--ink);
         }
 
         .readout-title-key {
           font-family: var(--fs);
-          font-size: 13px;
+          font-size: 13.5px;
           font-weight: 600;
           color: var(--ink);
         }
@@ -878,7 +925,7 @@ export const LandingPage: React.FC = () => {
 
         .readout-prob-value {
           font-family: var(--fm);
-          font-size: 24px;
+          font-size: 22px;
           line-height: 1;
           font-weight: 500;
           color: var(--ink);
@@ -887,14 +934,24 @@ export const LandingPage: React.FC = () => {
 
         .readout-desc {
           font-family: var(--fs);
-          font-size: 13px;
-          line-height: 1.45;
+          font-size: 12.5px;
+          line-height: 1.48;
           color: var(--mut);
           margin: 6px 0 0;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+
+        /* Tactile Hover Lift for Panels */
+        .hover-lift {
+          transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease, box-shadow 220ms ease;
+        }
+
+        .hover-lift:hover {
+          transform: translateY(-2px);
+          border-color: var(--acc);
         }
 
         /* Section Commons */
@@ -923,12 +980,13 @@ export const LandingPage: React.FC = () => {
         }
 
         .step-panel {
-          padding: 16px 18px;
+          padding: 18px 20px;
+          height: 100%;
         }
 
         .step-number-box {
-          width: 24px;
-          height: 24px;
+          width: 26px;
+          height: 26px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -950,7 +1008,7 @@ export const LandingPage: React.FC = () => {
         .step-desc {
           font-family: var(--fs);
           font-size: 13px;
-          line-height: 1.5;
+          line-height: 1.55;
           color: var(--mut);
           margin: 6px 0 0;
         }
@@ -964,9 +1022,9 @@ export const LandingPage: React.FC = () => {
         .what-row {
           display: grid;
           grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-          gap: 32px;
+          gap: 36px;
           align-items: center;
-          padding: 32px 0;
+          padding: 30px 0;
           border-bottom: 1px solid var(--bd);
         }
 
@@ -976,7 +1034,7 @@ export const LandingPage: React.FC = () => {
         }
 
         .what-row:first-child {
-          padding-top: 16px;
+          padding-top: 14px;
         }
 
         .what-title {
@@ -997,8 +1055,8 @@ export const LandingPage: React.FC = () => {
         }
 
         .what-preview-panel {
-          height: 220px;
-          padding: 12px;
+          height: 210px;
+          padding: 14px;
           overflow: hidden;
         }
 
@@ -1013,7 +1071,7 @@ export const LandingPage: React.FC = () => {
         /* About */
         .about-grid {
           display: grid;
-          grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+          grid-template-columns: minmax(0, 6fr) minmax(0, 4fr);
           gap: 32px;
           align-items: start;
         }
@@ -1023,13 +1081,13 @@ export const LandingPage: React.FC = () => {
           font-size: 14px;
           line-height: 22px;
           color: var(--ink);
-          max-width: 60ch;
+          max-width: 58ch;
           margin: 0 0 12px;
         }
 
         /* Final CTA */
         .final-cta-box {
-          max-width: 560px;
+          max-width: 480px;
           margin: 0 auto;
           text-align: center;
           display: flex;
@@ -1062,7 +1120,7 @@ export const LandingPage: React.FC = () => {
           .hero-layout-grid {
             display: flex;
             flex-direction: column;
-            gap: 28px;
+            gap: 24px;
           }
 
           .hero-heart-col {

@@ -6,12 +6,12 @@ import { QuietButton } from '../ui/QuietButton';
 import { useTheme } from '../../hooks/useTheme';
 import { useWizardStore } from '../../store/useWizardStore';
 import { LANDING_COPY } from '../../content/landing';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sun, Moon } from 'lucide-react';
 
 export const LandingNav: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<string>('');
   const [isNarrow, setIsNarrow] = useState(false);
 
@@ -146,36 +146,34 @@ export const LandingNav: React.FC = () => {
           })}
         </nav>
 
-        {/* Right: Theme Select & Start Assessment */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <label htmlFor="landing-theme-select" className="landing-nav-theme-label">
-              {LANDING_COPY.nav.themeLabel}
-            </label>
-            <select
-              id="landing-theme-select"
-              aria-label={LANDING_COPY.nav.themeLabel}
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as any)}
-              style={{
-                height: '32px',
-                width: '112px',
-                fontFamily: 'var(--fs)',
-                fontSize: '12px',
-                backgroundColor: 'var(--panel)',
-                color: 'var(--ink)',
-                border: '1px solid var(--bds)',
-                borderRadius: 'var(--radius)',
-                padding: '0 8px',
-                outline: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="system">System</option>
-              <option value="light">Paper</option>
-              <option value="dark">Monitor</option>
-            </select>
-          </div>
+        {/* Right: Theme Toggle & Start Assessment */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="landing-theme-toggle-btn"
+            aria-label={`Switch to ${resolvedTheme === 'dark' ? 'Paper' : 'Monitor'} theme`}
+            title={`Switch to ${resolvedTheme === 'dark' ? 'Paper' : 'Monitor'} theme`}
+            style={{
+              width: '32px',
+              height: '32px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--panel)',
+              border: '1px solid var(--bds)',
+              borderRadius: 'var(--radius)',
+              color: 'var(--ink)',
+              cursor: 'pointer',
+              transition: 'background-color 140ms ease, border-color 140ms ease, transform 140ms ease',
+            }}
+          >
+            {resolvedTheme === 'dark' ? (
+              <Sun size={15} />
+            ) : (
+              <Moon size={15} />
+            )}
+          </button>
 
           <PrimaryButton
             size="md"

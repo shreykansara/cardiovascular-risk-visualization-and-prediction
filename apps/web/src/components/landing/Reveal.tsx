@@ -2,11 +2,13 @@ import React, { useRef, useState, useEffect } from 'react';
 
 export interface RevealProps extends React.HTMLAttributes<HTMLDivElement> {
   staggerIndex?: number;
+  variant?: 'fade-up' | 'wipe' | 'scale';
   children: React.ReactNode;
 }
 
 export const Reveal: React.FC<RevealProps> = ({
   staggerIndex = 0,
+  variant = 'fade-up',
   children,
   className = '',
   style,
@@ -33,17 +35,25 @@ export const Reveal: React.FC<RevealProps> = ({
           observer.unobserve(el);
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.12 }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
+  const animClass = isRevealed
+    ? variant === 'wipe'
+      ? 'wipe'
+      : variant === 'scale'
+      ? 'scale-in'
+      : 'fade-up'
+    : '';
+
   return (
     <div
       ref={ref}
-      className={`${isRevealed ? 'wipe' : ''} ${className}`}
+      className={`${animClass} ${className}`}
       style={{
         ...style,
         '--i': staggerIndex,
