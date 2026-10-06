@@ -175,7 +175,7 @@ export const HeartCanvas: React.FC<HeartCanvasProps> = ({
 
         <Suspense
           fallback={
-            <Html center>
+            <Html center zIndexRange={[5, 1]}>
               <div
                 style={{
                   backgroundColor: 'var(--panel)',
@@ -244,7 +244,7 @@ export const HeartCanvas: React.FC<HeartCanvasProps> = ({
               position: 'absolute',
               top: '12px',
               left: '12px',
-              zIndex: 10,
+              zIndex: 2,
               backgroundColor: 'var(--panel)',
               border: '1px solid var(--bds)',
               borderRadius: '3px',
@@ -270,7 +270,7 @@ export const HeartCanvas: React.FC<HeartCanvasProps> = ({
               position: 'absolute',
               top: '12px',
               right: '12px',
-              zIndex: 10,
+              zIndex: 2,
               width: '36px',
               height: '36px',
               display: 'inline-flex',
@@ -300,7 +300,7 @@ export const HeartCanvas: React.FC<HeartCanvasProps> = ({
                 position: 'absolute',
                 bottom: '12px',
                 left: '12px',
-                zIndex: 10,
+                zIndex: 2,
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
@@ -333,7 +333,7 @@ export const HeartCanvas: React.FC<HeartCanvasProps> = ({
                 position: 'absolute',
                 bottom: '12px',
                 left: '12px',
-                zIndex: 10,
+                zIndex: 2,
                 width: '28px',
                 height: '28px',
                 display: 'inline-flex',
@@ -361,7 +361,7 @@ export const HeartCanvas: React.FC<HeartCanvasProps> = ({
         <>
           {/* Subtle Vessel Hover Inspection Chip for non-landing (Results) */}
           {hoveredVessel && (
-            <div className="absolute top-4 left-4 z-20 bg-black/75 backdrop-blur-md p-1.5 px-3 rounded-full border border-rose-900/50 flex items-center gap-2 text-[12px] text-rose-100 pointer-events-none shadow-md">
+            <div className="absolute top-4 left-4 z-[2] bg-black/75 backdrop-blur-md p-1.5 px-3 rounded-full border border-rose-900/50 flex items-center gap-2 text-[12px] text-rose-100 pointer-events-none shadow-md">
               <span>{hoveredVessel.replace('vessel_', '')} artery</span>
             </div>
           )}
@@ -370,7 +370,7 @@ export const HeartCanvas: React.FC<HeartCanvasProps> = ({
           <button
             type="button"
             onClick={handleResetView}
-            className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/85 text-rose-100 hover:text-white border border-rose-900/50 hover:border-rose-500/60 backdrop-blur-md text-[11px] font-mono transition-all duration-150 cursor-pointer shadow-lg active:scale-95"
+            className="absolute bottom-4 right-4 z-[2] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/85 text-rose-100 hover:text-white border border-rose-900/50 hover:border-rose-500/60 backdrop-blur-md text-[11px] font-mono transition-all duration-150 cursor-pointer shadow-lg active:scale-95"
             title="Reset 3D camera to default anatomical view"
           >
             <RotateCcw className="w-3.5 h-3.5 text-rose-300" />

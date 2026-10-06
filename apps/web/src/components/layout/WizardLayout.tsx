@@ -30,6 +30,9 @@ export const WizardLayout: React.FC = () => {
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '18px 16px 16px',
+          position: 'relative',
+          zIndex: 1,
+          isolation: 'isolate',
         }}
       >
         <Outlet />

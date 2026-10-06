@@ -26,6 +26,11 @@ export const LandingLayout: React.FC = () => {
         id="content"
         tabIndex={-1}
         className="flex-1 w-full flex flex-col focus:outline-none"
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          isolation: 'isolate',
+        }}
       >
         <Outlet />
       </main>

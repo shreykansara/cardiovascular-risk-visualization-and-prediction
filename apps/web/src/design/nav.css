@@ -22,7 +22,7 @@
   border: 1px solid var(--bds);
   border-radius: var(--radius);
   padding: 6px 12px;
-  z-index: 110;
+  z-index: 1010;
 }
 
 .skip-link:focus {
@@ -39,11 +39,11 @@
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   height: 56px;
   background-color: var(--panel);
   border-bottom: 1px solid var(--bd);
-  box-shadow: none;
+  box-shadow: var(--nav-shadow);
 }
 
 .app-header-inner {
