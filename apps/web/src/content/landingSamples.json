@@ -1,0 +1,32 @@
+[
+  {
+    "id": "normal",
+    "patient_id": "PT-HEALTHY-01",
+    "label": "Lower risk sample",
+    "cad": 12.9,
+    "lad": 13.2,
+    "lcx": 14.1,
+    "rca": 14.8,
+    "generatedOn": "2026-10-06T10:24:10.162126+00:00"
+  },
+  {
+    "id": "rca_ischemia",
+    "patient_id": "PT-INFERIOR-RCA-04",
+    "label": "Moderate risk sample",
+    "cad": 91.6,
+    "lad": 36.5,
+    "lcx": 46.5,
+    "rca": 82.5,
+    "generatedOn": "2026-10-06T10:24:10.162126+00:00"
+  },
+  {
+    "id": "high_risk_lad",
+    "patient_id": "PT-LAD-ISCHEMIA-02",
+    "label": "Higher risk sample",
+    "cad": 94.4,
+    "lad": 91.0,
+    "lcx": 24.4,
+    "rca": 22.8,
+    "generatedOn": "2026-10-06T10:24:10.162126+00:00"
+  }
+]
