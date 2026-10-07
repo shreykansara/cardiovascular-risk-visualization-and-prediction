@@ -1,0 +1,662 @@
+[
+  {
+    "key": "Age",
+    "label": "Patient Age",
+    "section": "Demographics",
+    "type": "number",
+    "unit": "years",
+    "min": 18.0,
+    "max": 110.0,
+    "allowed_values": null
+  },
+  {
+    "key": "Sex",
+    "label": "Biological Sex",
+    "section": "Demographics",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "Male",
+      "Female"
+    ]
+  },
+  {
+    "key": "Weight",
+    "label": "Body Weight",
+    "section": "Demographics",
+    "type": "number",
+    "unit": "kg",
+    "min": 30.0,
+    "max": 250.0,
+    "allowed_values": null
+  },
+  {
+    "key": "Length",
+    "label": "Height / Length",
+    "section": "Demographics",
+    "type": "number",
+    "unit": "cm",
+    "min": 100.0,
+    "max": 240.0,
+    "allowed_values": null
+  },
+  {
+    "key": "BMI",
+    "label": "Body Mass Index",
+    "section": "Demographics",
+    "type": "number",
+    "unit": "kg/m²",
+    "min": 12.0,
+    "max": 65.0,
+    "allowed_values": null
+  },
+  {
+    "key": "BP",
+    "label": "Systolic Blood Pressure",
+    "section": "Clinical Examination",
+    "type": "number",
+    "unit": "mmHg",
+    "min": 50.0,
+    "max": 260.0,
+    "allowed_values": null
+  },
+  {
+    "key": "PR",
+    "label": "Resting Pulse Rate",
+    "section": "Clinical Examination",
+    "type": "number",
+    "unit": "bpm",
+    "min": 35.0,
+    "max": 220.0,
+    "allowed_values": null
+  },
+  {
+    "key": "DM",
+    "label": "Diabetes Mellitus",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "HTN",
+    "label": "Hypertension",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "Current Smoker",
+    "label": "Current Smoker",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "EX-Smoker",
+    "label": "Ex-Smoker",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "FH",
+    "label": "Family History of CAD",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "Obesity",
+    "label": "Clinical Obesity",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "CRF",
+    "label": "Chronic Renal Failure",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "CVA",
+    "label": "Cerebrovascular Accident",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Airway disease",
+    "label": "Airway / Lung Disease",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Thyroid Disease",
+    "label": "Thyroid Dysfunction",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "CHF",
+    "label": "Congestive Heart Failure",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "DLP",
+    "label": "Dyslipidemia",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Edema",
+    "label": "Peripheral Edema",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "Weak Peripheral Pulse",
+    "label": "Weak Peripheral Pulse",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Lung rales",
+    "label": "Pulmonary Rales",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Systolic Murmur",
+    "label": "Systolic Murmur",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Diastolic Murmur",
+    "label": "Diastolic Murmur",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Typical Chest Pain",
+    "label": "Typical Chest Pain",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "Dyspnea",
+    "label": "Exertional Dyspnea",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Function Class",
+    "label": "NYHA Functional Class",
+    "section": "Clinical Examination",
+    "type": "select",
+    "unit": "class",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "key": "Atypical",
+    "label": "Atypical Angina",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Nonanginal",
+    "label": "Non-Anginal Chest Pain",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Exertional CP",
+    "label": "Exertional Chest Pain",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "LowTH Ang",
+    "label": "Low-Threshold Angina",
+    "section": "Clinical Examination",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Q Wave",
+    "label": "Pathologic Q-Wave",
+    "section": "ECG",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "St Elevation",
+    "label": "ST-Segment Elevation",
+    "section": "ECG",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "St Depression",
+    "label": "ST-Segment Depression",
+    "section": "ECG",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "Tinversion",
+    "label": "T-Wave Inversion",
+    "section": "ECG",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1"
+    ]
+  },
+  {
+    "key": "LVH",
+    "label": "Left Ventricular Hypertrophy",
+    "section": "ECG",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "Poor R Progression",
+    "label": "Poor R-Wave Progression",
+    "section": "ECG",
+    "type": "toggle",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "Y"
+    ]
+  },
+  {
+    "key": "BBB",
+    "label": "Bundle Branch Block",
+    "section": "ECG",
+    "type": "select",
+    "unit": "",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "LBBB",
+      "RBBB"
+    ]
+  },
+  {
+    "key": "FBS",
+    "label": "Fasting Blood Sugar",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mg/dL",
+    "min": 40.0,
+    "max": 600.0,
+    "allowed_values": null
+  },
+  {
+    "key": "CR",
+    "label": "Serum Creatinine",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mg/dL",
+    "min": 0.1,
+    "max": 15.0,
+    "allowed_values": null
+  },
+  {
+    "key": "TG",
+    "label": "Triglycerides",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mg/dL",
+    "min": 20.0,
+    "max": 2000.0,
+    "allowed_values": null
+  },
+  {
+    "key": "LDL",
+    "label": "Low-Density Lipoprotein (LDL)",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mg/dL",
+    "min": 10.0,
+    "max": 500.0,
+    "allowed_values": null
+  },
+  {
+    "key": "HDL",
+    "label": "High-Density Lipoprotein (HDL)",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mg/dL",
+    "min": 5.0,
+    "max": 180.0,
+    "allowed_values": null
+  },
+  {
+    "key": "BUN",
+    "label": "Blood Urea Nitrogen",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mg/dL",
+    "min": 2.0,
+    "max": 150.0,
+    "allowed_values": null
+  },
+  {
+    "key": "ESR",
+    "label": "Erythrocyte Sedimentation Rate",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mm/hr",
+    "min": 1.0,
+    "max": 150.0,
+    "allowed_values": null
+  },
+  {
+    "key": "HB",
+    "label": "Hemoglobin",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "g/dL",
+    "min": 5.0,
+    "max": 25.0,
+    "allowed_values": null
+  },
+  {
+    "key": "K",
+    "label": "Serum Potassium",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mEq/L",
+    "min": 1.5,
+    "max": 9.0,
+    "allowed_values": null
+  },
+  {
+    "key": "Na",
+    "label": "Serum Sodium",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "mEq/L",
+    "min": 100.0,
+    "max": 180.0,
+    "allowed_values": null
+  },
+  {
+    "key": "WBC",
+    "label": "White Blood Cell Count",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "/mcL",
+    "min": 1000.0,
+    "max": 50000.0,
+    "allowed_values": null
+  },
+  {
+    "key": "Lymph",
+    "label": "Lymphocyte Percentage",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "%",
+    "min": 1.0,
+    "max": 90.0,
+    "allowed_values": null
+  },
+  {
+    "key": "Neut",
+    "label": "Neutrophil Percentage",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "%",
+    "min": 5.0,
+    "max": 95.0,
+    "allowed_values": null
+  },
+  {
+    "key": "PLT",
+    "label": "Platelet Count",
+    "section": "Laboratory",
+    "type": "number",
+    "unit": "x10³/mcL",
+    "min": 10.0,
+    "max": 1500.0,
+    "allowed_values": null
+  },
+  {
+    "key": "EF-TTE",
+    "label": "Ejection Fraction (TTE)",
+    "section": "Echocardiography",
+    "type": "number",
+    "unit": "%",
+    "min": 10.0,
+    "max": 85.0,
+    "allowed_values": null
+  },
+  {
+    "key": "Region RWMA",
+    "label": "Regional Wall Motion Abnormality",
+    "section": "Echocardiography",
+    "type": "select",
+    "unit": "score",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4"
+    ]
+  },
+  {
+    "key": "VHD",
+    "label": "Valvular Heart Disease",
+    "section": "Echocardiography",
+    "type": "select",
+    "unit": "grade",
+    "min": null,
+    "max": null,
+    "allowed_values": [
+      "N",
+      "mild",
+      "Moderate",
+      "Severe"
+    ]
+  }
+]
