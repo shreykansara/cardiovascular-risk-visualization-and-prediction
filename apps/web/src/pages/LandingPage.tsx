@@ -324,26 +324,15 @@ export const LandingPage: React.FC = () => {
                   idx === 0 ? ClipboardList : idx === 1 ? Heart : FileText;
                 return (
                   <Reveal key={step.number} staggerIndex={idx} variant="fade-up">
-                    <Panel className="step-panel hover-lift flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between pb-2 mb-2 border-b border-[var(--bd)]">
-                          <div className="flex items-center gap-2">
-                            <div className="step-number-box">{step.number}</div>
-                            <span className="step-tag-text">{step.stepTag}</span>
-                          </div>
-                          <IconComponent className="w-4 h-4 text-[var(--acc)]" />
+                    <Panel className="step-panel hover-lift flex flex-col justify-center">
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[var(--bd)]">
+                        <div className="flex items-center gap-2">
+                          <div className="step-number-box">{step.number}</div>
+                          <span className="step-tag-text">{step.stepTag}</span>
                         </div>
-                        <h3 className="step-title">{step.title}</h3>
-                        <p className="step-desc">{step.description}</p>
+                        <IconComponent className="w-4 h-4 text-[var(--acc)]" />
                       </div>
-                      <div className="step-chips-wrap">
-                        {step.modalities.map((m) => (
-                          <span key={m.label} className="step-chip">
-                            <span className="step-chip-label">{m.label}</span>
-                            <span className="step-chip-count">{m.count}</span>
-                          </span>
-                        ))}
-                      </div>
+                      <h3 className="step-title">{step.title}</h3>
                     </Panel>
                   </Reveal>
                 );
@@ -1192,8 +1181,8 @@ export const LandingPage: React.FC = () => {
         }
 
         .step-panel {
-          padding: 18px 20px;
-          min-height: 200px;
+          padding: 16px 18px;
+          min-height: 88px;
           height: 100%;
         }
 
@@ -1222,47 +1211,7 @@ export const LandingPage: React.FC = () => {
           font-size: 15px;
           font-weight: 600;
           color: var(--ink);
-          margin: 10px 0 0;
-        }
-
-        .step-desc {
-          font-family: var(--fs);
-          font-size: 13px;
-          line-height: 1.55;
-          color: var(--mut);
           margin: 6px 0 0;
-        }
-
-        .step-chips-wrap {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-top: 14px;
-          padding-top: 12px;
-          border-top: 1px solid var(--bd);
-        }
-
-        .step-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          background: var(--hov);
-          border: 1px solid var(--bd);
-          border-radius: 3px;
-          padding: 2px 7px;
-          font-family: var(--fs);
-          font-size: 11px;
-        }
-
-        .step-chip-label {
-          color: var(--ink);
-        }
-
-        .step-chip-count {
-          font-family: var(--fm);
-          font-size: 10px;
-          color: var(--acc);
-          font-weight: 600;
         }
 
         /* What you get */
