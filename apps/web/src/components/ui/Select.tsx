@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import type { FieldMeta } from '../../types/wizard';
+import { FieldSourceBadge } from '../forms/FieldSourceBadge';
 
 export interface SelectOption {
   label: string;
@@ -9,6 +11,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   label?: string;
   options: SelectOption[];
   source?: 'manual' | 'extracted' | 'unverified';
+  meta?: FieldMeta;
   error?: string;
   inline?: boolean;
   selectClassName?: string;
@@ -18,6 +21,7 @@ export const Select: React.FC<SelectProps> = ({
   label,
   options,
   source,
+  meta,
   error,
   inline = false,
   selectClassName = '',
@@ -114,7 +118,9 @@ export const Select: React.FC<SelectProps> = ({
           >
             {label}
           </label>
-          {source && source !== 'manual' && (
+          {meta ? (
+            <FieldSourceBadge meta={meta} />
+          ) : source && source !== 'manual' ? (
             <span
               style={{
                 fontFamily: 'var(--fs)',
@@ -128,7 +134,7 @@ export const Select: React.FC<SelectProps> = ({
             >
               {source === 'extracted' ? 'Extracted' : 'Unverified'}
             </span>
-          )}
+          ) : null}
         </div>
       )}
 

@@ -6,6 +6,7 @@
 @import './design/grid.css';
 @import './design/motion.css';
 @import './design/nav.css';
+@import './design/extraction.css';
 @import './design/print.css';
 
 @tailwind base;

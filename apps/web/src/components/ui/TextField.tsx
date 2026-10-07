@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import type { FieldMeta } from '../../types/wizard';
+import { FieldSourceBadge } from '../forms/FieldSourceBadge';
 
 export interface TextFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label: string;
@@ -8,6 +10,7 @@ export interface TextFieldProps extends Omit<React.InputHTMLAttributes<HTMLInput
   referenceRangeText?: string;
   isOutOfRange?: boolean;
   source?: 'manual' | 'extracted' | 'unverified';
+  meta?: FieldMeta;
 }
 
 export const TextField: React.FC<TextFieldProps> = ({
@@ -18,6 +21,7 @@ export const TextField: React.FC<TextFieldProps> = ({
   referenceRangeText,
   isOutOfRange,
   source,
+  meta,
   value,
   onFocus,
   onBlur,
@@ -69,7 +73,9 @@ export const TextField: React.FC<TextFieldProps> = ({
         >
           {label}
         </label>
-        {source && source !== 'manual' && (
+        {meta ? (
+          <FieldSourceBadge meta={meta} />
+        ) : source && source !== 'manual' ? (
           <span
             style={{
               fontFamily: 'var(--fs)',
@@ -83,7 +89,7 @@ export const TextField: React.FC<TextFieldProps> = ({
           >
             {source === 'extracted' ? 'Extracted' : 'Unverified'}
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Input wrapper: height 34px, border 1px solid --bds, radius 3px, background --panel, padding 0 8px, flex row */}

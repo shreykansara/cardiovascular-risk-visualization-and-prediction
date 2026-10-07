@@ -12,7 +12,8 @@ import { SecondaryButton } from '../components/ui/SecondaryButton';
 import { QuietButton } from '../components/ui/QuietButton';
 import { InlineLink } from '../components/ui/InlineLink';
 import { FieldAnatomy, getFieldErrorMessage } from '../components/forms/FieldAnatomy';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Upload } from 'lucide-react';
+import { ReportUploadPanel } from '../components/extraction/ReportUploadPanel';
 
 interface SectionConfig {
   id: string;
@@ -51,6 +52,19 @@ export const DataEntryPage: React.FC = () => {
   const [activeSectionId, setActiveSectionId] = useState<string>('demographics');
 
   const clearDialogRef = useRef<HTMLDialogElement>(null);
+
+  // Upload reports panel state and refs (Task 9.1 & 9.2)
+  const [isUploadPanelExpanded, setIsUploadPanelExpanded] = useState(true);
+  const reportUploadPanelRef = useRef<HTMLDivElement>(null);
+  const firstSlotButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleOpenUploadPanel = () => {
+    setIsUploadPanelExpanded(true);
+    reportUploadPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => {
+      firstSlotButtonRef.current?.focus();
+    }, 100);
+  };
 
   // Track expanded state for each of the 5 sections (Task 5.5: on mobile <600px, only first section expanded)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() => {
@@ -414,14 +428,14 @@ export const DataEntryPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Right: Upload report disabled button + Sample patient select */}
+        {/* Right: Upload reports button (Task 9.1) + Sample patient select */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <SecondaryButton
             size="sm"
-            disabled
-            title="Available in a later version"
+            leftIcon={<Upload size={14} />}
+            onClick={handleOpenUploadPanel}
           >
-            Upload report (coming soon)
+            Upload reports
           </SecondaryButton>
 
           <select
@@ -452,6 +466,14 @@ export const DataEntryPage: React.FC = () => {
           </select>
         </div>
       </Panel>
+
+      {/* Task 9.2 ReportUploadPanel placed directly below the header Panel */}
+      <ReportUploadPanel
+        ref={reportUploadPanelRef}
+        firstSlotButtonRef={firstSlotButtonRef}
+        isExpanded={isUploadPanelExpanded}
+        onToggleExpanded={setIsUploadPanelExpanded}
+      />
 
       {/* Task 4.4 Section strip for mobile/tablet <900px (sticky top 48px) */}
       <Panel

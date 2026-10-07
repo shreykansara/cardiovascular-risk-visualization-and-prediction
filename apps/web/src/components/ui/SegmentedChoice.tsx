@@ -1,4 +1,6 @@
 import React from 'react';
+import type { FieldMeta } from '../../types/wizard';
+import { FieldSourceBadge } from '../forms/FieldSourceBadge';
 
 export interface SegmentedChoiceOption {
   label: string;
@@ -11,6 +13,7 @@ export interface SegmentedChoiceProps {
   value: string | number;
   onChange: (value: any) => void;
   source?: 'manual' | 'extracted' | 'unverified';
+  meta?: FieldMeta;
   className?: string;
   disabled?: boolean;
 }
@@ -21,6 +24,7 @@ export const SegmentedChoice: React.FC<SegmentedChoiceProps> = ({
   value,
   onChange,
   source,
+  meta,
   className = '',
   disabled = false,
 }) => {
@@ -42,7 +46,9 @@ export const SegmentedChoice: React.FC<SegmentedChoiceProps> = ({
         >
           {label}
         </label>
-        {source && source !== 'manual' && (
+        {meta ? (
+          <FieldSourceBadge meta={meta} />
+        ) : source && source !== 'manual' ? (
           <span
             style={{
               fontFamily: 'var(--fs)',
@@ -56,7 +62,7 @@ export const SegmentedChoice: React.FC<SegmentedChoiceProps> = ({
           >
             {source === 'extracted' ? 'Extracted' : 'Unverified'}
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Two adjacent bordered buttons: 34px high, outer corners 3px radius only, 13px */}

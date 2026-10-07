@@ -38,6 +38,7 @@ export const FormField: React.FC<FormFieldProps> = ({
         id={`field-${feature.key}`}
         label={feature.label}
         source={source}
+        meta={meta}
         value={value !== undefined && value !== null ? value : ''}
         onChange={(e) => onChange(e.target.value)}
         options={feature.options}
@@ -51,6 +52,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       <SegmentedChoice
         label={feature.label}
         source={source}
+        meta={meta}
         value={value !== undefined && value !== null ? value : ''}
         onChange={onChange}
         options={feature.options}
@@ -65,6 +67,7 @@ export const FormField: React.FC<FormFieldProps> = ({
         label={feature.label}
         unit={feature.unit}
         source={source}
+        meta={meta}
         value={value !== undefined && value !== null ? value : ''}
         onChange={(e) => {
           const val = e.target.value === '' ? '' : Number(e.target.value);
@@ -86,6 +89,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       label={feature.label}
       unit={feature.unit}
       source={source}
+      meta={meta}
       value={value !== undefined && value !== null ? value : ''}
       onChange={(e) => onChange(e.target.value)}
       referenceRange={rangeObj}
