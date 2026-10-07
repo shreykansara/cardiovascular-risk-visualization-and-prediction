@@ -7,6 +7,12 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CompleteAnalysisResponse, PatientData, VesselExplanation } from '../types/clinical';
 import type { FieldMeta, FieldSource, PatientReportData, TechnicalReportData } from '../types/wizard';
+import type {
+  ExtractionResult,
+  ReportSlotState,
+  ReportType,
+} from '../types/extraction';
+import { REPORT_TOTALS } from '../types/extraction';
 import { FEATURE_SCHEMA, getDefaultPatientData, validateFeatureValue } from '../config/featureSchema';
 import { PATIENT_PROFILES, usePatientStore } from './usePatientStore';
 
@@ -34,6 +40,9 @@ interface WizardState {
   fieldMeta: Record<string, FieldMeta>;
   isFormValid: boolean;
 
+  // --- Reports Upload State (Phase 8) ---
+  reports: Record<ReportType, ReportSlotState>;
+
   // --- Step 3 Results State ---
   prediction: CompleteAnalysisResponse['predictions'] | null;
   shapResult: Record<string, VesselExplanation> | null;
@@ -54,6 +63,9 @@ interface WizardState {
   setDisclaimerAccepted: (accepted: boolean) => void;
   setFieldValue: <K extends keyof PatientData>(key: K, value: PatientData[K]) => void;
   setFieldMeta: (key: string, meta: Partial<FieldMeta>) => void;
+  setReportSlotState: (type: ReportType, slotState: Partial<ReportSlotState>) => void;
+  applyExtraction: (type: ReportType, result: ExtractionResult) => void;
+  removeReport: (type: ReportType) => void;
   validateAllFields: () => boolean;
   applyExtractedValues: (values: Partial<PatientData>, confidences?: Record<string, number>) => void;
   loadSamplePatient: (profileKey?: string) => void;
@@ -66,6 +78,51 @@ interface WizardState {
   markStepCompleted: (stepNumber: number) => void;
   reset: () => void;
   resetSession: () => void;
+}
+
+export function initializeReportsState(): Record<ReportType, ReportSlotState> {
+  return {
+    ecg: {
+      status: 'idle',
+      progress: 0,
+      filled: 0,
+      total: REPORT_TOTALS.ecg,
+      notFound: [],
+      skipped: [],
+      rejected: [],
+      warnings: [],
+    },
+    echo: {
+      status: 'idle',
+      progress: 0,
+      filled: 0,
+      total: REPORT_TOTALS.echo,
+      notFound: [],
+      skipped: [],
+      rejected: [],
+      warnings: [],
+    },
+    lab: {
+      status: 'idle',
+      progress: 0,
+      filled: 0,
+      total: REPORT_TOTALS.lab,
+      notFound: [],
+      skipped: [],
+      rejected: [],
+      warnings: [],
+    },
+    ehr: {
+      status: 'idle',
+      progress: 0,
+      filled: 0,
+      total: REPORT_TOTALS.ehr,
+      notFound: [],
+      skipped: [],
+      rejected: [],
+      warnings: [],
+    },
+  };
 }
 
 function initializeFieldMeta(): Record<string, FieldMeta> {
@@ -91,6 +148,7 @@ export const useWizardStore = create<WizardState>()(
       inputs: getDefaultPatientData(),
       fieldMeta: initializeFieldMeta(),
       isFormValid: false,
+      reports: initializeReportsState(),
 
       prediction: null,
       shapResult: null,
@@ -140,6 +198,12 @@ export const useWizardStore = create<WizardState>()(
           [key as string]: {
             ...currentMeta,
             source: 'manual' as FieldSource,
+            confidence: null,
+            fromReport: null,
+            evidence: null,
+            page: null,
+            converted: false,
+            derived: false,
             error,
             touched: true,
           },
@@ -161,6 +225,158 @@ export const useWizardStore = create<WizardState>()(
             },
           },
         }));
+      },
+
+      setReportSlotState: (type, slotState) => {
+        set((state) => ({
+          reports: {
+            ...state.reports,
+            [type]: {
+              ...state.reports[type],
+              ...slotState,
+            },
+          },
+        }));
+      },
+
+      applyExtraction: (type, result) => {
+        const state = get();
+        const updatedInputs = { ...state.inputs };
+        const updatedMeta = { ...state.fieldMeta };
+        const defaultInputs = getDefaultPatientData();
+
+        // 1. First remove the previous fields of this report type that are still unedited
+        for (const feat of FEATURE_SCHEMA) {
+          const k = feat.key;
+          const meta = updatedMeta[k];
+          if (meta && meta.fromReport === type && meta.source !== 'manual') {
+            (updatedInputs as any)[k] = (defaultInputs as any)[k];
+            updatedMeta[k] = {
+              source: 'manual',
+              confidence: null,
+              error: null,
+              touched: false,
+              fromReport: null,
+              evidence: null,
+              page: null,
+              converted: false,
+              derived: false,
+            };
+            usePatientStore.getState().updatePatientField(k as any, (defaultInputs as any)[k]);
+          }
+        }
+
+        // 2. For every returned field:
+        // if form already has a value with source "manual", do NOT overwrite; add key to skipped
+        const skipped: string[] = [];
+        let appliedCount = 0;
+
+        for (const [key, fieldData] of Object.entries(result.fields)) {
+          const feat = FEATURE_SCHEMA.find((f) => f.key === key);
+          if (!feat) continue;
+
+          const currentMeta = updatedMeta[key];
+          if (currentMeta && currentMeta.source === 'manual' && currentMeta.touched) {
+            skipped.push(key);
+            continue;
+          }
+
+          const val = fieldData.value;
+          (updatedInputs as any)[key] = val;
+          const err = validateFeatureValue(feat, val);
+
+          updatedMeta[key] = {
+            source: fieldData.confidence === 'high' ? 'extracted' : 'unverified',
+            confidence: fieldData.confidence,
+            fromReport: type,
+            evidence: fieldData.evidence,
+            page: fieldData.page,
+            converted: fieldData.converted,
+            derived: fieldData.derived,
+            error: err,
+            touched: true,
+          };
+          appliedCount++;
+
+          usePatientStore.getState().updatePatientField(key as any, val as any);
+        }
+
+        // 3. Update reports slot
+        const updatedReports = {
+          ...state.reports,
+          [type]: {
+            status: 'done' as const,
+            progress: 100,
+            filled: appliedCount,
+            total: REPORT_TOTALS[type],
+            notFound: result.not_found || [],
+            skipped,
+            rejected: (result.rejected || []).map((r) => ({
+              key: r.key,
+              reason: r.reason,
+              found: r.found,
+            })),
+            warnings: result.warnings || [],
+            error: undefined,
+            uploadedAt: new Date().toISOString(),
+          },
+        };
+
+        set({
+          isDirty: true,
+          inputs: updatedInputs,
+          fieldMeta: updatedMeta,
+          reports: updatedReports,
+        });
+      },
+
+      removeReport: (type) => {
+        const state = get();
+        const updatedInputs = { ...state.inputs };
+        const updatedMeta = { ...state.fieldMeta };
+        const defaultInputs = getDefaultPatientData();
+
+        for (const feat of FEATURE_SCHEMA) {
+          const k = feat.key;
+          const meta = updatedMeta[k];
+          if (meta && meta.fromReport === type && meta.source !== 'manual') {
+            (updatedInputs as any)[k] = (defaultInputs as any)[k];
+            updatedMeta[k] = {
+              source: 'manual',
+              confidence: null,
+              error: null,
+              touched: false,
+              fromReport: null,
+              evidence: null,
+              page: null,
+              converted: false,
+              derived: false,
+            };
+            usePatientStore.getState().updatePatientField(k as any, (defaultInputs as any)[k]);
+          }
+        }
+
+        const updatedReports = {
+          ...state.reports,
+          [type]: {
+            status: 'idle' as const,
+            progress: 0,
+            filled: 0,
+            total: REPORT_TOTALS[type],
+            notFound: [],
+            skipped: [],
+            rejected: [],
+            warnings: [],
+            error: undefined,
+            uploadedAt: undefined,
+          },
+        };
+
+        set({
+          inputs: updatedInputs,
+          fieldMeta: updatedMeta,
+          reports: updatedReports,
+        });
       },
 
       validateAllFields: () => {
@@ -185,11 +401,6 @@ export const useWizardStore = create<WizardState>()(
         return valid;
       },
 
-      /**
-       * Stub function for future automated document extraction.
-       * Sets field source to 'extracted' and flags confidence.
-       * TODO: Connect to OCR / Multimodal clinical report extraction pipeline.
-       */
       applyExtractedValues: (values: Partial<PatientData>, confidences?: Record<string, number>) => {
         const state = get();
         const updatedInputs = { ...state.inputs, ...values };
@@ -232,6 +443,7 @@ export const useWizardStore = create<WizardState>()(
           inputs: data,
           fieldMeta: updatedMeta,
           isFormValid: true,
+          reports: initializeReportsState(),
         });
 
         // Sync with usePatientStore
@@ -338,6 +550,7 @@ export const useWizardStore = create<WizardState>()(
           inputs: getDefaultPatientData(),
           fieldMeta: initializeFieldMeta(),
           isFormValid: false,
+          reports: initializeReportsState(),
           prediction: null,
           shapResult: null,
           analysisLatencyMs: null,
@@ -364,12 +577,25 @@ export const useWizardStore = create<WizardState>()(
         if (!state.isDirty) {
           return {} as any;
         }
+        const sanitizedReports: Record<ReportType, ReportSlotState> = { ...state.reports };
+        for (const t of ['ecg', 'echo', 'lab', 'ehr'] as ReportType[]) {
+          const r = sanitizedReports[t];
+          if (r && (r.status === 'uploading' || r.status === 'reading')) {
+            sanitizedReports[t] = {
+              ...r,
+              status: 'idle',
+              progress: 0,
+            };
+          }
+        }
+
         return {
           isDirty: state.isDirty,
           disclaimerAccepted: state.disclaimerAccepted,
           completedSteps: state.completedSteps,
           inputs: state.inputs,
           fieldMeta: state.fieldMeta,
+          reports: sanitizedReports,
           prediction: state.prediction,
           shapResult: state.shapResult,
           technicalReport: state.technicalReport,

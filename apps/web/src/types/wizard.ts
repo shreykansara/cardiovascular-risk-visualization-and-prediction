@@ -4,6 +4,7 @@
  */
 
 import type { CompleteAnalysisResponse, PatientData } from './clinical';
+import type { ReportType } from './extraction';
 
 export type WizardStepId = 'welcome' | 'enter-data' | 'results' | 'reports';
 
@@ -45,9 +46,14 @@ export type FieldSource = 'manual' | 'extracted' | 'unverified';
 
 export interface FieldMeta {
   source: FieldSource;
-  confidence?: number | null;
+  confidence?: 'high' | 'check' | number | null;
   error?: string | null;
   touched?: boolean;
+  fromReport?: ReportType | null;
+  evidence?: string | null;
+  page?: number | null;
+  converted?: boolean;
+  derived?: boolean;
 }
 
 export interface TechnicalReportData {
