@@ -1,0 +1,361 @@
+{
+  "Age": [
+    "patient age",
+    "age"
+  ],
+  "Sex": [
+    "biological sex",
+    "gender",
+    "sex"
+  ],
+  "Weight": [
+    "body weight",
+    "weight",
+    "wt"
+  ],
+  "Length": [
+    "body height",
+    "height",
+    "length",
+    "ht"
+  ],
+  "BMI": [
+    "body mass index",
+    "bmi"
+  ],
+  "BP": [
+    "resting blood pressure",
+    "systolic blood pressure",
+    "blood pressure",
+    "systolic bp",
+    "bp"
+  ],
+  "PR": [
+    "resting heart rate",
+    "resting pulse rate",
+    "pulse rate",
+    "heart rate",
+    "pulse",
+    "hr",
+    "pr"
+  ],
+  "DM": [
+    "diabetes mellitus",
+    "diabetes",
+    "dm"
+  ],
+  "HTN": [
+    "high blood pressure",
+    "hypertension",
+    "htn"
+  ],
+  "Current Smoker": [
+    "active smoker",
+    "current smoker",
+    "tobacco use",
+    "smoker",
+    "smoking"
+  ],
+  "EX-Smoker": [
+    "former smoker",
+    "past smoker",
+    "ex-smoker",
+    "ex smoker"
+  ],
+  "FH": [
+    "family history of premature cad",
+    "family history of heart disease",
+    "family history of cad",
+    "family history",
+    "fh"
+  ],
+  "Obesity": [
+    "clinical obesity",
+    "clinically obese",
+    "obese",
+    "obesity"
+  ],
+  "CRF": [
+    "chronic kidney disease",
+    "chronic renal failure",
+    "renal failure",
+    "ckd",
+    "crf"
+  ],
+  "CVA": [
+    "cerebrovascular accident",
+    "transient ischemic attack",
+    "stroke",
+    "tia",
+    "cva"
+  ],
+  "Airway disease": [
+    "chronic obstructive pulmonary disease",
+    "airway disease",
+    "pulmonary disease",
+    "asthma",
+    "copd"
+  ],
+  "Thyroid Disease": [
+    "thyroid dysfunction",
+    "thyroid disease",
+    "hypothyroidism",
+    "hyperthyroidism"
+  ],
+  "CHF": [
+    "congestive heart failure",
+    "heart failure",
+    "chf",
+    "hf"
+  ],
+  "DLP": [
+    "hypercholesterolemia",
+    "hyperlipidemia",
+    "dyslipidemia",
+    "dlp",
+    "hld"
+  ],
+  "Edema": [
+    "peripheral edema",
+    "peripheral oedema",
+    "pedal edema",
+    "ankle edema",
+    "oedema",
+    "edema"
+  ],
+  "Weak Peripheral Pulse": [
+    "diminished peripheral pulses",
+    "diminished peripheral pulse",
+    "weak peripheral pulse",
+    "absent peripheral pulse",
+    "weak pulse"
+  ],
+  "Lung rales": [
+    "pulmonary crepitations",
+    "pulmonary crackles",
+    "pulmonary rales",
+    "crepitations",
+    "lung rales",
+    "crackles",
+    "rales"
+  ],
+  "Systolic Murmur": [
+    "ejection systolic murmur",
+    "systolic heart murmur",
+    "pansystolic murmur",
+    "systolic murmur"
+  ],
+  "Diastolic Murmur": [
+    "early diastolic murmur",
+    "diastolic heart murmur",
+    "diastolic murmur"
+  ],
+  "Typical Chest Pain": [
+    "typical chest pain",
+    "substernal chest pain",
+    "exertional angina",
+    "typical angina",
+    "angina pectoris"
+  ],
+  "Dyspnea": [
+    "shortness of breath",
+    "exertional dyspnea",
+    "breathlessness",
+    "dyspnea",
+    "sob"
+  ],
+  "Function Class": [
+    "nyha functional class",
+    "functional class",
+    "function class",
+    "nyha class",
+    "nyha"
+  ],
+  "Atypical": [
+    "atypical chest pain",
+    "atypical angina",
+    "atypical cp",
+    "atypical"
+  ],
+  "Nonanginal": [
+    "non-anginal chest pain",
+    "non anginal chest pain",
+    "nonanginal chest pain",
+    "non-cardiac chest pain",
+    "non-anginal",
+    "nonanginal"
+  ],
+  "Exertional CP": [
+    "chest pain on exertion",
+    "exertional chest pain",
+    "exertional cp",
+    "pain on exertion"
+  ],
+  "LowTH Ang": [
+    "low-threshold angina",
+    "low threshold angina",
+    "low-threshold cp",
+    "rest angina",
+    "lowth ang"
+  ],
+  "Q Wave": [
+    "pathological q waves",
+    "pathological q wave",
+    "pathologic q wave",
+    "pathologic q-wave",
+    "q waves",
+    "q wave"
+  ],
+  "St Elevation": [
+    "st segment elevation",
+    "st-segment elevation",
+    "st elevation",
+    "ste"
+  ],
+  "St Depression": [
+    "st segment depression",
+    "st-segment depression",
+    "st depression",
+    "std"
+  ],
+  "Tinversion": [
+    "t wave inversion",
+    "t-wave inversion",
+    "inverted t waves",
+    "t inversion",
+    "twi"
+  ],
+  "LVH": [
+    "left ventricular hypertrophy",
+    "lvh"
+  ],
+  "Poor R Progression": [
+    "poor r wave progression",
+    "poor r-wave progression",
+    "poor r progression",
+    "prwp"
+  ],
+  "BBB": [
+    "bundle branch block",
+    "left bundle branch block",
+    "right bundle branch block",
+    "lbbb",
+    "rbbb",
+    "bbb"
+  ],
+  "FBS": [
+    "fasting blood glucose",
+    "fasting plasma glucose",
+    "fasting blood sugar",
+    "glucose fasting",
+    "fasting glucose",
+    "fbs",
+    "fbg",
+    "fpg"
+  ],
+  "CR": [
+    "serum creatinine",
+    "creatinine",
+    "cr"
+  ],
+  "TG": [
+    "serum triglycerides",
+    "triglycerides",
+    "triglyceride",
+    "tgl",
+    "tg"
+  ],
+  "LDL": [
+    "low density lipoprotein",
+    "low-density lipoprotein",
+    "ldl cholesterol",
+    "ldl-c",
+    "ldl"
+  ],
+  "HDL": [
+    "high density lipoprotein",
+    "high-density lipoprotein",
+    "hdl cholesterol",
+    "hdl-c",
+    "hdl"
+  ],
+  "BUN": [
+    "blood urea nitrogen",
+    "urea nitrogen",
+    "blood urea",
+    "urea",
+    "bun"
+  ],
+  "ESR": [
+    "erythrocyte sedimentation rate",
+    "sed rate",
+    "esr"
+  ],
+  "HB": [
+    "hemoglobin",
+    "haemoglobin",
+    "hgb",
+    "hb"
+  ],
+  "K": [
+    "serum potassium",
+    "potassium",
+    "k+",
+    "k"
+  ],
+  "Na": [
+    "serum sodium",
+    "sodium",
+    "na+",
+    "na"
+  ],
+  "WBC": [
+    "white blood cell count",
+    "total leukocyte count",
+    "total leucocyte count",
+    "white blood cells",
+    "tlc",
+    "wbc"
+  ],
+  "Lymph": [
+    "lymphocyte percentage",
+    "lymphocytes (%)",
+    "lymphocyte %",
+    "lymphocytes",
+    "lymph"
+  ],
+  "Neut": [
+    "neutrophil percentage",
+    "neutrophils (%)",
+    "neutrophil %",
+    "neutrophils",
+    "polymorphs",
+    "neut"
+  ],
+  "PLT": [
+    "platelet count",
+    "platelets",
+    "plt"
+  ],
+  "EF-TTE": [
+    "ejection fraction (tte)",
+    "ejection fraction",
+    "ef (tte)",
+    "ef-tte",
+    "lvef",
+    "ef"
+  ],
+  "Region RWMA": [
+    "regional wall motion abnormality",
+    "regional wall motion abnormalities",
+    "regions with rwma",
+    "wall motion abnormality",
+    "rwma"
+  ],
+  "VHD": [
+    "valvular heart disease",
+    "valve disease",
+    "valvulopathy",
+    "vhd"
+  ]
+}
