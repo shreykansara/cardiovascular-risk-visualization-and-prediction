@@ -54,7 +54,7 @@ def parse_ehr(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
     # =========================================================================
 
     # --- Blood Pressure (BP): Systolic blood pressure only (50 - 260 mmHg) ---
-    bp_match = re.search(r"\b(?:bp|blood\s+pressure|resting\s+bp)\s*[:=]?\s*([0-9]{2,3})\s*(?:/\s*([0-9]{2,3}))?\s*(?:mm\s*hg)?", full_text, re.IGNORECASE)
+    bp_match = re.search(r"\b(?:resting\s+blood\s+pressure|blood\s+pressure|resting\s+bp|bp)\s*(?:\([a-z\s]+\))?\s*[:=]?\s*([0-9]{2,3})\s*(?:/\s*([0-9]{2,3}))?\s*(?:mm\s*hg)?", full_text, re.IGNORECASE)
     if bp_match:
         systolic = float(bp_match.group(1))
         conv = convert_and_validate_numeric("BP", systolic, "mmHg")
@@ -78,7 +78,7 @@ def parse_ehr(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
                 remaining_keys.remove("BP")
 
     # --- Pulse Rate (PR) ---
-    pr_match = re.search(r"\b(?:pulse\s+rate|pulse|heart\s+rate|hr|pr)\s*[:=]?\s*([0-9]{2,3})\s*(?:bpm|/min)?\b", full_text, re.IGNORECASE)
+    pr_match = re.search(r"\b(?:resting\s+pulse\s+rate|pulse\s+rate|resting\s+pulse|pulse|heart\s+rate|hr|pr)\s*(?:\([a-z\s]+\))?\s*[:=]?\s*([0-9]{2,3})\s*(?:bpm|/min)?\b", full_text, re.IGNORECASE)
     if pr_match and "PR" in remaining_keys:
         val = float(pr_match.group(1))
         conv = convert_and_validate_numeric("PR", val, "bpm")

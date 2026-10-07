@@ -40,8 +40,8 @@ def parse_lab(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
 
             key = match.key
 
-            # Exclusion guard for LDL / HDL
-            if key in {"LDL", "HDL"} and has_ldl_hdl_exclusions(row.text):
+            # Exclusion guard for LDL / HDL (on label text only, not unit/row text)
+            if key in {"LDL", "HDL"} and has_ldl_hdl_exclusions(match.label_text):
                 continue
 
             loc = locate_value_for_match(match, page.rows, r_idx)

@@ -107,7 +107,7 @@ def parse_echo(document: Document) -> Tuple[Dict[str, ExtractedField], List[Reje
     # 2. REGIONAL WALL MOTION ABNORMALITY (Region RWMA)
     # =========================================================================
     # Strategy A: Explicit "Regions with RWMA: N" or "RWMA score: N" or "RWMA: N"
-    explicit_rwma_match = re.search(r"\b(?:regions\s+with\s+rwma|rwma\s+score|rwma)\s*[:=]\s*([0-9]+|none|normal)\b", full_text, re.IGNORECASE)
+    explicit_rwma_match = re.search(r"\b(?:regions\s+with\s+rwma|rwma\s+score|rwma)\s*[:=]?\s*([0-9]+|none|normal)\b", full_text, re.IGNORECASE)
     if explicit_rwma_match:
         val_str = explicit_rwma_match.group(1).lower()
         if val_str in {"none", "normal", "0"}:
