@@ -117,3 +117,10 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 uvicorn.log
+
+# --- LaTeX Intermediate Files ---
+*.aux
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
