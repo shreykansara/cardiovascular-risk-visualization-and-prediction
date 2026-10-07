@@ -61,14 +61,24 @@ def locate_value_for_match(
     label_cell_idx = match.cell_index
 
     # Strategy (b): Inline pattern inside the label cell or row text
-    # e.g., "FBS: 110 mg/dL" or "FBS = 110 mg/dL" or "FBS ..... 110 mg/dL"
+    # e.g., "FBS: 110 mg/dL", "FBS = 110 mg/dL", "FBS ..... 110 mg/dL", "FBS 110 mg/dL", "Heart rate - 72 bpm"
     # Allow optional abbreviations/parentheses between synonym and delimiter e.g. "Left Ventricular Ejection Fraction (LVEF): 50-55 %"
-    pattern = (
-        r"\b" + re.escape(match.synonym_matched) +
-        r"[^:\=\n\r]{0,40}(?:[:=]|\.{2,})\s*([^\n\r]+)"
-    )
     search_text = row.cells[label_cell_idx] if len(row.cells) > 1 else row.text
-    m = re.search(pattern, search_text, re.IGNORECASE)
+    
+    # 1. Delimited pattern (:, =, .., -, ->, is, was, of)
+    delim_pattern = (
+        r"\b" + re.escape(match.synonym_matched) +
+        r"[^:\=\n\r\-]{0,40}?(?:[:=]|\.{2,}|[-–—]|->|\b(?:is|was|of)\b)\s*([^\n\r]+)"
+    )
+    m = re.search(delim_pattern, search_text, re.IGNORECASE)
+    if not m:
+        # 2. Space-separated pattern directly followed by numeric value or standard categorical token
+        space_pattern = (
+            r"\b" + re.escape(match.synonym_matched) +
+            r"\s+([0-9][^\n\r]*|\b(?:yes|no|present|absent|positive|negative|normal|wnl|nil|none|male|female|lbbb|rbbb|mild|moderate|severe)\b[^\n\r]*)"
+        )
+        m = re.search(space_pattern, search_text, re.IGNORECASE)
+
     if m:
         after_label = m.group(1).strip()
         parsed = parse_numeric_value_and_unit(after_label)
@@ -80,6 +90,16 @@ def locate_value_for_match(
                 unit=parsed.unit,
                 evidence=evidence,
                 parsed=parsed,
+            )
+        # Even if not purely numeric, return the string for categorical evaluation
+        first_token = re.split(r"[\s,;]+", after_label)[0].lower()
+        if first_token in {"yes", "no", "present", "absent", "positive", "negative", "normal", "wnl", "nil", "none", "male", "female", "lbbb", "rbbb", "mild", "moderate", "severe"}:
+            evidence = f"{match.label_text}: {after_label}"[:80]
+            return LocatedValue(
+                raw_value=after_label,
+                unit=None,
+                evidence=evidence,
+                parsed=None,
             )
 
     # Strategy (a): Table cells

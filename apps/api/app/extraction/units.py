@@ -22,9 +22,13 @@ def normalize_unit_str(unit: Optional[str]) -> str:
     """Normalizes unit strings for robust canonical matching."""
     if not unit:
         return ""
-    u = normalize_text(unit).lower()
+    u = normalize_text(unit).lower().strip()
     u = u.replace(" ", "").replace("⋅", "*").replace("×", "x")
     u = u.replace("micro", "u").replace("µ", "u").replace("mc", "u")
+    u = u.replace("gm/dl", "g/dl").replace("gms/dl", "g/dl")
+    u = u.replace("gm/l", "g/l").replace("gms/l", "g/l")
+    u = u.replace("mg%", "mg/dl").replace("mg/100ml", "mg/dl")
+    u = u.replace("mm-hg", "mmhg")
     return u
 
 def convert_and_validate_numeric(

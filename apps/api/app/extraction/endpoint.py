@@ -22,22 +22,25 @@ from .report_types import REPORT_DISPLAY_NAMES, ReportType, owned_keys
 router = APIRouter(tags=["Extraction"])
 
 def _perform_extraction_sync(pdf_bytes: bytes, rtype: ReportType):
-    """Worker thread target: parse text layer, detect wrong type, and invoke parser."""
+    """Worker thread target: parse text layer, invoke parser, and only detect wrong type if no valid fields found."""
     doc = extract_document_from_bytes(pdf_bytes)
-
-    # Wrong report type signature check
-    suggested = detect_wrong_report_type(rtype, doc)
-    if suggested:
-        sugg_name = REPORT_DISPLAY_NAMES.get(suggested, str(suggested.value))
-        raise ExtractionError(
-            code="wrong_report_type",
-            message=f"This looks like an {sugg_name} report. Upload it in the {sugg_name} slot.",
-            status_code=422,
-            suggested_type=suggested,
-        )
 
     parser = get_parser(rtype)
     fields, rejected, warnings = parser(doc)
+
+    # Only if the chosen parser found NO valid fields, check if document belongs to a different slot
+    if len(fields) == 0:
+        suggested = detect_wrong_report_type(rtype, doc, fields_found_count=0)
+        if suggested:
+            sugg_name = REPORT_DISPLAY_NAMES.get(suggested, str(suggested.value))
+            article = "an" if sugg_name[0].lower() in "aeiou" else "a"
+            raise ExtractionError(
+                code="wrong_report_type",
+                message=f"This looks like {article} {sugg_name} report. Upload it in the {sugg_name} slot.",
+                status_code=422,
+                suggested_type=suggested,
+            )
+
     return doc, fields, rejected, warnings
 
 @router.post(
@@ -122,12 +125,12 @@ async def extract_report_endpoint(
         return err_resp
     except Exception as e:
         elapsed_ms = int((time.perf_counter() - start_time) * 1000)
-        logger.error(
-            f"request_id={req_id} report_type={rtype_enum.value} error=unreadable elapsed_ms={elapsed_ms}"
+        logger.exception(
+            f"request_id={req_id} report_type={rtype_enum.value} error=unhandled exception={e} elapsed_ms={elapsed_ms}"
         )
         err_resp = JSONResponse(
             status_code=422,
-            content=ErrorBody(code="unreadable", message="This PDF could not be read.").model_dump(),
+            content=ErrorBody(code="unreadable", message=f"This PDF could not be read: {str(e)[:120]}").model_dump(),
         )
         err_resp.headers["Cache-Control"] = "no-store"
         return err_resp

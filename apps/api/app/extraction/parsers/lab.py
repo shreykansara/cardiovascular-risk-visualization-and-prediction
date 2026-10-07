@@ -6,14 +6,16 @@ Enforces percentage checking for Lymph/Neut, exclusion words for LDL/HDL,
 urea-to-BUN conversion, SI unit conversion, and physiological bounds checking.
 """
 
+import re
 from typing import Dict, List, Optional, Set, Tuple
 
 from ..locate import locate_value_for_match
-from ..matcher import has_ldl_hdl_exclusions, match_field_in_row
+from ..matcher import FIELD_SYNONYMS, has_ldl_hdl_exclusions, match_field_in_row
 from ..models import ExtractedField, RejectedField
 from ..pdf_text import Document
 from ..report_types import ReportType, owned_keys
 from ..units import convert_and_validate_numeric
+from ..values import parse_numeric_value_and_unit
 
 OWNED_KEYS: Set[str] = set(owned_keys(ReportType.lab))
 
@@ -120,6 +122,105 @@ def parse_lab(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
                 page=page.page_number,
             )
             target_keys.remove(key)
+
+    # Pass 2: Text / Narrative fallback for remaining laboratory biomarkers
+    if target_keys:
+        for page in document.pages:
+            full_page_text = page.text
+            for key in list(target_keys):
+                synonyms = FIELD_SYNONYMS.get(key, [])
+                for syn in synonyms:
+                    # Look for syn followed by value
+                    pat = (
+                        r"\b" + re.escape(syn) +
+                        r"(?:[^:\=\n\r\-;,]{0,40}?(?:[:=]|\.{2,}|[-–—]|->|\b(?:is|was|of)\b)|\s+)\s*([^\n\r;,]+)"
+                    )
+                    m = re.search(pat, full_page_text, re.IGNORECASE)
+                    if not m:
+                        continue
+
+                    # Exclusion guard for LDL / HDL in Pass 2
+                    if key in {"LDL", "HDL"}:
+                        start_pos = m.start()
+                        prefix = full_page_text[max(0, start_pos - 20):start_pos].lower()
+                        match_line = full_page_text[max(0, start_pos - 30):min(len(full_page_text), m.end() + 30)].lower()
+                        if any(exc in prefix for exc in ["non-", "non ", "vldl"]) or any(exc in match_line for exc in ["ratio", "/ hdl", "/hdl", "hdl /"]):
+                            continue
+
+                    raw_snippet = m.group(1).strip()
+                    parsed = parse_numeric_value_and_unit(raw_snippet)
+                    if not parsed:
+                        continue
+
+                    if parsed.is_censored:
+                        rejected.append(RejectedField(
+                            key=key,
+                            reason="censored_value",
+                            found=parsed.censored_snippet[:40],
+                        ))
+                        target_keys.remove(key)
+                        break
+
+                    if parsed.value is None:
+                        continue
+
+                    raw_val = parsed.value
+                    stated_unit = parsed.unit
+
+                    if key in {"Lymph", "Neut"}:
+                        if stated_unit and stated_unit != "%":
+                            rejected.append(RejectedField(
+                                key=key,
+                                reason="not_percent",
+                                found=f"{raw_val} {stated_unit}"[:40],
+                            ))
+                            target_keys.remove(key)
+                            break
+                        if not stated_unit and "%" in syn:
+                            stated_unit = "%"
+                        elif not stated_unit and raw_val > 100:
+                            rejected.append(RejectedField(
+                                key=key,
+                                reason="not_percent",
+                                found=str(raw_val)[:40],
+                            ))
+                            target_keys.remove(key)
+                            break
+
+                    is_urea = False
+                    if key == "BUN":
+                        syn_low = syn.lower()
+                        if "nitrogen" not in syn_low and "bun" not in syn_low:
+                            is_urea = True
+
+                    conv = convert_and_validate_numeric(
+                        key=key,
+                        raw_value=raw_val,
+                        stated_unit=stated_unit,
+                        is_urea_source=is_urea,
+                    )
+
+                    if conv.rejection_reason:
+                        rejected.append(RejectedField(
+                            key=key,
+                            reason=conv.rejection_reason,
+                            found=conv.found_snippet[:40] if conv.found_snippet else str(raw_val),
+                        ))
+                        target_keys.remove(key)
+                        break
+
+                    evidence = f"{syn}: {raw_val} {stated_unit or ''}".strip()[:80]
+                    fields[key] = ExtractedField(
+                        value=conv.value,
+                        confidence="check" if (conv.confidence_check or parsed.is_range_midpoint or is_urea) else "high",
+                        unit_in_report=stated_unit,
+                        converted=conv.converted,
+                        derived=False,
+                        evidence=evidence,
+                        page=page.page_number,
+                    )
+                    target_keys.remove(key)
+                    break
 
     # Security assertion: Parser must NEVER return keys it does not own
     for k in list(fields.keys()):

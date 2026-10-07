@@ -301,3 +301,55 @@ def test_evidence_privacy_and_bounds():
     assert "John Doe" not in ev
     assert "987654321" not in ev
     assert "1970-01-01" not in ev
+
+# 12. Robustness enhancements (space-separated, multi-item lab, header demographics, gm/dL units)
+def test_robustness_extraction_features():
+    # A. Header demographics on rows with patient name
+    ehr_text = (
+        "Clinic Outpatient Note\n"
+        "Patient Name: Jane Doe  MRN: 123456  Age: 54  Sex: Female\n"
+        "BP 130/80 mmHg  HR 72 bpm\n"
+        "Assessment: Patient has hypertension and diabetes."
+    )
+    doc_ehr = Document.from_text(ehr_text)
+    fields_ehr, _, _ = parse_ehr(doc_ehr)
+    assert "Age" in fields_ehr and fields_ehr["Age"].value == 54.0
+    assert "Sex" in fields_ehr and fields_ehr["Sex"].value == "Female"
+    assert "BP" in fields_ehr and fields_ehr["BP"].value == 130.0
+    assert "PR" in fields_ehr and fields_ehr["PR"].value == 72.0
+    assert "Jane Doe" not in fields_ehr["Age"].evidence
+    assert "123456" not in fields_ehr["Age"].evidence
+
+    # B. Multi-item and comma-separated lab panels with alternate units (gm/dL)
+    lab_text = (
+        "Clinical Laboratory Report\n"
+        "Chemistry: FBS 110 mg/dL, Serum Creatinine 1.1 mg/dL, BUN 18 mg/dL\n"
+        "Lipid Panel: Total Cholesterol 220 mg/dL, Triglycerides 180 mg/dL, HDL 42 mg/dL, LDL 142 mg/dL\n"
+        "Electrolytes: Sodium 140 mEq/L, Potassium 4.2 mEq/L\n"
+        "CBC: Hemoglobin 14.5 gm/dL, WBC 7.8 x10^3/uL, Platelets 250 x10^3/uL\n"
+        "ESR: 15 mm/hr, Lymphocytes (%): 32%, Neutrophils (%): 62%"
+    )
+    doc_lab = Document.from_text(lab_text)
+    fields_lab, _, _ = parse_lab(doc_lab)
+    assert len(fields_lab) == 14
+    assert fields_lab["HB"].value == 14.5
+    assert fields_lab["FBS"].value == 110.0
+    assert fields_lab["CR"].value == 1.1
+    assert fields_lab["TG"].value == 180.0
+    assert fields_lab["LDL"].value == 142.0
+    assert fields_lab["HDL"].value == 42.0
+
+    # C. Outpatient note mentioning ECG findings must NOT trigger wrong_report_type false positive
+    consult_note = (
+        "Cardiology Consultation Note\n"
+        "Patient: 62yo Male presenting with chest pain on exertion.\n"
+        "Resting BP 140/90, Pulse 76 bpm.\n"
+        "12-Lead ECG performed in clinic: sinus rhythm, normal QRS, ST segment depression.\n"
+        "Plan: Medical therapy."
+    )
+    doc_consult = Document.from_text(consult_note)
+    fields_consult, _, _ = parse_ehr(doc_consult)
+    # Parser extracts EHR fields (Age, Sex, BP, PR, Chest pain)
+    assert len(fields_consult) >= 4
+    # Wrong report type detector recognizes fields found and does not flag wrong type
+    assert detect_wrong_report_type(ReportType.ehr, doc_consult, fields_found_count=len(fields_consult)) is None

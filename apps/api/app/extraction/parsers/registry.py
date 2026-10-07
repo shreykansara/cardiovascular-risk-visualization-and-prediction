@@ -24,25 +24,31 @@ PARSER_REGISTRY: Dict[ReportType, ParserFunc] = {
 
 SIGNATURE_KEYWORDS: Dict[ReportType, List[str]] = {
     ReportType.ecg: [
-        "electrocardiogram", "ecg", "ekg", "st segment", "qrs", "sinus rhythm", "pr interval", "qt"
+        "electrocardiogram", "ecg", "ekg", "st segment", "qrs", "sinus rhythm", "pr interval", "qt", "12-lead"
     ],
     ReportType.echo: [
-        "echocardiograph", "ejection fraction", "lvef", "mitral", "aortic valve", "wall motion", "left atrium", "doppler"
+        "echocardiograph", "echocardiogram", "ejection fraction", "lvef", "mitral", "aortic valve", "wall motion", "left atrium", "doppler", "transthoracic"
     ],
     ReportType.lab: [
-        "hemoglobin", "haemoglobin", "creatinine", "glucose", "cholesterol", "triglyceride", "platelet", "reference range"
+        "hemoglobin", "haemoglobin", "creatinine", "glucose", "cholesterol", "triglyceride", "platelet", "reference range", "biochemistry", "hematology", "pathology", "serum"
     ],
     ReportType.ehr: [
-        "chief complaint", "past history", "vitals", "blood pressure", "examination", "outpatient", "opd", "history"
+        "chief complaint", "past history", "vitals", "blood pressure", "examination", "outpatient", "opd", "history",
+        "consultation", "progress note", "clinical note", "clinic", "encounter", "subjective", "objective", "assessment",
+        "physical exam", "physician", "patient", "complaint", "review of systems", "hpi", "pmh", "follow-up"
     ],
 }
 
-def detect_wrong_report_type(chosen_type: ReportType, document: Document) -> Optional[ReportType]:
+def detect_wrong_report_type(chosen_type: ReportType, document: Document, fields_found_count: int = 0) -> Optional[ReportType]:
     """
     Evaluates signature keywords across document text.
+    If fields were already successfully extracted for the chosen type, never flag wrong type.
     If the chosen report type scores 1 or less and another type scores 3 or more,
     returns the suggested ReportType.
     """
+    if fields_found_count > 0:
+        return None
+
     full_text_lower = " ".join(r.text.lower() for p in document.pages for r in p.rows)
 
     scores: Dict[ReportType, int] = {}

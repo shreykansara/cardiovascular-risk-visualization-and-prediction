@@ -28,6 +28,8 @@
     "systolic blood pressure",
     "blood pressure",
     "systolic bp",
+    "resting bp",
+    "sbp",
     "bp"
   ],
   "PR": [
@@ -35,17 +37,22 @@
     "resting pulse rate",
     "pulse rate",
     "heart rate",
+    "heart rate (bpm)",
     "pulse",
     "hr",
     "pr"
   ],
   "DM": [
     "diabetes mellitus",
+    "type 2 diabetes",
+    "t2dm",
+    "t1dm",
     "diabetes",
     "dm"
   ],
   "HTN": [
     "high blood pressure",
+    "essential hypertension",
     "hypertension",
     "htn"
   ],
@@ -247,6 +254,7 @@
     "fasting blood glucose",
     "fasting plasma glucose",
     "fasting blood sugar",
+    "glucose, fasting",
     "glucose fasting",
     "fasting glucose",
     "fbs",
@@ -255,11 +263,14 @@
   ],
   "CR": [
     "serum creatinine",
+    "s. creatinine",
+    "s creatinine",
     "creatinine",
     "cr"
   ],
   "TG": [
     "serum triglycerides",
+    "s. triglycerides",
     "triglycerides",
     "triglyceride",
     "tgl",
@@ -282,6 +293,7 @@
   "BUN": [
     "blood urea nitrogen",
     "urea nitrogen",
+    "serum urea",
     "blood urea",
     "urea",
     "bun"
@@ -294,6 +306,7 @@
   "HB": [
     "hemoglobin",
     "haemoglobin",
+    "hb%",
     "hgb",
     "hb"
   ],
@@ -314,6 +327,7 @@
     "total leukocyte count",
     "total leucocyte count",
     "white blood cells",
+    "wbc count",
     "tlc",
     "wbc"
   ],
@@ -334,6 +348,7 @@
   ],
   "PLT": [
     "platelet count",
+    "plt count",
     "platelets",
     "plt"
   ],

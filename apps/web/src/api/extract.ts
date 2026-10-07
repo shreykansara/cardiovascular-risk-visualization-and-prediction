@@ -71,7 +71,7 @@ export function extractReport(
       try {
         const errJson = JSON.parse(xhr.responseText);
         const code: ExtractionErrorCode = errJson.code || 'unknown';
-        const message: string = errJson.message || 'Extraction failed.';
+        const message: string = errJson.message || (typeof errJson.detail === 'string' ? errJson.detail : 'Extraction failed.');
         const suggestedType: ReportType | undefined = errJson.suggested_type;
         reject(new ExtractionError(code, message, suggestedType));
       } catch (e) {
@@ -80,6 +80,8 @@ export function extractReport(
           reject(new ExtractionError('too_large', 'File exceeds maximum upload size.'));
         } else if (xhr.status === 503) {
           reject(new ExtractionError('busy', 'Extraction server is busy.'));
+        } else if (xhr.status === 502 || xhr.status === 504 || xhr.status === 500) {
+          reject(new ExtractionError('network', 'Could not reach backend API server. Ensure the API server is running on port 8000.'));
         } else {
           reject(new ExtractionError('unknown', `Server error (${xhr.status}).`));
         }
@@ -87,7 +89,7 @@ export function extractReport(
     };
 
     xhr.onerror = () => {
-      reject(new ExtractionError('network', 'Could not reach the server.'));
+      reject(new ExtractionError('network', 'Could not reach backend API server. Ensure the API server is running on port 8000.'));
     };
 
     xhr.ontimeout = () => {

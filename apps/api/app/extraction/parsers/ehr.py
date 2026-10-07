@@ -165,9 +165,12 @@ def parse_ehr(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
                 )
                 remaining_keys.remove("Weight")
 
-    # --- Age (From 'Age' label only; NEVER read dates of birth) ---
+    # --- Age (From 'Age' label or demographic narrative; NEVER read dates of birth) ---
     if "Age" in remaining_keys:
         age_m = re.search(r"\b(?:age|patient\s+age)\s*[:=]?\s*([0-9]{2,3})\s*(?:yo|y/o|years|yrs)?\b", full_text, re.IGNORECASE)
+        if not age_m:
+            # Narrative format e.g. "62-year-old male", "55 yo female", "71 y/o"
+            age_m = re.search(r"\b([0-9]{2,3})\s*(?:-|–)?\s*(?:year[s]?(?:-|–|\s*)old|yo|y/o|years|yrs)\b", full_text, re.IGNORECASE)
         if age_m:
             val = float(age_m.group(1))
             conv = convert_and_validate_numeric("Age", val, "years")
@@ -184,7 +187,7 @@ def parse_ehr(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
                     unit_in_report="years",
                     converted=False,
                     derived=False,
-                    evidence=age_m.group(0)[:80],
+                    evidence=f"Age: {int(conv.value)} years",
                     page=1,
                 )
                 remaining_keys.remove("Age")
@@ -192,6 +195,9 @@ def parse_ehr(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
     # --- Sex ---
     if "Sex" in remaining_keys:
         sex_m = re.search(r"\b(?:sex|gender|biological\s+sex)\s*[:=]?\s*(male|female|m|f)\b", full_text, re.IGNORECASE)
+        if not sex_m:
+            # Narrative format e.g. "62-year-old male", "55 yo female"
+            sex_m = re.search(r"\b(?:[0-9]{2,3}\s*(?:-|–)?\s*(?:year[s]?(?:-|–|\s*)old|yo|y/o|years|yrs)\s+)?(male|female)\b", full_text, re.IGNORECASE)
         if sex_m:
             sex_val = parse_sex_value(sex_m.group(1))
             if sex_val:
@@ -201,14 +207,14 @@ def parse_ehr(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
                     unit_in_report=None,
                     converted=False,
                     derived=False,
-                    evidence=sex_m.group(0)[:80],
+                    evidence=f"Sex: {sex_val}",
                     page=1,
                 )
                 remaining_keys.remove("Sex")
 
     # --- Function Class ---
     if "Function Class" in remaining_keys:
-        fc_m = re.search(r"\b(?:nyha\s*(?:functional\s*)?class|functional\s*class|function\s*class)\s*[:=]?\s*(?:class\s+)?([0-4]|i{1,3}|iv|none)\b", full_text, re.IGNORECASE)
+        fc_m = re.search(r"\b(?:nyha\s*(?:functional\s*)?(?:class)?|functional\s*class|function\s*class)\s*[:=]?\s*(?:class\s+)?([0-4]|i{1,3}|iv|none)\b", full_text, re.IGNORECASE)
         if fc_m:
             fc_val = parse_function_class(fc_m.group(1))
             if fc_val:

@@ -46,7 +46,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   no_text_layer: 'This PDF has no readable text. Scanned reports are not supported yet.',
   unreadable: 'This PDF could not be read.',
   busy: 'The server is busy. Try again in a moment.',
-  network: 'Could not reach the server.',
+  network: 'Could not connect to the API server. Please ensure the backend is running.',
 };
 
 const REJECTED_REASONS: Record<string, string> = {
@@ -62,13 +62,19 @@ function getFieldLabel(key: string): string {
   return feat ? feat.label : key;
 }
 
-function formatErrorMessage(code: ExtractionErrorCode, suggestedType?: ReportType): string {
+function formatErrorMessage(code: ExtractionErrorCode, suggestedType?: ReportType, customMessage?: string): string {
   if (code === 'wrong_report_type') {
     const suggestedName = suggestedType ? REPORT_DISPLAY_NAMES[suggestedType] : 'another';
     const article = /^[aeiou]/i.test(suggestedName) ? 'an' : 'a';
     return `This looks like ${article} ${suggestedName} report. Upload it in the ${suggestedName} slot.`;
   }
-  return ERROR_MESSAGES[code] || 'Something went wrong while reading the report.';
+  if (code === 'network' && customMessage) {
+    return customMessage;
+  }
+  if (code === 'unknown' && customMessage && customMessage !== 'Extraction failed.') {
+    return customMessage;
+  }
+  return ERROR_MESSAGES[code] || customMessage || 'Something went wrong while reading the report.';
 }
 
 export interface ReportSlotProps {
@@ -164,7 +170,7 @@ export const ReportSlot: React.FC<ReportSlotProps> = ({
       if (err instanceof ExtractionError) {
         code = err.code;
         suggestedType = err.suggested_type;
-        msg = formatErrorMessage(code, suggestedType);
+        msg = formatErrorMessage(code, suggestedType, err.message);
       } else if (err.message) {
         msg = err.message;
       }

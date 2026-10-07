@@ -10,7 +10,7 @@ from .normalize import normalize_text
 from .report_types import get_field_spec
 
 YES_TOKENS = {"yes", "present", "positive", "true", "y", "+"}
-NO_TOKENS = {"no", "absent", "negative", "false", "n", "-", "nil"}
+NO_TOKENS = {"no", "absent", "negative", "false", "n", "-", "nil", "normal", "wnl", "none"}
 
 NEGATION_PATTERNS = [
     r"\bno\b",
@@ -124,10 +124,10 @@ def parse_bbb_value(text: str) -> Optional[str]:
     'N', 'LBBB', 'RBBB'.
     """
     s = normalize_text(text).lower().strip()
-    if "lbbb" in s or "left bundle branch" in s or "left" in s:
-        return "LBBB"
-    if "rbbb" in s or "right bundle branch" in s or "right" in s:
-        return "RBBB"
-    if any(k in s for k in ["no bundle branch", "none", "nil", "absent", "normal", "n", "no"]):
+    if any(k in s for k in ["no bundle branch", "none", "nil", "absent", "normal", "no bbb", "no block", "without bbb"]) or s in {"n", "no"}:
         return "N"
+    if "lbbb" in s or "left bundle branch" in s or "left bundle" in s:
+        return "LBBB"
+    if "rbbb" in s or "right bundle branch" in s or "right bundle" in s:
+        return "RBBB"
     return None

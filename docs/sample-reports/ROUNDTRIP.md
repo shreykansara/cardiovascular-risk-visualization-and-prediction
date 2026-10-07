@@ -1,6 +1,6 @@
 # Sample Reports Round-Trip Extraction Verification Report
 
-**Date:** 2026-10-07 18:01:42  
+**Date:** 2026-10-07 21:39:33  
 **Target Branch:** `feature/sample-reports`  
 **Scope:** 4 patient presets (55 fields each), 4 report variants, 3 intake edge cases.
 

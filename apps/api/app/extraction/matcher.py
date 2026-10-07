@@ -42,11 +42,15 @@ class MatchResult:
     row: Row
     label_text: str
 
-def is_header_identifier_row(row: Row, row_index: int) -> bool:
+def is_header_identifier_row(row: Row, row_index: int, target_keys: Optional[List[str]] = None) -> bool:
     """
     Checks if a row is inside the patient identifier header block:
     First 8 rows of page 1, only when containing patient identifier keywords.
+    Allows demographic target keys (Age, Sex) to be matched on header rows.
     """
+    if target_keys and any(k in {"Age", "Sex"} for k in target_keys):
+        return False
+
     if row.page_number == 1 and row_index < 8:
         row_lower = row.text.lower()
         for kw in HEADER_IDENTIFIER_KEYWORDS:
@@ -95,7 +99,7 @@ def match_field_in_row(row: Row, row_index: int, target_keys: List[str]) -> Opti
     Searches row cells for a match among target_keys.
     Returns the first MatchResult found or None.
     """
-    if is_header_identifier_row(row, row_index):
+    if is_header_identifier_row(row, row_index, target_keys):
         return None
 
     for cell_idx, cell in enumerate(row.cells):
