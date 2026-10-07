@@ -98,10 +98,10 @@ export const LandingPage: React.FC = () => {
   // Vessel selector radio options
   const vesselOptions: SegmentedOption<VesselFocusOption>[] = useMemo(
     () => [
-      { id: 'full', label: 'Full heart' },
-      { id: 'lad', label: 'LAD' },
-      { id: 'lcx', label: 'LCX' },
-      { id: 'rca', label: 'RCA' },
+      { id: 'full', label: 'All arteries' },
+      { id: 'lad', label: 'Front (LAD)' },
+      { id: 'lcx', label: 'Side (LCX)' },
+      { id: 'rca', label: 'Right (RCA)' },
     ],
     []
   );
@@ -374,22 +374,16 @@ export const LandingPage: React.FC = () => {
                   {/* Perfusion Territory Table */}
                   <div className="mt-4 border border-[var(--bd)] rounded-[3px] overflow-hidden bg-[var(--hov)]">
                     <div className="px-3 py-1.5 bg-[var(--panel)] border-b border-[var(--bd)] flex items-center justify-between text-[11px] font-[var(--fm)] text-[var(--mut)]">
-                      <span>TERRITORY AUDIT</span>
-                      <span>PERFUSION MAPPING</span>
+                      <span>ARTERY</span>
+                      <span>BLOOD SUPPLY ZONE</span>
                     </div>
                     <div className="table-scroll-wrap overflow-x-auto w-full">
-                      <table className="w-full text-left text-[11px] font-[var(--fs)]" style={{ minWidth: '320px' }}>
+                      <table className="w-full text-left text-[11px] font-[var(--fs)]">
                         <tbody>
                           {LANDING_COPY.whatYouGet.rows[0].vessels.map((v) => (
                             <tr key={v.vessel} className="border-b border-[var(--bd)] last:border-b-0">
-                              <td className="px-3 py-1.5 font-bold font-[var(--fm)] text-[var(--ink)]">{v.vessel}</td>
-                              <td className="px-3 py-1.5 text-[var(--mut)]">{v.territory}</td>
-                              <td className="px-3 py-1.5 text-right font-[var(--fm)] text-[var(--ink)]">{v.prob}</td>
-                              <td className="px-3 py-1.5 text-right">
-                                <span className={v.risk === 'High Risk' ? 'xai-badge-up' : 'xai-badge-down'}>
-                                  {v.risk}
-                                </span>
-                              </td>
+                              <td className="px-3 py-2 font-semibold font-[var(--fs)] text-[var(--ink)]">{v.vessel}</td>
+                              <td className="px-3 py-2 text-[var(--mut)]">{v.territory}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -404,9 +398,9 @@ export const LandingPage: React.FC = () => {
                       <div className="flex items-center justify-between pb-1.5 mb-1 border-b border-[var(--bd)] text-[11px] font-[var(--fm)] text-[var(--mut)]">
                         <div className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-[var(--low)] inline-block animate-pulse" />
-                          <span>3D VASCULAR ENGINE</span>
+                          <span>3D HEART MODEL</span>
                         </div>
-                        <span>LAD · LCX · RCA MESH</span>
+                        <span>MAIN ARTERIES</span>
                       </div>
                       <VesselCard
                         vesselKey="lad"
@@ -483,18 +477,18 @@ export const LandingPage: React.FC = () => {
                         <div className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-[var(--acc)] inline-block" />
                           <span className="text-[12px] font-semibold text-[var(--ink)] font-[var(--fs)]">
-                            Explainable AI (TreeSHAP) Feature Attribution
+                            Top Influencing Factors
                           </span>
                         </div>
-                        <span className="text-[10px] font-[var(--fm)] text-[var(--mut)]">LOCAL ATTRIBUTION Δ</span>
+                        <span className="text-[10px] font-[var(--fm)] text-[var(--mut)]">DIRECTION</span>
                       </div>
                       <div className="table-scroll-wrap overflow-x-auto w-full">
                         <table className="telemetry-table" style={{ minWidth: '460px' }}>
                           <thead>
                             <tr>
-                              <th>Biomarker / Modality</th>
-                              <th>Patient Value</th>
-                              <th>Explainable AI Impact</th>
+                              <th>Health Factor</th>
+                              <th>Value</th>
+                              <th>Impact on Estimate</th>
                               <th style={{ textAlign: 'right' }}>Direction</th>
                             </tr>
                           </thead>
@@ -535,8 +529,8 @@ export const LandingPage: React.FC = () => {
                         </table>
                       </div>
                       <div className="pt-2 text-[11px] text-[var(--mut)] font-[var(--fs)] border-t border-[var(--bd)] flex items-center justify-between">
-                        <span>Transparent directional attributions per patient</span>
-                        <span className="font-[var(--fm)] text-[10px] text-[var(--acc)]">Σ Δ = +0.48 NET CAD</span>
+                        <span>Clinical feature attribution per measurement</span>
+                        <span className="font-[var(--fm)] text-[10px] text-[var(--acc)]">ATTRIBUTION</span>
                       </div>
                     </Panel>
                   </div>
@@ -550,12 +544,12 @@ export const LandingPage: React.FC = () => {
 
                   <div className="mt-4 flex flex-col gap-2 font-[var(--fs)] text-[13px] text-[var(--mut)]">
                     <div className="flex items-start gap-2">
-                      <span className="text-[var(--acc)] font-bold">✓</span>
-                      <span><strong>Exact mathematical Shapley values</strong> compute the relative positive or negative influence of each clinical measurement.</span>
+                      <span className="text-[var(--acc)] font-bold">•</span>
+                      <span><strong>Directional impact:</strong> Clearly separates risk-elevating factors from protective indicators.</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <span className="text-[var(--acc)] font-bold">✓</span>
-                      <span><strong>Zero black-box obscurity</strong> allows clinicians to verify why LAD stenosis probability reached 91.0%.</span>
+                      <span className="text-[var(--acc)] font-bold">•</span>
+                      <span><strong>Objective evidence:</strong> Grounded in vitals, ECG markers, and echocardiography readings.</span>
                     </div>
                   </div>
                 </div>
@@ -571,11 +565,11 @@ export const LandingPage: React.FC = () => {
                   <div className="mt-4 flex flex-col gap-2 font-[var(--fs)] text-[13px] text-[var(--mut)]">
                     <div className="flex items-start gap-2">
                       <span className="text-[var(--acc)] font-bold">•</span>
-                      <span><strong>Clinician Diagnostic Audit:</strong> Comprehensive numerical probabilities, calibrated risk bands, and top Explainable AI drivers for each vessel.</span>
+                      <span><strong>Patient Guide:</strong> Plain-language summary to prepare for your consultation.</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="text-[var(--acc)] font-bold">•</span>
-                      <span><strong>Patient Plain-Language Guide:</strong> Transparent summaries without clinical jargon, framing results for informed physician discussions.</span>
+                      <span><strong>Clinician Sheet:</strong> Structured measurements and risk tiers ready for medical review.</span>
                     </div>
                   </div>
                 </div>
@@ -610,7 +604,7 @@ export const LandingPage: React.FC = () => {
                                 color: 'var(--s-ink)',
                               }}
                             >
-                              Clinician Diagnostic Audit
+                              Doctor Review Sheet
                             </span>
                             <span
                               style={{
@@ -632,7 +626,7 @@ export const LandingPage: React.FC = () => {
                               color: 'var(--s-mut)',
                             }}
                           >
-                            Model outputs
+                            Key outputs
                           </span>
                         </div>
                         <div className="table-scroll-wrap overflow-x-auto w-full">
@@ -653,15 +647,15 @@ export const LandingPage: React.FC = () => {
                                   textAlign: 'left',
                                 }}
                               >
-                                <th style={{ padding: '4px 0', fontWeight: 500 }}>Target Vessel</th>
+                                <th style={{ padding: '4px 0', fontWeight: 500 }}>Target Artery</th>
                                 <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
-                                  Probability
+                                  Estimated Risk
                                 </th>
                                 <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
-                                  Risk band
+                                  Risk Tier
                                 </th>
                                 <th style={{ padding: '4px 0', textAlign: 'right', fontWeight: 500 }}>
-                                  Top Explainable AI Driver
+                                  Top Contributing Factor
                                 </th>
                               </tr>
                             </thead>
@@ -726,8 +720,8 @@ export const LandingPage: React.FC = () => {
                             color: 'var(--s-mut)',
                           }}
                         >
-                          <span>Dual-format: Full Clinician Audit & Plain Patient Summary</span>
-                          <span style={{ fontFamily: 'var(--fm)', color: 'var(--s-acc)' }}>PDF / PRINT READY</span>
+                          <span>Dual-format: Plain Patient Guide & Clinician Review Sheet</span>
+                          <span style={{ fontFamily: 'var(--fm)', color: 'var(--s-acc)' }}>PRINT & PDF READY</span>
                         </div>
                       </div>
                     </Panel>
@@ -754,12 +748,24 @@ export const LandingPage: React.FC = () => {
             </h2>
 
             <div className="about-grid">
-              {/* Left Column: Paragraphs + Architecture & Explainable AI Specifications Table */}
+              {/* Left Column: Structured highlights */}
               <div className="about-text-col">
-                {LANDING_COPY.about.paragraphs.map((para, i) => (
-                  <p key={i} className="about-paragraph">{para}</p>
-                ))}
                 <p className="about-paragraph">
+                  {LANDING_COPY.about.paragraphs[0]}
+                </p>
+
+                <div className="mt-3 flex flex-col gap-2.5 font-[var(--fs)] text-[13px] text-[var(--mut)]">
+                  {LANDING_COPY.about.systemSpecs.map((s) => (
+                    <div key={s.component} className="flex items-start gap-2">
+                      <span className="text-[var(--acc)] font-bold mt-0.5">•</span>
+                      <span>
+                        <strong className="text-[var(--ink)]">{s.component}:</strong> {s.role} ({s.spec}).
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="about-paragraph mt-4">
                   {LANDING_COPY.about.technicalTextPre}
                   <Link
                     to="/model-info"
@@ -772,37 +778,6 @@ export const LandingPage: React.FC = () => {
                   </Link>
                   {LANDING_COPY.about.technicalTextPost}
                 </p>
-
-                {/* Explainable AI & System Architecture Specifications Table */}
-                <div className="mt-5 border border-[var(--bd)] rounded-[3px] overflow-hidden bg-[var(--panel)]">
-                  <div className="px-3.5 py-2 bg-[var(--hov)] border-b border-[var(--bd)] flex items-center justify-between">
-                    <span className="text-[12px] font-semibold font-[var(--fs)] text-[var(--ink)]">
-                      Explainable AI & System Specifications
-                    </span>
-                    <span className="text-[10px] font-[var(--fm)] text-[var(--mut)]">
-                      VALIDATION MATRIX
-                    </span>
-                  </div>
-                  <div className="table-scroll-wrap overflow-x-auto w-full">
-                    <table className="telemetry-table" style={{ minWidth: '420px' }}>
-                      <tbody>
-                        {LANDING_COPY.about.systemSpecs.map((s) => (
-                          <tr key={s.component}>
-                            <td className="font-semibold text-[11px] text-[var(--ink)] w-[32%]">
-                              {s.component}
-                            </td>
-                            <td className="font-[var(--fm)] text-[11px] text-[var(--acc)]">
-                              {s.spec}
-                            </td>
-                            <td className="text-[11px] text-[var(--mut)] text-right">
-                              {s.role}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
               </div>
 
               {/* Right Column: Decision support disclaimer block */}
@@ -813,19 +788,19 @@ export const LandingPage: React.FC = () => {
                     border: '1px solid var(--bd)',
                     borderRadius: 'var(--radius)',
                     backgroundColor: 'var(--panel)',
-                    padding: '20px',
+                    padding: '18px 20px',
                   }}
                 >
                   <div className="telemetry-badge">
-                    CLINICAL DECISION SUPPORT
+                    SAFETY NOTE
                   </div>
                   <div
                     style={{
                       fontFamily: 'var(--fs)',
-                      fontSize: '14px',
+                      fontSize: '13.5px',
                       fontWeight: 600,
                       color: 'var(--ink)',
-                      marginBottom: '8px',
+                      marginBottom: '6px',
                     }}
                   >
                     {LANDING_COPY.about.disclaimer.heading}
@@ -833,31 +808,31 @@ export const LandingPage: React.FC = () => {
                   <p
                     style={{
                       fontFamily: 'var(--fs)',
-                      fontSize: '13px',
-                      lineHeight: 1.55,
+                      fontSize: '12.5px',
+                      lineHeight: 1.5,
                       color: 'var(--ink)',
-                      margin: '0 0 16px',
+                      margin: '0 0 14px',
                     }}
                   >
                     {LANDING_COPY.about.disclaimer.body}
                   </p>
 
-                  <div className="pt-3 border-t border-[var(--bd)] flex flex-col gap-2 text-[12px] font-[var(--fs)] text-[var(--mut)]">
+                  <div className="pt-3 border-t border-[var(--bd)] flex flex-col gap-2 text-[11.5px] font-[var(--fs)] text-[var(--mut)]">
                     <div className="flex items-center justify-between">
                       <span>Model Architecture</span>
-                      <span className="font-[var(--fm)] text-[var(--ink)]">XGBoost Classifier</span>
+                      <span className="font-[var(--fm)] text-[var(--ink)]">Tree ensemble</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Explainability Engine</span>
-                      <span className="font-[var(--fm)] text-[var(--ink)]">TreeSHAP Local Δ</span>
+                      <span>Factor Analysis</span>
+                      <span className="font-[var(--fm)] text-[var(--ink)]">Feature impact scoring</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Full Model Report</span>
+                      <span>Specifications</span>
                       <Link
                         to="/model-info"
                         className="font-[var(--fm)] text-[var(--acc)] underline"
                       >
-                        Inspect documentation →
+                        Technical details →
                       </Link>
                     </div>
                   </div>

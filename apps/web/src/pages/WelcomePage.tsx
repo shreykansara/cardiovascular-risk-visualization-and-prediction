@@ -31,7 +31,7 @@ export const WelcomePage: React.FC = () => {
     <div
       className="w-full mx-auto"
       style={{
-        maxWidth: '920px',
+        maxWidth: '820px',
         marginTop: '28px',
         marginBottom: '40px',
       }}
@@ -77,7 +77,7 @@ export const WelcomePage: React.FC = () => {
           </svg>
         </div>
 
-        {/* Hero Section */}
+        {/* Welcome Section */}
         <div
           className="wipe"
           style={{
@@ -85,7 +85,7 @@ export const WelcomePage: React.FC = () => {
             '--i': 1,
           } as React.CSSProperties}
         >
-          {/* Eyebrow Clinical Badge */}
+          {/* Eyebrow Badge */}
           <div
             style={{
               display: 'inline-flex',
@@ -110,95 +110,41 @@ export const WelcomePage: React.FC = () => {
                 display: 'inline-block',
               }}
             />
-            <span>ACC/AHA CLINICAL AI PROTOCOL · MULTIMODAL CAD STRATIFICATION</span>
+            <span>HEART HEALTH ASSESSMENT · STEP 1 OF 4</span>
           </div>
 
-          {/* Primary SEO Heading (Single <h1>) */}
+          {/* Primary Heading */}
           <h1
             style={{
               fontFamily: 'var(--fs)',
-              fontSize: '28px',
-              lineHeight: '36px',
+              fontSize: '26px',
+              lineHeight: '34px',
               fontWeight: 600,
               color: 'var(--ink)',
               margin: 0,
             }}
           >
-            Perfusion3D: Precision Coronary Risk Visualization & 3D Perfusion Mapping
+            Welcome to Perfusion3D
           </h1>
 
-          {/* Value Proposition Lead Paragraph */}
+          {/* Customer-friendly Lead Paragraph */}
           <p
             style={{
               fontFamily: 'var(--fs)',
-              fontSize: '14px',
+              fontSize: '14.5px',
               lineHeight: 1.6,
               color: 'var(--ink)',
-              maxWidth: '72ch',
+              maxWidth: '68ch',
               marginTop: '10px',
               marginBottom: 0,
+              opacity: 0.9,
             }}
           >
-            Estimating vessel-specific stenosis across Left Anterior Descending (LAD), Left Circumflex (LCX), and Right Coronary Artery (RCA) territories from 55 non-invasive clinical markers using calibrated LightGBM machine learning and local TreeSHAP explainability.
+            A visual way to explore heart artery health and prepare for your doctor&apos;s appointment. Enter routine health measurements or upload test reports to see an interactive 3D model of your heart&apos;s main arteries.
           </p>
 
-          {/* Quantitative Performance Benchmarks Strip */}
-          <div
-            style={{
-              marginTop: '24px',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '10px',
-              padding: '14px 16px',
-              backgroundColor: 'var(--hov)',
-              border: '1px solid var(--bd)',
-              borderRadius: 'var(--radius)',
-            }}
-          >
-            {[
-              { stat: '94.2%', label: 'AUROC discrimination', sub: 'Z-Alizadeh Sani cohort' },
-              { stat: '< 12ms', label: 'Inference & TreeSHAP latency', sub: 'Real-time client compute' },
-              { stat: '3 Vessels', label: 'Territory-specific risk', sub: 'LAD · LCX · RCA mapping' },
-              { stat: '100% Offline', label: 'Deterministic fallback', sub: 'Zero external LLM dependence' },
-            ].map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', flexDirection: 'column' }}>
-                <span
-                  style={{
-                    fontFamily: 'var(--fm)',
-                    fontSize: '18px',
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {item.stat}
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--fs)',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                    marginTop: '2px',
-                  }}
-                >
-                  {item.label}
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--fs)',
-                    fontSize: '11px',
-                    color: 'var(--mut)',
-                  }}
-                >
-                  {item.sub}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Clinical Capabilities Overview Grid */}
-          <div style={{ marginTop: '28px' }}>
+          {/* Customer Orientation: 3 Simple Steps */}
+          <div style={{ marginTop: '24px' }}>
             <h2
               style={{
                 fontFamily: 'var(--fs)',
@@ -207,174 +153,89 @@ export const WelcomePage: React.FC = () => {
                 color: 'var(--ink)',
                 paddingBottom: '6px',
                 borderBottom: '1px solid var(--bd)',
-                margin: 0,
+                margin: '0 0 12px 0',
               }}
             >
-              Core platform capabilities
+              What to expect
             </h2>
 
             <div
               style={{
-                marginTop: '12px',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
                 gap: '12px',
               }}
             >
               {[
                 {
-                  id: 'feature-1',
-                  tag: '01 // INGESTION',
-                  title: 'Multimodal Feature Ingestion',
-                  desc: 'Comprehensive entry of 55 clinical factors spanning demographics, symptom presentations, ECG rhythm alterations, laboratory biomarkers, and echocardiographic wall motion.',
+                  step: '1',
+                  title: 'Enter measurements',
+                  desc: 'Add numbers like blood pressure and cholesterol, or upload your ECG and echo reports.',
                 },
                 {
-                  id: 'feature-2',
-                  tag: '02 // ANATOMICAL TWIN',
-                  title: 'Interactive 3D Perfusion Twin',
-                  desc: 'Photorealistic human heart digital twin with extruded, tapering coronary conduits that dynamically glow according to patient risk tiers with synchronized heartbeat pulses.',
+                  step: '2',
+                  title: 'Explore your 3D heart',
+                  desc: 'Rotate a 3D heart color-coded to show the estimated chance of narrowing in each artery.',
                 },
                 {
-                  id: 'feature-3',
-                  tag: '03 // EXPLAINABILITY',
-                  title: 'TreeSHAP & Dual Reporting',
-                  desc: 'Exact feature importance attribution for every vessel prediction. Generates quantitative audit documentation for specialists alongside accessible plain-language guidance for patients.',
+                  step: '3',
+                  title: 'Review and share',
+                  desc: 'See which health factors influenced your results, and print a clear summary for your doctor.',
                 },
-              ].map((f) => (
+              ].map((item) => (
                 <div
-                  key={f.id}
+                  key={item.step}
                   style={{
-                    padding: '14px',
+                    padding: '14px 16px',
                     border: '1px solid var(--bd)',
                     borderRadius: 'var(--radius)',
                     backgroundColor: 'var(--panel)',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'space-between',
+                    gap: '6px',
                   }}
                 >
-                  <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span
                       style={{
                         fontFamily: 'var(--fm)',
-                        fontSize: '10px',
-                        color: 'var(--mut)',
-                        display: 'block',
-                        marginBottom: '6px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        color: 'var(--acc)',
+                        backgroundColor: 'var(--hov)',
+                        border: '1px solid var(--bd)',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      {f.tag}
+                      {item.step}
                     </span>
-                    <h3
+                    <span
                       style={{
                         fontFamily: 'var(--fs)',
                         fontSize: '13px',
                         fontWeight: 600,
                         color: 'var(--ink)',
-                        margin: 0,
-                        marginBottom: '4px',
                       }}
                     >
-                      {f.title}
-                    </h3>
-                    <p
-                      style={{
-                        fontFamily: 'var(--fs)',
-                        fontSize: '12px',
-                        lineHeight: 1.5,
-                        color: 'var(--mut)',
-                        margin: 0,
-                      }}
-                    >
-                      {f.desc}
-                    </p>
+                      {item.title}
+                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Workflow Sequence Steps */}
-          <div style={{ marginTop: '28px' }}>
-            <h2
-              style={{
-                fontFamily: 'var(--fs)',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: 'var(--ink)',
-                paddingBottom: '6px',
-                borderBottom: '1px solid var(--bd)',
-                margin: 0,
-              }}
-            >
-              Four-step clinical decision workflow
-            </h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', marginTop: '6px' }}>
-              {[
-                {
-                  num: '1',
-                  title: 'Enter clinical measurements',
-                  desc: 'Fill in patient demographics, symptoms, ECG findings, and echocardiographic indices with automated boundary checks.',
-                },
-                {
-                  num: '2',
-                  title: 'Inspect 3D coronary perfusion',
-                  desc: 'Examine predicted stenosis probabilities mapped across LAD, LCX, and RCA conduits with camera orbit and zoom controls.',
-                },
-                {
-                  num: '3',
-                  title: 'Review TreeSHAP risk factors',
-                  desc: 'Audit the quantitative clinical variables driving the prediction up or down relative to baseline population risk.',
-                },
-                {
-                  num: '4',
-                  title: 'Generate verified documentation',
-                  desc: 'Print or export high-density technical audit sheets for cardiology records and accessible guidance for patients.',
-                },
-              ].map((row) => (
-                <div
-                  key={row.num}
-                  style={{
-                    padding: '10px 0',
-                    borderBottom: '1px solid var(--bd)',
-                    display: 'grid',
-                    gridTemplateColumns: '28px 1fr',
-                    alignItems: 'baseline',
-                  }}
-                >
-                  <span
+                  <p
                     style={{
-                      fontFamily: 'var(--fm)',
+                      fontFamily: 'var(--fs)',
                       fontSize: '12px',
+                      lineHeight: 1.5,
                       color: 'var(--mut)',
-                      fontVariantNumeric: 'tabular-nums',
+                      margin: 0,
                     }}
                   >
-                    {row.num}
-                  </span>
-                  <div>
-                    <div
-                      style={{
-                        fontFamily: 'var(--fs)',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        color: 'var(--ink)',
-                      }}
-                    >
-                      {row.title}
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: 'var(--fs)',
-                        fontSize: '12px',
-                        color: 'var(--mut)',
-                        marginTop: '2px',
-                      }}
-                    >
-                      {row.desc}
-                    </div>
-                  </div>
+                    {item.desc}
+                  </p>
                 </div>
               ))}
             </div>
@@ -383,7 +244,7 @@ export const WelcomePage: React.FC = () => {
           {/* Decision Support Disclaimer Block */}
           <div
             style={{
-              marginTop: '28px',
+              marginTop: '24px',
               border: '1px solid var(--bd)',
               borderRadius: 'var(--radius)',
               backgroundColor: 'var(--hov)',
@@ -399,7 +260,7 @@ export const WelcomePage: React.FC = () => {
                 marginBottom: '4px',
               }}
             >
-              Decision support only
+              Important notice
             </div>
             <p
               style={{
@@ -414,7 +275,7 @@ export const WelcomePage: React.FC = () => {
             </p>
           </div>
 
-          {/* Acknowledgement Checkbox Row (Maintains E2E ID) */}
+          {/* Acknowledgement Checkbox Row */}
           <div
             style={{
               marginTop: '16px',
@@ -450,7 +311,7 @@ export const WelcomePage: React.FC = () => {
             </label>
           </div>
 
-          {/* Primary Action Button Row (Maintains E2E ID) */}
+          {/* Primary Action Button Row */}
           <div
             style={{
               marginTop: '20px',
@@ -473,11 +334,11 @@ export const WelcomePage: React.FC = () => {
               <span
                 style={{
                   fontFamily: 'var(--fs)',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   color: 'var(--mut)',
                 }}
               >
-                Tick the box to continue
+                Check the box above to continue
               </span>
             )}
           </div>
@@ -502,25 +363,25 @@ export const WelcomePage: React.FC = () => {
                 marginRight: '4px',
               }}
             >
-              Or load sample patient profile:
+              Or explore with sample data:
             </span>
-            <SecondaryButton
-              size="sm"
-              onClick={() => handleQuickLoad('high_risk_lad')}
-            >
-              LAD Ischemia (Isolated Anterior)
-            </SecondaryButton>
-            <SecondaryButton
-              size="sm"
-              onClick={() => handleQuickLoad('triple_vessel')}
-            >
-              Triple-Vessel Critical CAD
-            </SecondaryButton>
             <SecondaryButton
               size="sm"
               onClick={() => handleQuickLoad('normal')}
             >
-              Healthy Normal
+              Lower risk sample
+            </SecondaryButton>
+            <SecondaryButton
+              size="sm"
+              onClick={() => handleQuickLoad('rca_ischemia')}
+            >
+              Moderate risk sample
+            </SecondaryButton>
+            <SecondaryButton
+              size="sm"
+              onClick={() => handleQuickLoad('high_risk_lad')}
+            >
+              Higher risk sample
             </SecondaryButton>
           </div>
         </div>

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "normal",
+    "label": "Sample 1 \u2014 Lower risk",
+    "risk_tier": "LOW",
+    "probability": 0.1294
+  },
+  {
+    "id": "rca_ischemia",
+    "label": "Sample 2 \u2014 Moderate risk",
+    "risk_tier": "MODERATE",
+    "probability": 0.548
+  },
+  {
+    "id": "high_risk_lad",
+    "label": "Sample 3 \u2014 Higher risk",
+    "risk_tier": "CRITICAL",
+    "probability": 0.9439
+  },
+  {
+    "id": "triple_vessel",
+    "label": "Sample 4 \u2014 Higher risk",
+    "risk_tier": "CRITICAL",
+    "probability": 0.9724
+  }
+]

@@ -14,6 +14,8 @@ import { InlineLink } from '../components/ui/InlineLink';
 import { FieldAnatomy, getFieldErrorMessage } from '../components/forms/FieldAnatomy';
 import { ChevronDown, ChevronUp, Upload } from 'lucide-react';
 import { ReportUploadPanel } from '../components/extraction/ReportUploadPanel';
+import { SECTION_NAMES } from '../content/glossary';
+import sampleBands from '../content/sampleBands.json';
 
 interface SectionConfig {
   id: string;
@@ -22,11 +24,11 @@ interface SectionConfig {
 }
 
 const SECTIONS_CONFIG: { id: string; name: string; sectionKey: string }[] = [
-  { id: 'demographics', name: 'Demographics', sectionKey: 'Demographics' },
-  { id: 'clinical-examination', name: 'Clinical examination', sectionKey: 'Clinical Examination' },
-  { id: 'ecg', name: 'ECG', sectionKey: 'ECG' },
-  { id: 'laboratory', name: 'Laboratory', sectionKey: 'Laboratory' },
-  { id: 'echocardiography', name: 'Echocardiography', sectionKey: 'Echocardiography' },
+  { id: 'demographics', name: SECTION_NAMES.demographics, sectionKey: 'Demographics' },
+  { id: 'clinical-examination', name: SECTION_NAMES['clinical-examination'], sectionKey: 'Clinical Examination' },
+  { id: 'ecg', name: SECTION_NAMES.ecg, sectionKey: 'ECG' },
+  { id: 'laboratory', name: SECTION_NAMES.laboratory, sectionKey: 'Laboratory' },
+  { id: 'echocardiography', name: SECTION_NAMES.echocardiography, sectionKey: 'Echocardiography' },
 ];
 
 export const DataEntryPage: React.FC = () => {
@@ -398,7 +400,7 @@ export const DataEntryPage: React.FC = () => {
                 margin: 0,
               }}
             >
-              Clinical data
+              Patient data
             </h1>
             {samplePatientLoaded && (
               <span
@@ -412,7 +414,7 @@ export const DataEntryPage: React.FC = () => {
                   lineHeight: '1',
                 }}
               >
-                Sample patient
+                Sample profile
               </span>
             )}
           </div>
@@ -424,11 +426,11 @@ export const DataEntryPage: React.FC = () => {
               margin: '2px 0 0 0',
             }}
           >
-            Enter each measurement, or load a sample patient.
+            Enter measurements below or choose a sample to explore.
           </p>
         </div>
 
-        {/* Right: Upload reports button (Task 9.1) + Sample patient select */}
+        {/* Right: Upload reports button + Sample select */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <SecondaryButton
             size="sm"
@@ -457,10 +459,10 @@ export const DataEntryPage: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            <option value="">Load sample patient</option>
-            {Object.entries(PATIENT_PROFILES).map(([key, prof]) => (
-              <option key={key} value={key}>
-                Sample: {prof.name}
+            <option value="">Choose a sample</option>
+            {sampleBands.map((band) => (
+              <option key={band.id} value={band.id}>
+                {band.label}
               </option>
             ))}
           </select>
@@ -540,7 +542,7 @@ export const DataEntryPage: React.FC = () => {
           disabled={!isDirty}
           onClick={() => clearDialogRef.current?.showModal()}
         >
-          Clear form
+          Clear all
         </QuietButton>
       </div>
 
@@ -864,7 +866,7 @@ export const DataEntryPage: React.FC = () => {
             {metrics.outsideTotal > 0 && (
               <>
                 <span>·</span>
-                <span>{metrics.outsideTotal} outside typical range</span>
+                <span>{metrics.outsideTotal} outside usual range</span>
               </>
             )}
             {hasAttemptedPredict && metrics.invalidFields.length > 0 && (
@@ -883,7 +885,7 @@ export const DataEntryPage: React.FC = () => {
             )}
           </div>
 
-          {/* Right group: Back + Predict */}
+          {/* Right group: Back + Calculate risk */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <SecondaryButton
               size="md"
@@ -896,7 +898,7 @@ export const DataEntryPage: React.FC = () => {
               size="lg"
               onClick={handlePredictClick}
             >
-              Predict
+              Calculate risk
             </PrimaryButton>
           </div>
         </div>

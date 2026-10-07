@@ -67,7 +67,7 @@ export const FieldSourceBadge: React.FC<FieldSourceBadgeProps> = ({ meta }) => {
         gap: '2px',
       }}
     >
-      <Chip label={meta.source === 'extracted' ? 'Extracted' : 'Unverified'} />
+      <Chip label={meta.source === 'extracted' ? 'From report' : 'Check'} />
       <button
         type="button"
         aria-label="Where this value came from"

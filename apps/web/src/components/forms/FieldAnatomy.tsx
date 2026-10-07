@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { FeatureDefinition } from '../../config/featureSchema';
 import type { FieldMeta } from '../../types/wizard';
+import { FIELD_HELP } from '../../content/glossary';
+import { HelpTip } from '../ui/HelpTip';
 
 export interface FieldAnatomyProps {
   feature: FeatureDefinition;
@@ -67,10 +69,11 @@ export const FieldAnatomy: React.FC<FieldAnatomyProps> = ({
 
   // Row 1: Source chip (only when not manual)
   const source = meta?.source && meta.source !== 'manual' ? meta.source : null;
+  const helpText = FIELD_HELP[feature.key];
 
   return (
     <div className="flex flex-col w-full">
-      {/* Row 1: Label and Source chip (Task 4.6) */}
+      {/* Row 1: Label, HelpTip and Source chip */}
       <div
         style={{
           display: 'flex',
@@ -80,17 +83,22 @@ export const FieldAnatomy: React.FC<FieldAnatomyProps> = ({
           minHeight: '18px',
         }}
       >
-        <label
-          htmlFor={autoId}
-          style={{
-            fontFamily: 'var(--fs)',
-            fontSize: '12px',
-            color: 'var(--mut)',
-            lineHeight: 1.2,
-          }}
-        >
-          {feature.label}
-        </label>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <label
+            htmlFor={autoId}
+            style={{
+              fontFamily: 'var(--fs)',
+              fontSize: '12px',
+              color: 'var(--mut)',
+              lineHeight: 1.2,
+            }}
+          >
+            {feature.label}
+          </label>
+          {helpText && (
+            <HelpTip text={helpText} label={`About ${feature.label}`} />
+          )}
+        </div>
         {source && (
           <span
             style={{
@@ -103,7 +111,7 @@ export const FieldAnatomy: React.FC<FieldAnatomyProps> = ({
               lineHeight: '16px',
             }}
           >
-            {source === 'extracted' ? 'Extracted' : 'Unverified'}
+            {source === 'extracted' ? 'From report' : 'Check'}
           </span>
         )}
       </div>
@@ -308,13 +316,13 @@ export const FieldAnatomy: React.FC<FieldAnatomyProps> = ({
               }}
             />
             <span style={{ color: 'var(--mut)' }}>
-              Outside typical range ({rangeStr})
+              Outside usual range ({rangeStr})
             </span>
           </>
         ) : isNumber && isFocused && rangeStr ? (
-          /* NUMBER fields only: typical range shown while focused */
+          /* NUMBER fields only: usual range shown while focused */
           <span style={{ color: 'var(--mut)' }}>
-            Typical range ({rangeStr})
+            Usual range: {rangeStr}
           </span>
         ) : null}
       </div>

@@ -47,9 +47,9 @@ export const TextField: React.FC<TextFieldProps> = ({
   const captionText = error
     ? error
     : outOfRange && rangeStr
-    ? `Outside typical range (${rangeStr})`
+    ? `Outside usual range (${rangeStr})`
     : rangeStr
-    ? `Typical range (${rangeStr})`
+    ? `Usual range: ${rangeStr}`
     : null;
 
   const showCaption = isFocused || Boolean(outOfRange) || Boolean(error);

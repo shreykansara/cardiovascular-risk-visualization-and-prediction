@@ -35,15 +35,15 @@ export const PhysiologicalBreakdownTable: React.FC<PhysiologicalBreakdownTablePr
       name: feat.label,
       valueDisplay: valueStr,
       referenceRange: feat.refDisplay || '—',
-      status: isOutside ? 'Outside typical range' : 'Within range',
+      status: isOutside ? 'Outside usual range' : 'Normal',
       isOutside,
     };
   });
 
   const columns = [
     { header: 'Measurement', accessor: 'name' as const },
-    { header: 'Patient value', accessor: 'valueDisplay' as const, isNumeric: true },
-    { header: 'Typical range', accessor: 'referenceRange' as const },
+    { header: 'Value', accessor: 'valueDisplay' as const, isNumeric: true },
+    { header: 'Usual range', accessor: 'referenceRange' as const },
     {
       header: 'Status',
       accessor: (row: MeasurementRow) => (

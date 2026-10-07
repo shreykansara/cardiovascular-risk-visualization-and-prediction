@@ -13,10 +13,10 @@
     "id": "rca_ischemia",
     "patient_id": "PT-INFERIOR-RCA-04",
     "label": "Moderate risk sample",
-    "cad": 91.6,
+    "cad": 54.8,
     "lad": 36.5,
     "lcx": 46.5,
-    "rca": 82.5,
+    "rca": 58.2,
     "generatedOn": "2026-10-06T10:24:10.162126+00:00"
   },
   {
