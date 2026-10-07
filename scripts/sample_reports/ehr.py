@@ -136,7 +136,7 @@ def generate_ehr_tex(
 
         history_section = f"""\\section*{{Past Medical History \\& Cardiovascular Risk Factors}}
 
-\\begin{{tabular}}{{@{{}} p{{7.2cm}} p{{3.0cm}} p{{6.4cm}} @{{}}}}
+\\begin{{tabular}}{{@{{}} p{{6.8cm}} p{{2.8cm}} p{{5.5cm}} @{{}}}}
   \\toprule
   \\textbf{{Risk Factor / Comorbidity}} & \\textbf{{Status}} & \\textbf{{Clinical Details}} \\\\
   \\midrule
@@ -146,9 +146,9 @@ def generate_ehr_tex(
 
         exam_section = f"""\\section*{{Cardiovascular Symptoms \\& Physical Examination}}
 
-\\begin{{tabular}}{{@{{}} p{{7.2cm}} p{{3.0cm}} p{{6.4cm}} @{{}}}}
+\\begin{{tabular}}{{@{{}} p{{6.8cm}} p{{2.8cm}} p{{5.5cm}} @{{}}}}
   \\toprule
-  \\textbf{{Symptom / Examination Sign}} & \\textbf{{Status}} & \\textbf{{Clinical Finding}} \\\\
+  \\textbf{{Symptom / Examination Sign}} & \\textbf{{Status}} & \\textbf{{Clinical Details}} \\\\
   \\midrule
 {chr(10).join(symp_rows)}
   \\bottomrule
@@ -186,10 +186,10 @@ def generate_ehr_tex(
 
 \\section*{{Demographics \\& Vital Signs}}
 
-\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}} l l l l @{{}}}}
-  \\textbf{{Age:}} {age_val} years & \\textbf{{Sex:}} {sex_val} & \\textbf{{Height:}} {length_val} cm & \\textbf{{Weight:}} {weight_val} kg \\\\
-  \\textbf{{Body mass index:}} {bmi_val} kg/m2 & \\textbf{{Blood pressure:}} {int(systolic)}/{diastolic} mmHg & \\textbf{{Pulse rate:}} {pr_val} bpm & \\textbf{{Function class:}} {fc_val} \\\\
-  \\textbf{{Temperature:}} {temp} \\textdegree{{C}} & \\textbf{{Respiration:}} {rr} /min & \\textbf{{SpO2:}} {spo2}\\% (Room air) & \\textbf{{NYHA Status:}} Ambulatory \\\\
+\\begin{{tabular*}}{{\\textwidth}}{{@{{}} l @{{\\extracolsep{{\\fill}}}} l @{{\\extracolsep{{\\fill}}}} l @{{}}}}
+  \\textbf{{Age:}} {age_val} years & \\textbf{{Sex:}} {sex_val} & \\textbf{{Height:}} {length_val} cm \\\\
+  \\textbf{{Weight:}} {weight_val} kg & \\textbf{{Body mass index:}} {bmi_val} kg/m2 & \\textbf{{Function class:}} {fc_val} \\\\
+  \\textbf{{Blood pressure:}} {int(systolic)}/{diastolic} mmHg & \\textbf{{Pulse rate:}} {pr_val} bpm & \\textbf{{SpO2:}} {spo2}\\% (Room air) \\\\
 \\end{{tabular*}}
 
 \\vspace{{8pt}}
@@ -210,7 +210,7 @@ def generate_ehr_tex(
 \\vspace{{14pt}}
 
 \\noindent
-\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}} l r @{{}}}}
+\\begin{{tabular*}}{{\\textwidth}}{{@{{}} l @{{\\extracolsep{{\\fill}}}} r @{{}}}}
   \\textbf{{Attending Physician:}} Dr. S. Synthetic, MD & \\textbf{{Encounter Date:}} {header.date_str} \\\\
 \\end{{tabular*}}
 

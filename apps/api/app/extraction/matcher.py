@@ -103,6 +103,9 @@ def match_field_in_row(row: Row, row_index: int, target_keys: List[str]) -> Opti
         if not clean_cell:
             continue
 
+        best_match: Optional[MatchResult] = None
+        best_syn_len = -1
+
         for key in target_keys:
             # LDL/HDL exclusion check on label cell
             if key in {"LDL", "HDL"} and has_ldl_hdl_exclusions(clean_cell):
@@ -111,12 +114,18 @@ def match_field_in_row(row: Row, row_index: int, target_keys: List[str]) -> Opti
             synonyms = FIELD_SYNONYMS.get(key, [])
             for syn in synonyms:
                 if matches_synonym(syn, clean_cell, cell_idx, row.text):
-                    return MatchResult(
-                        key=key,
-                        synonym_matched=syn,
-                        cell_index=cell_idx,
-                        row=row,
-                        label_text=clean_cell,
-                    )
+                    if len(syn) > best_syn_len:
+                        best_match = MatchResult(
+                            key=key,
+                            synonym_matched=syn,
+                            cell_index=cell_idx,
+                            row=row,
+                            label_text=clean_cell,
+                        )
+                        best_syn_len = len(syn)
+                    break
+
+        if best_match:
+            return best_match
 
     return None

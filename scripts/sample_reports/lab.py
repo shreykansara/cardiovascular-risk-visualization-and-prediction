@@ -152,11 +152,13 @@ def generate_lab_tex(
     header_tex = render_latex_header(header, "Comprehensive Laboratory Panel", "Clinical Pathology & Biochemistry Department")
 
     # Haematology rows
+    neut_label = LAB_LABELS['Neut'].replace("%", r"\%")
+    lymph_label = LAB_LABELS['Lymph'].replace("%", r"\%")
     haem_rows = [
         f"  {LAB_LABELS['HB']} & {hb_val} & {hb_unit} & {hb_ref} \\\\",
         f"  {LAB_LABELS['WBC']} & {wbc_val} & {wbc_unit} & {wbc_ref} \\\\",
-        f"  {LAB_LABELS['Neut']} & {neut_val} & \\% & 40--75 \\\\",
-        f"  {LAB_LABELS['Lymph']} & {lymph_val} & \\% & 20--45 \\\\",
+        f"  {neut_label} & {neut_val} & \\% & 40--75 \\\\",
+        f"  {lymph_label} & {lymph_val} & \\% & 20--45 \\\\",
         f"  {LAB_LABELS['PLT']} & {plt_val} & {plt_unit} & {plt_ref} \\\\",
     ]
     if not omit_partial:
@@ -171,8 +173,6 @@ def generate_lab_tex(
         f"  {LAB_LABELS['K']} & {k_val} & {k_unit} & {k_ref} \\\\",
     ]
 
-    # Lipid rows with distractor items
-    # Note: If omit_partial is True, we omit 6 selected tests (e.g. ESR, FBS, BUN, Na, K, TG)
     if not omit_partial:
         lipid_rows = [
             f"  Total cholesterol & {derived.total_cholesterol} & mg/dL & < 200 \\\\",
@@ -183,16 +183,29 @@ def generate_lab_tex(
             f"  Non-HDL cholesterol & {derived.non_hdl} & mg/dL & < 130 \\\\",
             f"  Cholesterol / HDL ratio & {derived.chol_hdl_ratio} & ratio & < 4.5 \\\\",
         ]
+        bio_section = f"""\\section*{{Clinical Biochemistry \\& Renal Profile}}
+
+\\begin{{tabular}}{{@{{}} p{{6.4cm}} p{{2.5cm}} p{{2.5cm}} p{{3.1cm}} @{{}}}}
+  \\toprule
+  \\textbf{{Test Description}} & \\textbf{{Result}} & \\textbf{{Unit}} & \\textbf{{Reference Range}} \\\\
+  \\midrule
+{chr(10).join(bio_rows)}
+  \\bottomrule
+\\end{{tabular}}
+
+\\vspace{{8pt}}"""
     else:
-        # Partial panel: only HDL, LDL
+        # Partial panel: only HDL, LDL (omitting ESR, FBS, CR, BUN, Na, K, TG = 7 tests)
         lipid_rows = [
             f"  {LAB_LABELS['HDL']} & {hdl_val} & {hdl_unit} & {hdl_ref} \\\\",
             f"  {LAB_LABELS['LDL']} & {ldl_val} & {ldl_unit} & {ldl_ref} \\\\",
         ]
-        # In partial mode, remove FBS, BUN, Na, K from bio_rows as well to omit exactly 7 fields
-        bio_rows = [
-            f"  {LAB_LABELS['CR']} & {cr_val} & {cr_unit} & {cr_ref} \\\\",
-        ]
+        bio_section = """% Biochemistry panel omitted in partial specimen variant
+\\vspace{6pt}
+\\noindent
+\\textit{Note: Comprehensive metabolic and renal chemistry panel not requested on this order.}
+
+\\vspace{6pt}"""
 
     content = f"""{preamble}
 
@@ -202,7 +215,7 @@ def generate_lab_tex(
 
 \\section*{{Haematology \\& Complete Blood Count}}
 
-\\begin{{tabular}}{{@{{}} p{{7.2cm}} p{{3.0cm}} p{{3.2cm}} p{{3.2cm}} @{{}}}}
+\\begin{{tabular}}{{@{{}} p{{6.4cm}} p{{2.5cm}} p{{2.5cm}} p{{3.1cm}} @{{}}}}
   \\toprule
   \\textbf{{Test Description}} & \\textbf{{Result}} & \\textbf{{Unit}} & \\textbf{{Reference Range}} \\\\
   \\midrule
@@ -212,21 +225,11 @@ def generate_lab_tex(
 
 \\vspace{{8pt}}
 
-\\section*{{Clinical Biochemistry \\& Renal Profile}}
-
-\\begin{{tabular}}{{@{{}} p{{7.2cm}} p{{3.0cm}} p{{3.2cm}} p{{3.2cm}} @{{}}}}
-  \\toprule
-  \\textbf{{Test Description}} & \\textbf{{Result}} & \\textbf{{Unit}} & \\textbf{{Reference Range}} \\\\
-  \\midrule
-{chr(10).join(bio_rows)}
-  \\bottomrule
-\\end{{tabular}}
-
-\\vspace{{8pt}}
+{bio_section}
 
 \\section*{{Lipid Panel \\& Atherogenic Risk Markers}}
 
-\\begin{{tabular}}{{@{{}} p{{7.2cm}} p{{3.0cm}} p{{3.2cm}} p{{3.2cm}} @{{}}}}
+\\begin{{tabular}}{{@{{}} p{{6.4cm}} p{{2.5cm}} p{{2.5cm}} p{{3.1cm}} @{{}}}}
   \\toprule
   \\textbf{{Test Description}} & \\textbf{{Result}} & \\textbf{{Unit}} & \\textbf{{Reference Range}} \\\\
   \\midrule
@@ -237,7 +240,7 @@ def generate_lab_tex(
 \\vspace{{14pt}}
 
 \\noindent
-\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}} l r @{{}}}}
+\\begin{{tabular*}}{{\\textwidth}}{{@{{}} l @{{\\extracolsep{{\\fill}}}} r @{{}}}}
   \\textbf{{Consultant Chemical Pathologist:}} Dr. L. Pathologist, FRCPath & \\textbf{{Report Released:}} {header.date_str} 14:30 UTC \\\\
 \\end{{tabular*}}
 

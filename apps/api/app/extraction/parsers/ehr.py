@@ -208,7 +208,7 @@ def parse_ehr(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
 
     # --- Function Class ---
     if "Function Class" in remaining_keys:
-        fc_m = re.search(r"\b(?:nyha\s*(?:functional\s*)?class|functional\s*class|function\s*class)\s*[:=]?\s*([0-4]|i{1,3}|iv|none)\b", full_text, re.IGNORECASE)
+        fc_m = re.search(r"\b(?:nyha\s*(?:functional\s*)?class|functional\s*class|function\s*class)\s*[:=]?\s*(?:class\s+)?([0-4]|i{1,3}|iv|none)\b", full_text, re.IGNORECASE)
         if fc_m:
             fc_val = parse_function_class(fc_m.group(1))
             if fc_val:

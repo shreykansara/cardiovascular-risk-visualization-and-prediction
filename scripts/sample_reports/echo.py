@@ -38,7 +38,7 @@ def generate_echo_tex(preset: PatientPreset, header: PatientHeader) -> str:
         mv_grade = "Normal"
         av_desc = "Trileaflet valve; normal excursion; no aortic insufficiency"
         av_grade = "Normal"
-        tv_desc = "Normal tricuspid valve; trace physiological regurgitation"
+        tv_desc = "Normal tricuspid valve; normal coaptation, no regurgitation"
         tv_grade = "Normal"
         pv_desc = "Normal pulmonic valve structure"
         pv_grade = "Normal"
@@ -90,17 +90,18 @@ def generate_echo_tex(preset: PatientPreset, header: PatientHeader) -> str:
 
 {header_tex}
 
-\\section*{{Quantitative Chamber Dimensions & Wall Thickness}}
+\\section*{{Quantitative Chamber Dimensions \\& Wall Thickness}}
 
-\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}} l l l l l @{{}}}}
-  \\textbf{{LVEDD:}} {lvedd} mm (42--59) & \\textbf{{LVESD:}} {lvesd} mm (25--40) & \\textbf{{IVS:}} {ivs} mm (6--11) & \\textbf{{LA Dimension:}} {la} mm (30--40) & \\textbf{{Aortic Root:}} {ao} mm (20--37) \\\\
+\\begin{{tabular*}}{{\\textwidth}}{{@{{}} l @{{\\extracolsep{{\\fill}}}} l @{{\\extracolsep{{\\fill}}}} l @{{}}}}
+  \\textbf{{LVEDD:}} {lvedd} mm (42--59) & \\textbf{{LVESD:}} {lvesd} mm (25--40) & \\textbf{{IVS Thickness:}} {ivs} mm (6--11) \\\\
+  \\textbf{{LA Dimension:}} {la} mm (30--40) & \\textbf{{Aortic Root:}} {ao} mm (20--37) & \\textbf{{LV Mass Index:}} Normal \\\\
 \\end{{tabular*}}
 
 \\vspace{{10pt}}
 
 \\section*{{Left Ventricular Systolic Function \\& Wall Motion}}
 
-\\begin{{tabular}}{{@{{}} p{{7.2cm}} p{{3.0cm}} p{{6.4cm}} @{{}}}}
+\\begin{{tabular}}{{@{{}} p{{6.8cm}} p{{2.8cm}} p{{5.5cm}} @{{}}}}
   \\toprule
   \\textbf{{Parameter}} & \\textbf{{Observed Value}} & \\textbf{{Reference / Notes}} \\\\
   \\midrule
@@ -113,7 +114,7 @@ def generate_echo_tex(preset: PatientPreset, header: PatientHeader) -> str:
 
 \\section*{{Valvular Assessment}}
 
-\\begin{{tabular}}{{@{{}} p{{3.8cm}} p{{9.6cm}} p{{3.2cm}} @{{}}}}
+\\begin{{tabular}}{{@{{}} p{{3.2cm}} p{{8.4cm}} p{{3.2cm}} @{{}}}}
   \\toprule
   \\textbf{{Valve Structure}} & \\textbf{{Doppler / Color Flow Findings}} & \\textbf{{Functional Grade}} \\\\
   \\midrule
@@ -136,7 +137,7 @@ def generate_echo_tex(preset: PatientPreset, header: PatientHeader) -> str:
 \\vspace{{18pt}}
 
 \\noindent
-\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}} l r @{{}}}}
+\\begin{{tabular*}}{{\\textwidth}}{{@{{}} l @{{\\extracolsep{{\\fill}}}} r @{{}}}}
   \\textbf{{Examining Cardiologist:}} Dr. M. Echo, MD, FASE & \\textbf{{Date Verified:}} {header.date_str} \\\\
 \\end{{tabular*}}
 

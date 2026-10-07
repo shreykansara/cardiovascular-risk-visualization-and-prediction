@@ -207,7 +207,7 @@ def generate_patient_header(
     except ValueError:
         dob = date(dob_year, 1, 1)
 
-    name_label = preset.name.upper().replace(" ", "_")
+    name_label = preset.name.upper()
     return PatientHeader(
         name=f"SAMPLE, {name_label}",
         mrn=f"SYN-{index:04d}",
@@ -216,7 +216,7 @@ def generate_patient_header(
         sex=sex,
         date_str=d.strftime("%Y-%m-%d"),
         facility="Synthetic Hospital CAD Research Unit",
-        physician="Dr. S. Synthetic, MD (GMC-9999999)",
+        physician="Dr. S. Synthetic, MD",
         synthetic_notice="Synthetic sample. Not a real patient.",
     )
 

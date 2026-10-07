@@ -36,9 +36,11 @@ def find_header_columns(page_rows: List[Row], match_row_idx: int) -> Tuple[Optio
         for c_idx, cell in enumerate(row.cells):
             clean = cell.lower().strip()
             if any(re.search(r"\b" + re.escape(kw) + r"\b", clean) for kw in RESULT_HEADER_KEYWORDS):
-                result_col = c_idx
+                if result_col is None:
+                    result_col = c_idx
             elif any(re.search(r"\b" + re.escape(kw) + r"\b", clean) for kw in UNIT_HEADER_KEYWORDS):
-                unit_col = c_idx
+                if unit_col is None:
+                    unit_col = c_idx
 
         if result_col is not None:
             return result_col, unit_col
@@ -65,7 +67,8 @@ def locate_value_for_match(
         r"\b" + re.escape(match.synonym_matched) +
         r"[^:\=\n\r]{0,40}(?:[:=]|\.{2,})\s*([^\n\r]+)"
     )
-    m = re.search(pattern, row.text, re.IGNORECASE)
+    search_text = row.cells[label_cell_idx] if len(row.cells) > 1 else row.text
+    m = re.search(pattern, search_text, re.IGNORECASE)
     if m:
         after_label = m.group(1).strip()
         parsed = parse_numeric_value_and_unit(after_label)

@@ -44,13 +44,17 @@ def render_latex_header(header: PatientHeader, report_title: str, report_subtitl
     """
     Renders the standardized patient header block with prominent synthetic sample notices.
     """
-    return f"""% --- Patient & Report Header ---
+    safe_title = report_title.replace("&", r"\&")
+    safe_subtitle = report_subtitle.replace("&", r"\&")
+    safe_name = header.name.replace("_", " ")
+
+    return f"""% --- Patient and Report Header ---
 \\begin{{center}}
   {{\\Large \\textbf{{{header.facility}}}}}\\\\
   \\vspace{{2pt}}
-  {{\\normalsize \\textbf{{{report_title.upper()}}}}}\\\\
+  {{\\normalsize \\textbf{{{safe_title.upper()}}}}}\\\\
   \\vspace{{1pt}}
-  {{\\footnotesize \\textcolor{{subtext}}{{{report_subtitle}}}}}\\\\
+  {{\\footnotesize \\textcolor{{subtext}}{{{safe_subtitle}}}}}\\\\
   \\vspace{{4pt}}
   {{\\small \\textbf{{\\textcolor{{red!75!black}}{{{header.synthetic_notice}}}}}}}\\\\
   \\vspace{{3pt}}
@@ -60,9 +64,10 @@ def render_latex_header(header: PatientHeader, report_title: str, report_subtitl
 \\vspace{{2pt}}
 
 \\noindent
-\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}} l l l l @{{}}}}
-  \\textbf{{Patient:}} {header.name} & \\textbf{{MRN:}} {header.mrn} & \\textbf{{Date:}} {header.date_str} & \\textbf{{Age / Sex:}} {header.age}y / {header.sex} \\\\
-  \\textbf{{DOB:}} {header.dob} & \\textbf{{Ref MD:}} {header.physician} & \\textbf{{Status:}} Final Verified & \\textbf{{Encounter:}} Ambulatory Outpatient \\\\
+\\begin{{tabular*}}{{\\textwidth}}{{@{{}} l @{{\\extracolsep{{\\fill}}}} r @{{}}}}
+  \\textbf{{Patient:}} {safe_name} & \\textbf{{MRN:}} {header.mrn} \\\\
+  \\textbf{{DOB:}} {header.dob} \\quad (\\textbf{{Age / Sex:}} {header.age}y / {header.sex}) & \\textbf{{Report Date:}} {header.date_str} \\\\
+  \\textbf{{Encounter:}} Ambulatory Outpatient & \\textbf{{Ref MD:}} {header.physician} \\\\
 \\end{{tabular*}}
 
 \\vspace{{2pt}}

@@ -1,0 +1,137 @@
+% LaTeX Preamble for Synthetic Clinical Reports
+% Multimodal AI Hackathon 2026 - Synthetic Sample Reports Generator
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=18mm,top=20mm,bottom=22mm]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+
+% Suppress hyphenation to ensure clinical token integrity
+\tolerance=9999
+\emergencystretch=10pt
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+
+% Table spacing: wide columns to prevent text clipping or word splitting
+\setlength{\tabcolsep}{10pt}
+\renewcommand{\arraystretch}{1.25}
+
+% Subtle neutral clinical palette
+\definecolor{darktext}{RGB}{30, 41, 59}
+\definecolor{subtext}{RGB}{100, 116, 139}
+\definecolor{linecolor}{RGB}{203, 213, 225}
+\definecolor{bannerbg}{RGB}{248, 250, 252}
+
+% Header and Footer setup
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[C]{\footnotesize\textcolor{subtext}{\textit{Synthetic sample. Not a real patient.} \quad\textbullet\quad Page \thepage}}
+
+\parindent 0pt
+\parskip 5pt
+
+
+\begin{document}
+
+% --- Patient and Report Header ---
+\begin{center}
+  {\Large \textbf{Synthetic Hospital CAD Research Unit}}\\
+  \vspace{2pt}
+  {\normalsize \textbf{AMBULATORY OUTPATIENT CARDIOLOGY CONSULTATION NOTE}}\\
+  \vspace{1pt}
+  {\footnotesize \textcolor{subtext}{Cardiovascular Outpatient Clinic}}\\
+  \vspace{4pt}
+  {\small \textbf{\textcolor{red!75!black}{Synthetic sample. Not a real patient.}}}\\
+  \vspace{3pt}
+  \textcolor{linecolor}{\rule{\textwidth}{0.8pt}}
+\end{center}
+
+\vspace{2pt}
+
+\noindent
+\begin{tabular*}{\textwidth}{@{} l @{\extracolsep{\fill}} r @{}}
+  \textbf{Patient:} SAMPLE, RCA / INFERIOR ISCHEMIA & \textbf{MRN:} SYN-0003 \\
+  \textbf{DOB:} 1964-01-15 \quad (\textbf{Age / Sex:} 62y / Male) & \textbf{Report Date:} 2026-03-15 \\
+  \textbf{Encounter:} Ambulatory Outpatient & \textbf{Ref MD:} Dr. S. Synthetic, MD \\
+\end{tabular*}
+
+\vspace{2pt}
+\noindent\textcolor{linecolor}{\rule{\textwidth}{0.4pt}}
+\vspace{6pt}
+
+
+\section*{Demographics \& Vital Signs}
+
+\begin{tabular*}{\textwidth}{@{} l @{\extracolsep{\fill}} l @{\extracolsep{\fill}} l @{}}
+  \textbf{Age:} 62 years & \textbf{Sex:} Male & \textbf{Height:} 168 cm \\
+  \textbf{Weight:} 65 kg & \textbf{Body mass index:} 23.03 kg/m2 & \textbf{Function class:} Class I \\
+  \textbf{Blood pressure:} 142/88 mmHg & \textbf{Pulse rate:} 68 bpm & \textbf{SpO2:} 98\% (Room air) \\
+\end{tabular*}
+
+\vspace{8pt}
+
+\section*{Past Medical History \& Cardiovascular Risk Factors}
+
+\begin{tabular}{@{} p{6.8cm} p{2.8cm} p{5.5cm} @{}}
+  \toprule
+  \textbf{Risk Factor / Comorbidity} & \textbf{Status} & \textbf{Clinical Details} \\
+  \midrule
+  Diabetes mellitus & Yes & Documented active diagnosis \\
+  Hypertension & Yes & Documented active diagnosis \\
+  Current smoker & No & No clinical history reported \\
+  Ex-smoker & No & No clinical history reported \\
+  Family history of CAD & No & No clinical history reported \\
+  Obesity & No & No clinical history reported \\
+  Chronic renal failure & No & No clinical history reported \\
+  Cerebrovascular accident & No & No clinical history reported \\
+  Airway disease & No & No clinical history reported \\
+  Thyroid disease & No & No clinical history reported \\
+  Congestive heart failure & No & No clinical history reported \\
+  Dyslipidemia & Yes & Documented active diagnosis \\
+  \bottomrule
+\end{tabular}
+
+\vspace{8pt}
+
+\section*{Cardiovascular Symptoms \& Physical Examination}
+
+\begin{tabular}{@{} p{6.8cm} p{2.8cm} p{5.5cm} @{}}
+  \toprule
+  \textbf{Symptom / Examination Sign} & \textbf{Status} & \textbf{Clinical Details} \\
+  \midrule
+  Typical chest pain & No & Absent on review of systems / exam \\
+  Atypical chest pain & Yes & Present on current evaluation \\
+  Non-anginal chest pain & No & Absent on review of systems / exam \\
+  Exertional chest pain & No & Absent on review of systems / exam \\
+  Low threshold angina & No & Absent on review of systems / exam \\
+  Dyspnea & No & Absent on review of systems / exam \\
+  Edema & No & Absent on review of systems / exam \\
+  Weak peripheral pulse & No & Absent on review of systems / exam \\
+  Lung rales & No & Absent on review of systems / exam \\
+  Systolic murmur & No & Absent on review of systems / exam \\
+  Diastolic murmur & No & Absent on review of systems / exam \\
+  \bottomrule
+\end{tabular}
+
+\vspace{8pt}
+
+\section*{Assessment \& Clinical Plan}
+
+\noindent
+\textbf{Impression:} Patient evaluated for CAD stratification. Comprehensive assessment based on clinical presentation, hemodynamic profile, and non-invasive testing. Optimization of risk factor profile and follow-up as indicated.
+
+\vspace{14pt}
+
+\noindent
+\begin{tabular*}{\textwidth}{@{} l @{\extracolsep{\fill}} r @{}}
+  \textbf{Attending Physician:} Dr. S. Synthetic, MD & \textbf{Encounter Date:} 2026-03-15 \\
+\end{tabular*}
+
+\end{document}

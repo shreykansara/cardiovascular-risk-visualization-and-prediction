@@ -73,7 +73,7 @@ def generate_ecg_tex(
     if not impression_only:
         findings_section = f"""\\section*{{Morphological \\& Ischemic Findings}}
 
-\\begin{{tabular}}{{@{{}} p{{7.2cm}} p{{3.0cm}} p{{6.4cm}} @{{}}}}
+\\begin{{tabular}}{{@{{}} p{{6.8cm}} p{{2.8cm}} p{{5.5cm}} @{{}}}}
   \\toprule
   \\textbf{{Parameter}} & \\textbf{{Result}} & \\textbf{{Diagnostic Criteria / Notes}} \\\\
   \\midrule
@@ -98,10 +98,11 @@ def generate_ecg_tex(
 
 {header_tex}
 
-\\section*{{Technical & Global Measurements}}
+\\section*{{Technical \\& Global Measurements}}
 
-\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}} l l l l l @{{}}}}
-  \\textbf{{Rhythm:}} {rhythm} & \\textbf{{Heart Rate:}} {hr} bpm & \\textbf{{PR Interval:}} {pr_int} ms & \\textbf{{QRS Duration:}} {qrs_dur} ms & \\textbf{{QT / QTc:}} {qt} / {qtc} ms \\\\
+\\begin{{tabular*}}{{\\textwidth}}{{@{{}} l @{{\\extracolsep{{\\fill}}}} l @{{\\extracolsep{{\\fill}}}} l @{{}}}}
+  \\textbf{{Rhythm:}} {rhythm} & \\textbf{{Heart Rate:}} {hr} bpm & \\textbf{{PR Interval:}} {pr_int} ms \\\\
+  \\textbf{{QRS Duration:}} {qrs_dur} ms & \\textbf{{QT / QTc:}} {qt} / {qtc} ms & \\textbf{{Mean QRS Axis:}} +45\\textdegree{{}} (Normal) \\\\
 \\end{{tabular*}}
 
 \\vspace{{10pt}}
@@ -110,7 +111,7 @@ def generate_ecg_tex(
 
 \\vspace{{12pt}}
 
-\\section*{{Impression & Interpretation}}
+\\section*{{Impression \\& Interpretation}}
 
 \\noindent
 \\textbf{{Conclusion:}} {impression}
@@ -118,7 +119,7 @@ def generate_ecg_tex(
 \\vspace{{18pt}}
 
 \\noindent
-\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}} l r @{{}}}}
+\\begin{{tabular*}}{{\\textwidth}}{{@{{}} l @{{\\extracolsep{{\\fill}}}} r @{{}}}}
   \\textbf{{Over-read by:}} Dr. E. Cardiologist, MD (Cardiology) & \\textbf{{Digitally Signed:}} {header.date_str} 10:15 UTC \\\\
 \\end{{tabular*}}
 
