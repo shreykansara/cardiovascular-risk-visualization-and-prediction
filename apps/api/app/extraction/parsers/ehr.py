@@ -223,6 +223,46 @@ def parse_ehr(document: Document) -> Tuple[Dict[str, ExtractedField], List[Rejec
                 )
                 remaining_keys.remove("Function Class")
 
+    # --- BMI (explicit or derived from height and weight) ---
+    if "BMI" in remaining_keys:
+        bmi_m = re.search(r"\b(?:body\s+mass\s+index|bmi)\s*[:=]?\s*([0-9]+(?:\.[0-9]+)?)\b", full_text, re.IGNORECASE)
+        if bmi_m:
+            val = float(bmi_m.group(1))
+            conv = convert_and_validate_numeric("BMI", val, "kg/m²")
+            if conv.rejection_reason:
+                rejected.append(RejectedField(
+                    key="BMI",
+                    reason=conv.rejection_reason,
+                    found=bmi_m.group(0)[:40],
+                ))
+            else:
+                fields["BMI"] = ExtractedField(
+                    value=conv.value,
+                    confidence="high",
+                    unit_in_report="kg/m²",
+                    converted=False,
+                    derived=False,
+                    evidence=bmi_m.group(0)[:80],
+                    page=1,
+                )
+                remaining_keys.remove("BMI")
+        elif "Weight" in fields and "Length" in fields and fields["Length"].value and fields["Length"].value > 0:
+            height_m = float(fields["Length"].value) / 100.0
+            weight_kg = float(fields["Weight"].value)
+            bmi_calc = round(weight_kg / (height_m ** 2), 2)
+            conv = convert_and_validate_numeric("BMI", bmi_calc, "kg/m²")
+            if not conv.rejection_reason:
+                fields["BMI"] = ExtractedField(
+                    value=conv.value,
+                    confidence="check",
+                    unit_in_report="kg/m²",
+                    converted=False,
+                    derived=True,
+                    evidence="Calculated from height and weight",
+                    page=1,
+                )
+                remaining_keys.remove("BMI")
+
     # =========================================================================
     # 2. STRUCTURED TABLE PASS FOR REMAINING FIELDS
     # =========================================================================

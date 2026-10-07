@@ -60,9 +60,10 @@ def locate_value_for_match(
 
     # Strategy (b): Inline pattern inside the label cell or row text
     # e.g., "FBS: 110 mg/dL" or "FBS = 110 mg/dL" or "FBS ..... 110 mg/dL"
+    # Allow optional abbreviations/parentheses between synonym and delimiter e.g. "Left Ventricular Ejection Fraction (LVEF): 50-55 %"
     pattern = (
         r"\b" + re.escape(match.synonym_matched) +
-        r"\s*(?:[:=]|\.{2,})\s*([^\n\r]+)"
+        r"[^:\=\n\r]{0,40}(?:[:=]|\.{2,})\s*([^\n\r]+)"
     )
     m = re.search(pattern, row.text, re.IGNORECASE)
     if m:
