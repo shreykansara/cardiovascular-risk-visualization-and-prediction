@@ -112,3 +112,22 @@ Derived from [`field_specs.json`](file:///c:/Users/Shrey/Projects/Multimodal%20A
 - **Installation Method**: Installed via Windows Package Manager (`winget install --id MiKTeX.MiKTeX -e --silent`).
 - **Executable Location**: `C:\Users\Shrey\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe`.
 - **On-the-fly Package Installation**: Enabled via `initexmf --set-config-value [MPM]AutoInstall=1`.
+
+---
+
+## 4. Unit Survival Test Decisions (Task 2.3)
+
+Evaluated via `scripts/sample_reports/test_units.py` compiled through `pdflatex` and extracted using `pdfplumber` / `pdfminer`:
+
+| Candidate Unit | LaTeX Source | Extracted Text | Decision & Rationale |
+|---|---|---|---|
+| Platelet count | `10\textasciicircum 3/uL` | `10^3/uL` | **Adopted**: Extracted as `10^3/uL`, perfectly matching `units.py` token check `10^3`. |
+| Platelet count | `$10^3$/uL` | `103/uL` | **Rejected**: Math mode superscript is flattened to `103`, breaking extraction. |
+| Total leucocyte | `cells/uL` | `cells/uL` | **Adopted**: ASCII representation survives without replacement glyphs. |
+| Total leucocyte | `cells/\textmu L` | `cells/L` | **Rejected**: Micro character extracted as `` unmapped glyph. |
+| Creatinine (SI) | `umol/L` | `umol/L` | **Adopted**: ASCII `u` prefix survives cleanly and maps in `units.py`. |
+| Creatinine (SI) | `\textmu mol/L` | `mol/L` | **Rejected**: Produces replacement glyph. |
+| Fasting glucose | `mg/dL` / `mmol/L` | `mg/dL` / `mmol/L` | **Adopted**: Standard ASCII survives. |
+| Electrolytes | `mEq/L` / `mmol/L` | `mEq/L` / `mmol/L` | **Adopted**: Standard ASCII survives. |
+| BMI | `kg/m2` | `kg/m2` | **Adopted**: Clear ASCII notation, no math mode required. |
+
