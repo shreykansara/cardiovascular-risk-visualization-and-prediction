@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Ping Render Service
         run: |
-          curl -s -f -m 30 "https://perfusion.shreykansara.dev/healthz" || echo "Ping failed or timed out"
+          curl -s -f -m 30 "https://perfusion.shreykansara.dev/reports" || echo "Ping failed or timed out"
